@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Vandal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        * {
+    /* This forces EVERY element to use the font */
+    font-family: 'Permanent Marker', cursive;
+}
+* {
+    /* Existing font rules... */
+    font-family: 'Permanent Marker', cursive;
+
+    /* DISABLING HIGHLIGHTING */
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;          /* Standard (Chrome, Firefox, Opera) */
+}
+
+/* Make sure users can still type in the search bar! */
+input {
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding-top: 80px;    /* Moves logo down */
+    padding-bottom: 100px; /* Moves VANDAL up */
+    
+    /* Background settings... */
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), 
+                url('https://wallpaperaccess.com/full/2238315.jpg');
+    background-size: cover;
+    background-position: center;
+}
+input, button {
+    font-family: 'Permanent Marker', cursive !important;
+}
+.main-logo {
+    height: 300px; 
+    width: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    
+    /* name | duration | timing-function | iteration-count */
+    animation: float 3s ease-in-out infinite;
+}
+
+/* 2. Define the "float" timeline */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    }
+    50% {
+        transform: translateY(-15px);
+        filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.8));
+    }
+    100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    }
+}
+#paintCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    /* 9999 is the standard "always on top" number */
+    z-index: 9999; 
+    /* This is the most important line: it lets you click the 
+       buttons even though the canvas is covering them! */
+    pointer-events: none; 
+}
+#clearBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(30, 41, 59, 0.9);
+    
+    display: flex;              /* ADD THIS */
+    align-items: center;        /* ADD THIS */
+    justify-content: center; 
+    transform: translateY(1px);   /* ADD THIS */
+
+    padding: 0;                 /* ADD THIS (important) */
+    
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    transition: 0.2s;
+}
+
+#clearBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255,255,255,0.6);
+}
+/* The "Clear Drawing" text - Now positioned ABOVE */
+/* The "Clear Drawing" text - Diagonal Position */
+#clearBtn::after {
+    content: "Clear Drawing";
+    position: absolute;
+    
+    /* Position it to the top-left of the button center */
+    bottom: 50px; 
+    right: 50px;
+    
+    /* Look & Feel */
+    white-space: nowrap;
+    font-size: 14px;
+    font-family: 'Permanent Marker', cursive; /* Matches your theme */
+    color: white;
+    text-shadow: 0 0 8px rgba(255, 0, 238, 1);
+    background: rgba(30, 41, 59, 0.95);
+    padding: 6px 12px;
+    border-radius: 10px 10px 0px 10px; /* Sharp corner points to the button */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    /* Animation */
+    opacity: 0;
+    transform: translate(10px, 10px) scale(0.8); /* Start slightly "inside" the button */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy effect */
+    pointer-events: none;
+}
+
+/* Diagonal "Pop-out" on Hover */
+#clearBtn:hover::after {
+    opacity: 1;
+    transform: translate(0, 0) scale(1); /* Glides out diagonally */
+}
+.search-container {
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+        }
+
+.search-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+.spacer {
+    flex-grow: 1; /* Keeps the gap in the middle */
+}
+.bottom-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.main-logo {
+    height: 300px; 
+    width: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    animation: float 3s ease-in-out infinite;
+
+    /* ADD THESE LINES */
+    pointer-events: none;   /* Makes clicks go through to the canvas */
+    user-select: none;     /* Prevents highlighting */
+    -webkit-user-drag: none; /* Prevents the "ghost image" dragging effect */
+}
+
+button {
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 0, 238, 0.5);
+}
+input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 5px rgba(255, 0, 238, 0.5);
+}
+.discord-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 55px;
+    height: 55px;
+    background: #5865F2; /* Discord blurple */
+    color: white;
+    font-size: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 0 15px rgba(88, 101, 242, 0.6);
+    z-index: 2000;
+    transition: all 0.2s ease;
+}
+
+.discord-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(88, 101, 242, 0.9);
+}
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            z-index: -1;
+        }
+
+        #home-ui {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 80px;
+            font-weight: bold;
+            background: linear-gradient(to right, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 5px;
+        }
+
+        .site-name {
+            font-size: 28px;
+            color: #d8b4fe;
+            margin-bottom: 40px;
+            letter-spacing: 4px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            background: rgba(30, 41, 59, 0.9);
+            padding: 10px;
+            border-radius: 50px;
+            border: 2px solid #a78bfa;
+            width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 20px;
+            padding-left: 25px;
+        }
+
+        button {
+            background: #c084fc;
+            color: #1e293b;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+ #proxy-container {
+    display: none;
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    background: rgb(255, 255, 255); /* Change to red temporarily */
+    z-index: 99998;
+    margin: 0;
+    padding: 0;
+}
+
+        #proxyFrame {
+            width: 100%; height: 100%;
+            border: none;
+        }
+
+        #back-btn {
+    position: fixed;
+    top: 20px; 
+    left: 20px;
+    z-index: 99999;
+    display: none;
+    background: #c084fc;
+    color: #1e293b;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-weight: bold;
+    pointer-events: auto;
+}
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="logo.png" alt="Logo" class="main-logo">
+    </div>
+    <canvas id="paintCanvas"></canvas>
+    
+    <button id="clearBtn">🗑️</button>
+    <div class="spacer"></div>
+    <audio id="spraySound" src="VeeVandalUse.mp3.mpeg" preload="auto"></audio>
+    <a href="https://discord.gg/cnDah7pw" target="_blank" class="discord-btn" id="discordBtn">
+    <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="28">
+</a>
+    <button id="back-btn">← Back Home</button>
+
+    <div id="home-ui">
+        <div class="logo">VANDAL</div>
+        <div class="site-name">Everything is your canvas🎨🖌️</div>
+        <div class="search-container">
+            <input type="text" id="urlInput">
+            <button id="goBtn">Spray</button>
+        </div>
+    </div>
+
+    <div id="proxy-container">
+        <iframe id="proxyFrame"></iframe>
+    </div>
+    <script src="/uv/uv.bundle.js"></script>
+<script src="/uv/uv.config.js"></script>
+<script src="/register-sw.js"></script>
+<script src="/baremux/index.js"></script>
+<script>
+    const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
+    conn.setTransport("/epoxy/index.mjs", [{ wisp: `ws://${location.host}/wisp/` }])
+        .then(() => console.log("Transport set successfully"))
+        .catch(err => console.error("Transport error:", err));
+</script>
+<script>
+        const homeUI = document.getElementById('home-ui');
+const proxyContainer = document.getElementById('proxy-container');
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'style') {
+            console.log('proxyContainer style changed:', proxyContainer.style.display);
+            console.trace();
+        }
+    });
+});
+observer.observe(proxyContainer, { attributes: true });
+const frame = document.getElementById('proxyFrame');
+const backBtn = document.getElementById('back-btn');
+const input = document.getElementById('urlInput');
+const canvas = document.getElementById('paintCanvas');
+const ctx = canvas.getContext('2d');
+const clearBtn = document.getElementById('clearBtn');
+const button = document.getElementById('goBtn');
+const discordBtn = document.getElementById('discordBtn');
+const spraySound = document.getElementById('spraySound');
+
+// 1. CLEAR CANVAS LOGIC
+clearBtn.onclick = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
+
+// 2. RANDOM PLACEHOLDERS
+const placeholderTexts = [
+    "Grab a can and start spraying!", "Shout out to DevvyE_yo", "Pls join the discord",
+    "Stud Tower Obby on Roblox!", "RAHH RAHH🛡️💀", "Manhattan cafe, search it up",
+    "Rate Vandal: 1-10", "AI making people dumb, start reading", "Click the screen!", 
+    "Paint the web", "N_gge_ (It's nugget, u dirty mind)"
+];
+input.placeholder = placeholderTexts[Math.floor(Math.random() * placeholderTexts.length)];
+
+// 3. THE FIXED LAUNCH FUNCTION
+async function launchProxy(event) {
+    console.log("launchProxy fired, url:", input.value);
+    if (event) event.preventDefault();
+    let url = input.value;
+    if (!url) return;
+
+    if (!url.startsWith('http')) {
+        if (!url.includes('.')) {
+            url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+        } else {
+            url = 'https://' + url;
+        }
+    }
+
+    console.log("Formatted URL:", url);
+
+    homeUI.style.display = 'none';
+    proxyContainer.style.display = 'block';
+    backBtn.style.display = 'block';
+    discordBtn.style.display = 'none';
+    clearBtn.style.display = 'none';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    try {
+    console.log("Registering SW...");
+    await registerSW();
+    console.log("Setting frame src...");
+    const encoded = __uv$config.encodeUrl(url);
+    console.log("Encoded:", encoded);
+    frame.src = '/uv/service/' + encoded;
+    console.log("Proxy container display:", proxyContainer.style.display);
+console.log("Proxy container rect:", proxyContainer.getBoundingClientRect());
+} catch (err) {
+    console.error("VANDAL Engine Error:", err);
+}
+}
+
+// 4. BACK BUTTON LOGIC
+backBtn.onclick = () => {
+    proxyContainer.style.display = 'none';
+    homeUI.style.display = 'flex';
+    backBtn.style.display = 'none';
+    discordBtn.style.display = 'flex';
+    clearBtn.style.display = 'flex';
+    frame.src = 'about:blank';
+};
+
+button.onclick = (e) => launchProxy(e);
+input.onkeydown = (e) => { if (e.key === 'Enter') launchProxy(e); };
+
+// 5. PAINTING LOGIC
+let drawing = false;
+let mouseX, mouseY;
+let lastColor = '#ff2e73';
+const colors = ['#ff2e73', '#00f2ff', '#7000ff', '#ff8c00', '#00ff00'];
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.onresize = resize;
+resize();
+
+function paint() {
+    if (!drawing) return;
+    const sprayRadius = 25;
+    const density = 40;
+    ctx.fillStyle = lastColor;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = lastColor;
+
+    for (let i = 0; i < density; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.pow(Math.random(), 2) * sprayRadius; 
+        const x = mouseX + radius * Math.cos(angle);
+        const y = mouseY + radius * Math.sin(angle);
+        ctx.beginPath();
+        ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+let sprayInterval;
+document.addEventListener('mousedown', (e) => {
+    // Don't draw if proxy is open
+    if (proxyContainer.style.display === 'block') return;
+    
+    drawing = true;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    lastColor = colors[Math.floor(Math.random() * colors.length)];
+    sprayInterval = setInterval(paint, 20);
+    spraySound.currentTime = 0;
+    spraySound.loop = true;
+    spraySound.play().catch(() => {});
+});
+
+document.addEventListener('mouseup', () => {
+    drawing = false;
+    clearInterval(sprayInterval);
+    stopSpraySound();
+});
+
+function stopSpraySound() {
+    let fade = setInterval(() => {
+        if (spraySound.volume > 0.05) {
+            spraySound.volume -= 0.05;
+        } else {
+            spraySound.pause();
+            spraySound.volume = 1;
+            clearInterval(fade);
+        }
+    }, 30);
+}
+document.addEventListener("click", () => {
+    spraySound.play().catch(e => console.log(e));
+});
+
+// Make sure this is called once at the bottom of your script
+    </script>
+</body>
+</html>
