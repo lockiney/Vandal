@@ -329,7 +329,7 @@ input::placeholder {
     <a href="https://discord.gg/cnDah7pw" target="_blank" class="discord-btn" id="discordBtn">
     <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="28">
 </a>
-    <button id="back-btn">← Back Home</button>
+    <button id="back-btn">←</button>
 
     <div id="home-ui">
         <div class="logo">VANDAL</div>
@@ -349,9 +349,7 @@ input::placeholder {
 <script src="/baremux/index.js"></script>
 <script>
     const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
-    conn.setTransport("/epoxy/index.mjs", [{ wisp: `ws://${location.host}/wisp/` }])
-        .then(() => console.log("Transport set successfully"))
-        .catch(err => console.error("Transport error:", err));
+    conn.setTransport("/epoxy/index.mjs", [{ wisp: `ws://${location.host}/wisp/` }]);
 </script>
 <script>
         const homeUI = document.getElementById('home-ui');
@@ -398,7 +396,7 @@ async function launchProxy(event) {
 
     if (!url.startsWith('http')) {
         if (!url.includes('.')) {
-            url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+            url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
         } else {
             url = 'https://' + url;
         }
