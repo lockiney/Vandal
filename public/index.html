@@ -149,6 +149,34 @@ input, button {
     opacity: 1;
     transform: translate(0, 0) scale(1); /* Glides out diagonally */
 }
+#proxy-container {
+    position: relative; /* Make sure this is relative so the loader can sit inside */
+}
+
+#loading-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000; /* Higher than the iframe */
+    background: linear-gradient(135deg, #4c1d95, #64748b); /* Purple to Gray gradient */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-text {
+    font-size: 50px;
+    color: white;
+    letter-spacing: 10px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.9); }
+}
 .search-container {
             transition: all 0.3s ease;
             border: 2px solid rgba(255, 255, 255, 0.1);
@@ -341,8 +369,11 @@ input::placeholder {
     </div>
 
     <div id="proxy-container">
-        <iframe id="proxyFrame"></iframe>
+    <div id="loading-screen">
+        <div class="loader-text">LOADING...</div>
     </div>
+    <iframe id="proxyFrame"></iframe>
+</div>
     <script src="/uv/uv.bundle.js"></script>
 <script src="/uv/uv.config.js"></script>
 <script src="/register-sw.js"></script>
@@ -387,6 +418,10 @@ const placeholderTexts = [
 ];
 input.placeholder = placeholderTexts[Math.floor(Math.random() * placeholderTexts.length)];
 
+const proxyFrame = document.getElementById('proxyFrame');
+proxyFrame.addEventListener('load', () => {
+    document.getElementById('loading-screen').style.display = 'none';
+});
 // 3. THE FIXED LAUNCH FUNCTION
 async function launchProxy(event) {
     console.log("launchProxy fired, url:", input.value);
@@ -410,7 +445,13 @@ async function launchProxy(event) {
     discordBtn.style.display = 'none';
     clearBtn.style.display = 'none';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 1. Show the loader in launchProxy
+document.getElementById('loading-screen').style.display = 'flex';
 
+// 2. Instead of waiting for 'load', use a setTimeout
+setTimeout(() => {
+    document.getElementById('loading-screen').style.display = 'none';
+}, 2500); // 2.5 seconds - adjust this based on your average load speed
     try {
     console.log("Registering SW...");
     await registerSW();
@@ -420,6 +461,7 @@ async function launchProxy(event) {
     frame.src = '/uv/service/' + encoded;
     console.log("Proxy container display:", proxyContainer.style.display);
 console.log("Proxy container rect:", proxyContainer.getBoundingClientRect());
+
 } catch (err) {
     console.error("VANDAL Engine Error:", err);
 }
