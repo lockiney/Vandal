@@ -380,7 +380,7 @@ input::placeholder {
 <script src="/baremux/index.js"></script>
 <script>
     const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
-    conn.setTransport("/epoxy/index.mjs", [{ wisp: `ws://${location.host}/wisp/` }]);
+    conn.setTransport("/epoxy/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
 </script>
 <script>
         const homeUI = document.getElementById('home-ui');
