@@ -2,254 +2,217 @@
 <html lang="en">
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>Vandal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <style>
         * {
-    /* This forces EVERY element to use the font */
-    font-family: 'Permanent Marker', cursive;
-}
-* {
-    /* Existing font rules... */
-    font-family: 'Permanent Marker', cursive;
-
-    /* DISABLING HIGHLIGHTING */
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none;      /* IE 10+ */
-    user-select: none;          /* Standard (Chrome, Firefox, Opera) */
-}
-
-/* Make sure users can still type in the search bar! */
-input {
-    -webkit-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
-    box-sizing: border-box;
-    padding-top: 80px;    /* Moves logo down */
-    padding-bottom: 100px; /* Moves VANDAL up */
-    
-    /* Background settings... */
-    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), 
-                url('https://wallpaperaccess.com/full/2238315.jpg');
-    background-size: cover;
-    background-position: center;
-}
-input, button {
-    font-family: 'Permanent Marker', cursive !important;
-}
-.main-logo {
-    height: 300px; 
-    width: auto;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-    
-    /* name | duration | timing-function | iteration-count */
-    animation: float 3s ease-in-out infinite;
-}
-
-/* 2. Define the "float" timeline */
-@keyframes float {
-    0% {
-        transform: translateY(0px);
-        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-    }
-    50% {
-        transform: translateY(-15px);
-        filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.8));
-    }
-    100% {
-        transform: translateY(0px);
-        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-    }
-}
-#paintCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    /* 9999 is the standard "always on top" number */
-    z-index: 9999; 
-    /* This is the most important line: it lets you click the 
-       buttons even though the canvas is covering them! */
-    pointer-events: none; 
-}
-#clearBtn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(30, 41, 59, 0.9);
-    
-    display: flex;              /* ADD THIS */
-    align-items: center;        /* ADD THIS */
-    justify-content: center; 
-    transform: translateY(1px);   /* ADD THIS */
-
-    padding: 0;                 /* ADD THIS (important) */
-    
-    color: white;
-    font-size: 22px;
-    cursor: pointer;
-    z-index: 10000;
-    box-shadow: 0 0 15px rgba(255,255,255,0.3);
-    transition: 0.2s;
-}
-
-#clearBtn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 25px rgba(255,255,255,0.6);
-}
-/* The "Clear Drawing" text - Now positioned ABOVE */
-/* The "Clear Drawing" text - Diagonal Position */
-#clearBtn::after {
-    content: "Clear Drawing";
-    position: absolute;
-    
-    /* Position it to the top-left of the button center */
-    bottom: 50px; 
-    right: 50px;
-    
-    /* Look & Feel */
-    white-space: nowrap;
-    font-size: 14px;
-    font-family: 'Permanent Marker', cursive; /* Matches your theme */
-    color: white;
-    text-shadow: 0 0 8px rgba(255, 0, 238, 1);
-    background: rgba(30, 41, 59, 0.95);
-    padding: 6px 12px;
-    border-radius: 10px 10px 0px 10px; /* Sharp corner points to the button */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    
-    /* Animation */
-    opacity: 0;
-    transform: translate(10px, 10px) scale(0.8); /* Start slightly "inside" the button */
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy effect */
-    pointer-events: none;
-}
-
-/* Diagonal "Pop-out" on Hover */
-#clearBtn:hover::after {
-    opacity: 1;
-    transform: translate(0, 0) scale(1); /* Glides out diagonally */
-}
-#proxy-container {
-    position: relative; /* Make sure this is relative so the loader can sit inside */
-}
-
-#loading-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 100000; /* Higher than the iframe */
-    background: linear-gradient(135deg, #4c1d95, #64748b); /* Purple to Gray gradient */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.loader-text {
-    font-size: 50px;
-    color: white;
-    letter-spacing: 10px;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.9); }
-}
-.search-container {
+            font-family: 'Permanent Marker', cursive;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        input {
+            -webkit-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            overflow-y: auto;
+            box-sizing: border-box;
+            padding-top: 80px;
+            padding-bottom: 100px;
+            background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)),
+                        url('https://wallpaperaccess.com/full/2238315.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        input, button {
+            font-family: 'Permanent Marker', cursive !important;
+        }
+        .main-logo {
+            height: 300px;
+            width: auto;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            animation: float 3s ease-in-out infinite;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        @keyframes float {
+            0%   { transform: translateY(0px);   filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+            50%  { transform: translateY(-15px);  filter: drop-shadow(0 0 25px rgba(255,255,255,0.8)); }
+            100% { transform: translateY(0px);   filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+        }
+        #paintCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        #clearBtn {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            width: 55px; height: 55px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(30, 41, 59, 0.9);
+            display: flex; align-items: center; justify-content: center;
+            transform: translateY(1px);
+            padding: 0;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            transition: 0.2s;
+        }
+        #clearBtn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(255,255,255,0.6); }
+        #clearBtn::after {
+            content: "Clear Drawing";
+            position: absolute;
+            bottom: 50px; right: 50px;
+            white-space: nowrap;
+            font-size: 14px;
+            font-family: 'Permanent Marker', cursive;
+            color: white;
+            text-shadow: 0 0 8px rgba(255,0,238,1);
+            background: rgba(30,41,59,0.95);
+            padding: 6px 12px;
+            border-radius: 10px 10px 0px 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            opacity: 0;
+            transform: translate(10px,10px) scale(0.8);
+            transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+            pointer-events: none;
+        }
+        #clearBtn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
+        #proxy-container {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgb(255,255,255);
+            z-index: 99998;
+            margin: 0; padding: 0;
+        }
+        #loading-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 100000;
+            background: linear-gradient(135deg, #4c1d95, #64748b);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .loader-text {
+            font-size: 50px;
+            color: white;
+            letter-spacing: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+        }
+        #progress-bar-wrap {
+            width: 280px; height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 16px auto 0;
+            overflow: hidden;
+        }
+        #progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #a78bfa, #c084fc);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        #progress-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 8px;
+            font-family: 'Permanent Marker', cursive;
+        }
+        .search-container {
             transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255,255,255,0.1);
             border-radius: 50px;
         }
-
-.search-container:hover {
+        .search-container:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 20px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.8);
         }
-.spacer {
-    flex-grow: 1; /* Keeps the gap in the middle */
-}
-.bottom-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-.main-logo {
-    height: 300px; 
-    width: auto;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-    animation: float 3s ease-in-out infinite;
-
-    /* ADD THESE LINES */
-    pointer-events: none;   /* Makes clicks go through to the canvas */
-    user-select: none;     /* Prevents highlighting */
-    -webkit-user-drag: none; /* Prevents the "ghost image" dragging effect */
-}
-
-button {
-    color: white;
-    font-weight: bold;
-    text-shadow: 0 0 8px rgba(255, 0, 238, 0.5);
-}
-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-    text-shadow: 0 0 5px rgba(255, 0, 238, 0.5);
-}
-.discord-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 55px;
-    height: 55px;
-    background: #5865F2; /* Discord blurple */
-    color: white;
-    font-size: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    box-shadow: 0 0 15px rgba(88, 101, 242, 0.6);
-    z-index: 2000;
-    transition: all 0.2s ease;
-}
-
-.discord-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 25px rgba(88, 101, 242, 0.9);
-}
-
+        .spacer { flex-grow: 1; }
+        button { color: white; font-weight: bold; text-shadow: 0 0 8px rgba(255,0,238,0.5); }
+        input::placeholder { color: rgba(255,255,255,0.5); text-shadow: 0 0 5px rgba(255,0,238,0.5); }
+        .discord-btn {
+            position: fixed;
+            bottom: 20px; left: 20px;
+            width: 55px; height: 55px;
+            background: #5865F2;
+            color: white; font-size: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 0 15px rgba(88,101,242,0.6);
+            z-index: 2000;
+            transition: all 0.2s ease;
+        }
+        .discord-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(88,101,242,0.9); }
+        .games-btn {
+            position: fixed;
+            bottom: 90px; left: 20px;
+            width: 55px; height: 55px;
+            background: #a78bfa;
+            color: white; font-size: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 0 15px rgba(167,139,250,0.6);
+            z-index: 2000;
+            transition: all 0.2s ease;
+        }
+        .games-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(167,139,250,0.9); }
+        .games-btn::after {
+            content: "Games";
+            position: absolute;
+            bottom: 50px; left: 50px;
+            white-space: nowrap;
+            font-size: 14px;
+            font-family: 'Permanent Marker', cursive;
+            color: white;
+            text-shadow: 0 0 8px rgba(167,139,250,1);
+            background: rgba(30,41,59,0.95);
+            padding: 6px 12px;
+            border-radius: 10px 10px 10px 0px;
+            border: 1px solid rgba(255,255,255,0.2);
+            opacity: 0;
+            transform: translate(10px,10px) scale(0.8);
+            transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+            pointer-events: none;
+        }
+        .games-btn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
         body::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15,23,42,0.85);
             z-index: -1;
         }
-
         #home-ui {
             text-align: center;
             display: flex;
@@ -259,7 +222,6 @@ input::placeholder {
             position: relative;
             z-index: 1;
         }
-
         .logo {
             font-size: 80px;
             font-weight: bold;
@@ -269,25 +231,22 @@ input::placeholder {
             margin-bottom: 10px;
             letter-spacing: 5px;
         }
-
         .site-name {
             font-size: 28px;
             color: #d8b4fe;
             margin-bottom: 40px;
             letter-spacing: 4px;
         }
-
         .search-container {
             display: flex;
             gap: 10px;
-            background: rgba(30, 41, 59, 0.9);
+            background: rgba(30,41,59,0.9);
             padding: 10px;
             border-radius: 50px;
             border: 2px solid #a78bfa;
             width: 600px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-
         input {
             flex: 1;
             background: transparent;
@@ -297,7 +256,6 @@ input::placeholder {
             font-size: 20px;
             padding-left: 25px;
         }
-
         button {
             background: #c084fc;
             color: #1e293b;
@@ -308,55 +266,56 @@ input::placeholder {
             cursor: pointer;
             text-transform: uppercase;
         }
-
- #proxy-container {
-    display: none;
-    position: fixed;
-    top: 0; 
-    left: 0;
-    width: 100vw; 
-    height: 100vh;
-    background: rgb(255, 255, 255); /* Change to red temporarily */
-    z-index: 99998;
-    margin: 0;
-    padding: 0;
-}
-
-        #proxyFrame {
-            width: 100%; height: 100%;
-            border: none;
-        }
-
+        #proxyFrame { width: 100%; height: 100%; border: none; }
         #back-btn {
-    position: fixed;
-    top: 20px; 
-    left: 20px;
-    z-index: 99999;
-    display: none;
-    background: #c084fc;
-    color: #1e293b;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: sans-serif;
-    font-weight: bold;
-    pointer-events: auto;
-}
+            position: fixed;
+            top: 20px; left: 20px;
+            z-index: 99999;
+            display: none;
+            background: #c084fc;
+            color: #1e293b;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-weight: bold;
+            pointer-events: auto;
+        }
+        #stats-counter {
+            position: fixed;
+            top: 16px; right: 20px;
+            z-index: 9999;
+            text-align: right;
+            font-family: 'Permanent Marker', cursive;
+            pointer-events: none;
+        }
+        .stat-line {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            text-shadow: 0 0 8px rgba(192,132,252,0.5);
+            line-height: 1.6;
+        }
+        .stat-num { color: #c084fc; }
     </style>
 </head>
 <body>
     <div class="logo-container">
         <img src="logo.png" alt="Logo" class="main-logo">
     </div>
+
+    <div id="stats-counter">
+        <div class="stat-line">🟢 Online: <span class="stat-num" id="onlineCount">...</span></div>
+        <div class="stat-line">👁 Visits: <span class="stat-num" id="visitCount">...</span></div>
+    </div>
+
     <canvas id="paintCanvas"></canvas>
-    
     <button id="clearBtn">🗑️</button>
     <div class="spacer"></div>
     <audio id="spraySound" src="VeeVandalUse.mp3.mpeg" preload="auto"></audio>
-    <a href="https://discord.gg/cnDah7pw" target="_blank" class="discord-btn" id="discordBtn">
-    <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="28">
-</a>
+
+    <a href="https://discord.gg/cnDah7pw" target="_blank" class="discord-btn" id="discordBtn"><img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="28"></a>
+    <a href="/games" class="games-btn" id="gamesBtn">🎮</a>
     <button id="back-btn">←</button>
 
     <div id="home-ui">
@@ -369,186 +328,201 @@ input::placeholder {
     </div>
 
     <div id="proxy-container">
-    <div id="loading-screen">
-        <div class="loader-text">LOADING...</div>
+        <div id="loading-screen">
+            <div class="loader-text">LOADING...</div>
+            <div id="progress-bar-wrap">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="progress-text">0%</div>
+        </div>
+        <iframe id="proxyFrame"></iframe>
     </div>
-    <iframe id="proxyFrame"></iframe>
-</div>
+
     <script src="/uv/uv.bundle.js"></script>
-<script src="/uv/uv.config.js"></script>
-<script src="/register-sw.js"></script>
-<script src="/baremux/index.js"></script>
-<script>
-    const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
-    conn.setTransport("/epoxy/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
-</script>
-<script>
+    <script src="/uv/uv.config.js"></script>
+    <script src="/register-sw.js"></script>
+    <script src="/baremux/index.js"></script>
+    <script>
+        const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
+        (async () => {
+            await conn.setTransport("/epoxy/dist/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
+        })();
+    </script>
+    <script>
         const homeUI = document.getElementById('home-ui');
-const proxyContainer = document.getElementById('proxy-container');
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'style') {
-            console.log('proxyContainer style changed:', proxyContainer.style.display);
-            console.trace();
+        const proxyContainer = document.getElementById('proxy-container');
+        const frame = document.getElementById('proxyFrame');
+        const backBtn = document.getElementById('back-btn');
+        const input = document.getElementById('urlInput');
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        const clearBtn = document.getElementById('clearBtn');
+        const button = document.getElementById('goBtn');
+        const discordBtn = document.getElementById('discordBtn');
+        const gamesBtn = document.getElementById('gamesBtn');
+        const spraySound = document.getElementById('spraySound');
+
+        clearBtn.onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const placeholderTexts = [
+            "Grab a can and start spraying!", "Shout out to DevvyE_yo", "Pls join the discord",
+            "Stud Tower Obby on Roblox!", "RAHH RAHH🛡️💀", "Manhattan cafe, search it up",
+            "Rate Vandal: 1-10", "AI making people dumb, start reading", "Click the screen!",
+            "Paint the web", "N_gge_ (It's nugget, u dirty mind)"
+        ];
+        input.placeholder = placeholderTexts[Math.floor(Math.random() * placeholderTexts.length)];
+
+        async function launchProxy(event) {
+            if (event) event.preventDefault();
+            let url = input.value;
+            if (!url) return;
+            if (!url.startsWith('http')) {
+                if (!url.includes('.')) {
+                    url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+                } else {
+                    url = 'https://' + url;
+                }
+            }
+            homeUI.style.display = 'none';
+            proxyContainer.style.display = 'block';
+            backBtn.style.display = 'block';
+            discordBtn.style.display = 'none';
+            gamesBtn.style.display = 'none';
+            clearBtn.style.display = 'none';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('loading-screen').style.display = 'flex';
+
+            // Progress bar animation
+            let progress = 0;
+            const bar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const interval = setInterval(() => {
+                if (progress < 85) {
+                    progress += Math.random() * 8;
+                    progress = Math.min(progress, 85);
+                    bar.style.width = progress + '%';
+                    progressText.textContent = Math.round(progress) + '%';
+                }
+            }, 300);
+
+            frame.onload = () => {
+                clearInterval(interval);
+                bar.style.width = '100%';
+                progressText.textContent = '100%';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    bar.style.width = '0%';
+                    progressText.textContent = '0%';
+                }, 300);
+            };
+
+            try {
+                await registerSW();
+                const encoded = __uv$config.encodeUrl(url);
+                frame.src = '/uv/service/' + encoded;
+            } catch (err) {
+                console.error("VANDAL Engine Error:", err);
+            }
         }
-    });
-});
-observer.observe(proxyContainer, { attributes: true });
-const frame = document.getElementById('proxyFrame');
-const backBtn = document.getElementById('back-btn');
-const input = document.getElementById('urlInput');
-const canvas = document.getElementById('paintCanvas');
-const ctx = canvas.getContext('2d');
-const clearBtn = document.getElementById('clearBtn');
-const button = document.getElementById('goBtn');
-const discordBtn = document.getElementById('discordBtn');
-const spraySound = document.getElementById('spraySound');
 
-// 1. CLEAR CANVAS LOGIC
-clearBtn.onclick = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-};
+        backBtn.onclick = () => {
+            proxyContainer.style.display = 'none';
+            homeUI.style.display = 'flex';
+            backBtn.style.display = 'none';
+            discordBtn.style.display = 'flex';
+            gamesBtn.style.display = 'flex';
+            clearBtn.style.display = 'flex';
+            frame.src = 'about:blank';
+        };
 
-// 2. RANDOM PLACEHOLDERS
-const placeholderTexts = [
-    "Grab a can and start spraying!", "Shout out to DevvyE_yo", "Pls join the discord",
-    "Stud Tower Obby on Roblox!", "RAHH RAHH🛡️💀", "Manhattan cafe, search it up",
-    "Rate Vandal: 1-10", "AI making people dumb, start reading", "Click the screen!", 
-    "Paint the web", "N_gge_ (It's nugget, u dirty mind)"
-];
-input.placeholder = placeholderTexts[Math.floor(Math.random() * placeholderTexts.length)];
+        button.onclick = (e) => launchProxy(e);
+        input.onkeydown = (e) => { if (e.key === 'Enter') launchProxy(e); };
 
-const proxyFrame = document.getElementById('proxyFrame');
-proxyFrame.addEventListener('load', () => {
-    document.getElementById('loading-screen').style.display = 'none';
-});
-// 3. THE FIXED LAUNCH FUNCTION
-async function launchProxy(event) {
-    console.log("launchProxy fired, url:", input.value);
-    if (event) event.preventDefault();
-    let url = input.value;
-    if (!url) return;
+        // Painting
+        let drawing = false;
+        let mouseX, mouseY;
+        let lastColor = '#ff2e73';
+        const colors = ['#ff2e73', '#00f2ff', '#7000ff', '#ff8c00', '#00ff00'];
 
-    if (!url.startsWith('http')) {
-        if (!url.includes('.')) {
-            url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
-        } else {
-            url = 'https://' + url;
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize;
+        resize();
+
+        function paint() {
+            if (!drawing) return;
+            const sprayRadius = 25, density = 40;
+            ctx.fillStyle = lastColor;
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = lastColor;
+            for (let i = 0; i < density; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.pow(Math.random(), 2) * sprayRadius;
+                const x = mouseX + radius * Math.cos(angle);
+                const y = mouseY + radius * Math.sin(angle);
+                ctx.beginPath();
+                ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
-    }
 
-    console.log("Formatted URL:", url);
+        let sprayInterval;
+        document.addEventListener('mousedown', (e) => {
+            if (proxyContainer.style.display === 'block') return;
+            drawing = true;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            lastColor = colors[Math.floor(Math.random() * colors.length)];
+            sprayInterval = setInterval(paint, 20);
+            spraySound.currentTime = 0;
+            spraySound.loop = true;
+            spraySound.play().catch(() => {});
+        });
 
-    homeUI.style.display = 'none';
-    proxyContainer.style.display = 'block';
-    backBtn.style.display = 'block';
-    discordBtn.style.display = 'none';
-    clearBtn.style.display = 'none';
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // 1. Show the loader in launchProxy
-document.getElementById('loading-screen').style.display = 'flex';
+        document.addEventListener('mousemove', (e) => {
+            if (!drawing) return;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
 
-// 2. Instead of waiting for 'load', use a setTimeout
-setTimeout(() => {
-    document.getElementById('loading-screen').style.display = 'none';
-}, 2500); // 2.5 seconds - adjust this based on your average load speed
-    try {
-    console.log("Registering SW...");
-    await registerSW();
-    console.log("Setting frame src...");
-    const encoded = __uv$config.encodeUrl(url);
-    console.log("Encoded:", encoded);
-    frame.src = '/uv/service/' + encoded;
-    console.log("Proxy container display:", proxyContainer.style.display);
-console.log("Proxy container rect:", proxyContainer.getBoundingClientRect());
+        document.addEventListener('mouseup', () => {
+            drawing = false;
+            clearInterval(sprayInterval);
+            stopSpraySound();
+        });
 
-} catch (err) {
-    console.error("VANDAL Engine Error:", err);
-}
-}
-
-// 4. BACK BUTTON LOGIC
-backBtn.onclick = () => {
-    proxyContainer.style.display = 'none';
-    homeUI.style.display = 'flex';
-    backBtn.style.display = 'none';
-    discordBtn.style.display = 'flex';
-    clearBtn.style.display = 'flex';
-    frame.src = 'about:blank';
-};
-
-button.onclick = (e) => launchProxy(e);
-input.onkeydown = (e) => { if (e.key === 'Enter') launchProxy(e); };
-
-// 5. PAINTING LOGIC
-let drawing = false;
-let mouseX, mouseY;
-let lastColor = '#ff2e73';
-const colors = ['#ff2e73', '#00f2ff', '#7000ff', '#ff8c00', '#00ff00'];
-
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.onresize = resize;
-resize();
-
-function paint() {
-    if (!drawing) return;
-    const sprayRadius = 25;
-    const density = 40;
-    ctx.fillStyle = lastColor;
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = lastColor;
-
-    for (let i = 0; i < density; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = Math.pow(Math.random(), 2) * sprayRadius; 
-        const x = mouseX + radius * Math.cos(angle);
-        const y = mouseY + radius * Math.sin(angle);
-        ctx.beginPath();
-        ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-let sprayInterval;
-document.addEventListener('mousedown', (e) => {
-    // Don't draw if proxy is open
-    if (proxyContainer.style.display === 'block') return;
-    
-    drawing = true;
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    lastColor = colors[Math.floor(Math.random() * colors.length)];
-    sprayInterval = setInterval(paint, 20);
-    spraySound.currentTime = 0;
-    spraySound.loop = true;
-    spraySound.play().catch(() => {});
-});
-
-document.addEventListener('mouseup', () => {
-    drawing = false;
-    clearInterval(sprayInterval);
-    stopSpraySound();
-});
-
-function stopSpraySound() {
-    let fade = setInterval(() => {
-        if (spraySound.volume > 0.05) {
-            spraySound.volume -= 0.05;
-        } else {
-            spraySound.pause();
-            spraySound.volume = 1;
-            clearInterval(fade);
+        function stopSpraySound() {
+            let fade = setInterval(() => {
+                if (spraySound.volume > 0.05) {
+                    spraySound.volume -= 0.05;
+                } else {
+                    spraySound.pause();
+                    spraySound.volume = 1;
+                    clearInterval(fade);
+                }
+            }, 30);
         }
-    }, 30);
-}
-document.addEventListener("click", () => {
-    spraySound.play().catch(e => console.log(e));
-});
 
-// Make sure this is called once at the bottom of your script
+        document.addEventListener("click", () => {
+            spraySound.play().catch(e => console.log(e));
+        });
+
+        // Stats counter
+        async function updateStats() {
+            try {
+                const visitRes = await fetch('https://api.counterapi.dev/v1/vandal/visits/up');
+                const visitData = await visitRes.json();
+                document.getElementById('visitCount').textContent = visitData.count.toLocaleString();
+            } catch(e) {}
+            try {
+                const onlineRes = await fetch('https://api.counterapi.dev/v1/vandal/online/up');
+                const onlineData = await onlineRes.json();
+                document.getElementById('onlineCount').textContent = onlineData.count;
+                setTimeout(async () => {
+                    try { await fetch('https://api.counterapi.dev/v1/vandal/online/down'); } catch(e) {}
+                }, 60000);
+            } catch(e) {}
+        }
+        updateStats();
     </script>
 </body>
 </html>
