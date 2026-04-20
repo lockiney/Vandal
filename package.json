@@ -12,10 +12,10 @@
   "type": "commonjs",
   "dependencies": {
     "@mercuryworkshop/bare-mux": "^2.1.8",
-    "@mercuryworkshop/epoxy-transport": "^3.0.1",
+    "@mercuryworkshop/epoxy-transport": "^2.1.28",
     "@mercuryworkshop/wisp-js": "^0.4.1",
-    "@titaniumnetwork-dev/ultraviolet": "^2.0.0",
-    "@tomphttp/bare-server-node": "^2.0.6",
+    "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
+    "@tomphttp/bare-server-node": "^2.0.2",
     "bare-server-node": "^2.0.3",
     "express": "^5.2.1",
     "http-proxy-middleware": "^3.0.5",

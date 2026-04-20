@@ -28,7 +28,7 @@ const bareServer = createBareServer('/bare/', {
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/uv/uv.config.js', (req, res) => res.sendFile(path.join(__dirname, 'public', 'uv.config.js')));
 
-const epoxyPath = path.join(require.resolve('@mercuryworkshop/epoxy-transport'), '..');
+const epoxyPath = path.join(require.resolve('@mercuryworkshop/epoxy-transport'), '../..');
 const bareMuxPath = path.join(require.resolve('@mercuryworkshop/bare-mux'), '..');
 app.use('/epoxy/', express.static(epoxyPath));
 app.use('/baremux/', express.static(bareMuxPath));
@@ -36,6 +36,11 @@ app.use('/uv/', express.static(uvPath));
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.use((req, res) => {
+app.get("/games", (req, res) => res.sendFile(path.join(__dirname, "public", "games.html")));
+app.get("/music", (req, res) => res.sendFile(path.join(__dirname, "public", "music.html")));
+app.get("/movies", (req, res) => res.sendFile(path.join(__dirname, "public", "movies.html")));
+app.get("/movies", (req, res) => res.sendFile(path.join(__dirname, "public", "movies.html")));
+app.get("/music", (req, res) => res.sendFile(path.join(__dirname, "public", "music.html")));
     res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

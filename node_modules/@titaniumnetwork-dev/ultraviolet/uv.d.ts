@@ -21,24 +21,28 @@ export type UVEncode = (input: Coded) => string;
  */
 export type UVDecode = (input: Coded) => string;
 
+export type UVInject = {
+    /**
+     * The host(s) to inject the HTML on.
+     * This is a regex that's tested against the proxied URL's host.
+     */
+    host: RegExp;
+    /**
+     * Where to inject the HTML
+     * Possible values: `"head" | "body"`
+     */
+    injectTo: "head" | "body";
+    /**
+     * The HTML to inject.
+     */
+    html: string;
+}
+
 /**
  * The Ultraviolet configuration object.
  * This interface defines the configuration options for the Ultraviolet library.
  */
 export interface UVConfig {
-    /**
-     * The Bare server(s) to use.
-     * If an array is specified, the service worker will randomly select a server to use.
-     * The selected server will be used for the duration of the session.
-     * Both relative and absolute paths are accepted. Relative paths are resolved to the current URL.
-     * @example // A Bare server running on the subdomain `bare.`, automatically correcting the apex record:
-     * `${location.protocol}//bare.${location.host.replace(/^www\./, "")}
-     * @example `http://localhost:8080/`
-     * @example `http://localhost:8080/bare/`
-     * @defaultValue `/bare/`
-     * @see {@link|https://github.com/tomphttp/specifications/blob/master/BareServer.md}
-     */
-    bare?: string | string[];
     /**
      * The prefix for Ultraviolet to listen on.
      * This prefix will be used to create the URL for the service worker and the client script.
@@ -101,4 +105,9 @@ export interface UVConfig {
      * @defaultValue `Ultraviolet.codec.xor.decode`
      */
     decodeUrl?: UVDecode;
+    /**
+     * HTML inject settings.
+     * This property expects an array of `UVInject`.
+     */
+    inject?: UVInject[];
 }

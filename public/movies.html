@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vandal - Movies</title>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Permanent Marker', cursive;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .topbar-title {
+            font-size: 22px;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+        }
+
+        .search-wrap {
+            flex: 1;
+            max-width: 500px;
+            margin-left: auto;
+            position: relative;
+        }
+
+        .search-wrap input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 50px;
+            color: white;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-wrap input:focus {
+            border-color: #a78bfa;
+            background: rgba(167,139,250,0.1);
+        }
+
+        .search-wrap input::placeholder { color: rgba(255,255,255,0.35); }
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.4);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            padding: 16px 20px 0;
+        }
+
+        .tab {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            font-family: 'Permanent Marker', cursive;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active, .tab:hover {
+            background: rgba(192,132,252,0.15);
+            border-color: #c084fc;
+            color: #c084fc;
+        }
+
+        /* GRID */
+        .section-title {
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+            padding: 16px 20px 12px;
+            letter-spacing: 2px;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            padding: 0 20px 40px;
+        }
+
+        .movie-card {
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(167,139,250,0.4);
+            box-shadow: 0 12px 30px rgba(167,139,250,0.15);
+        }
+
+        .movie-poster {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            display: block;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .movie-info {
+            padding: 10px;
+        }
+
+        .movie-title {
+            font-size: 12px;
+            color: rgba(255,255,255,0.85);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .movie-year {
+            font-size: 11px;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .movie-rating {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #fbbf24;
+            font-size: 11px;
+            padding: 3px 7px;
+            border-radius: 6px;
+        }
+
+        .play-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(167,139,250,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 40px;
+        }
+
+        .movie-card:hover .play-overlay { opacity: 1; }
+
+        /* PLAYER */
+        #playerOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        #playerOverlay.active { display: flex; }
+
+        .player-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            gap: 12px;
+        }
+
+        .player-title { font-size: 16px; color: #a78bfa; }
+
+        .player-close {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,80,80,0.4);
+            background: rgba(255,80,80,0.1);
+            color: white;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .player-close:hover { background: rgba(255,80,80,0.3); }
+
+        #movieFrame {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .loading::after {
+            content: '';
+            display: block;
+            width: 40px; height: 40px;
+            border: 3px solid rgba(167,139,250,0.2);
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 16px auto 0;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255,255,255,0.3);
+            font-size: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+            .topbar-title { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/" class="back-btn">← Back</a>
+    <div class="topbar-title">🎬 VANDAL MOVIES</div>
+    <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search movies & shows..." oninput="handleSearch()">
+    </div>
+</div>
+
+<div class="tabs">
+    <button class="tab active" onclick="setTab('movie', this)">🎬 Movies</button>
+    <button class="tab" onclick="setTab('tv', this)">📺 TV Shows</button>
+</div>
+
+<div id="mainContent">
+    <div class="section-title" id="sectionTitle">🔥 Trending</div>
+    <div class="movie-grid" id="movieGrid">
+        <div class="loading">Loading</div>
+    </div>
+</div>
+
+<!-- Player -->
+<div id="playerOverlay">
+    <div class="player-topbar">
+        <span class="player-title" id="playerTitle">Movie</span>
+        <button class="player-close" onclick="closePlayer()">✕ Close</button>
+    </div>
+    <iframe id="movieFrame" allowfullscreen allow="autoplay; encrypted-media; fullscreen"></iframe>
+</div>
+
+<script>
+    const TMDB_KEY = '6ead635df4863cb0fe72dac0486c8b88';
+    const TMDB_BASE = 'https://api.themoviedb.org/3';
+    const IMG_BASE = 'https://image.tmdb.org/t/p/w300';
+
+    let currentTab = 'movie';
+    let searchTimeout;
+
+    function setTab(type, btn) {
+        currentTab = type;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const query = document.getElementById('searchInput').value.trim();
+        if (query) {
+            doSearch(query);
+        } else {
+            loadTrending();
+        }
+    }
+
+    function handleSearch() {
+        clearTimeout(searchTimeout);
+        const query = document.getElementById('searchInput').value.trim();
+        searchTimeout = setTimeout(() => {
+            if (query) doSearch(query);
+            else loadTrending();
+        }, 400);
+    }
+
+    async function loadTrending() {
+        document.getElementById('sectionTitle').textContent = '🔥 Trending';
+        document.getElementById('movieGrid').innerHTML = '<div class="loading">Loading</div>';
+        try {
+            const res = await fetch(`${TMDB_BASE}/trending/${currentTab}/week?api_key=${TMDB_KEY}`);
+            const data = await res.json();
+            renderGrid(data.results);
+        } catch(e) {
+            document.getElementById('movieGrid').innerHTML = '<div class="no-results">Failed to load 😕</div>';
+        }
+    }
+
+    async function doSearch(query) {
+        document.getElementById('sectionTitle').textContent = `🔍 Results for "${query}"`;
+        document.getElementById('movieGrid').innerHTML = '<div class="loading">Searching</div>';
+        try {
+            const res = await fetch(`${TMDB_BASE}/search/${currentTab}?api_key=${TMDB_KEY}&query=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            renderGrid(data.results);
+        } catch(e) {
+            document.getElementById('movieGrid').innerHTML = '<div class="no-results">Search failed 😕</div>';
+        }
+    }
+
+    function renderGrid(items) {
+        const grid = document.getElementById('movieGrid');
+        if (!items || !items.length) {
+            grid.innerHTML = '<div class="no-results">No results found 😕</div>';
+            return;
+        }
+        grid.innerHTML = '';
+        items.forEach(item => {
+            const title = item.title || item.name;
+            const year = (item.release_date || item.first_air_date || '').split('-')[0];
+            const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
+            const poster = item.poster_path ? IMG_BASE + item.poster_path : null;
+
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            card.onclick = () => openPlayer(item);
+
+            card.innerHTML = `
+                ${poster ? `<img class="movie-poster" src="${poster}" alt="${title}" loading="lazy">` : `<div class="movie-poster" style="display:flex;align-items:center;justify-content:center;font-size:40px;">🎬</div>`}
+                <div class="play-overlay">▶</div>
+                ${rating ? `<div class="movie-rating">⭐ ${rating}</div>` : ''}
+                <div class="movie-info">
+                    <div class="movie-title">${title}</div>
+                    <div class="movie-year">${year || ''}</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function openPlayer(item) {
+        const title = item.title || item.name;
+        const type = item.title ? 'movie' : 'tv';
+        const id = item.id;
+
+        document.getElementById('playerTitle').textContent = title;
+        document.getElementById('movieFrame').src = `https://vidsrc.cc/v2/embed/${type}/${id}`;
+        document.getElementById('playerOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePlayer() {
+        document.getElementById('playerOverlay').classList.remove('active');
+        document.getElementById('movieFrame').src = '';
+        document.body.style.overflow = '';
+    }
+
+    // Load trending on start
+    loadTrending();
+</script>
+</body>
+</html>
