@@ -206,6 +206,39 @@
             pointer-events: none;
         }
         .games-btn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
+        .music-btn {
+    position: fixed;
+    bottom: 160px; left: 20px;
+    width: 55px; height: 55px;
+    background: #ec4899;
+    color: white; font-size: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 0 15px rgba(236,72,153,0.6);
+    z-index: 2000;
+    transition: all 0.2s ease;
+}
+.music-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(236,72,153,0.9); }
+.music-btn::after {
+    content: "Music";
+    position: absolute;
+    bottom: 50px; left: 50px;
+    white-space: nowrap;
+    font-size: 14px;
+    font-family: 'Permanent Marker', cursive;
+    color: white;
+    text-shadow: 0 0 8px rgba(236,72,153,1);
+    background: rgba(30,41,59,0.95);
+    padding: 6px 12px;
+    border-radius: 10px 10px 10px 0px;
+    border: 1px solid rgba(255,255,255,0.2);
+    opacity: 0;
+    transform: translate(10px,10px) scale(0.8);
+    transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    pointer-events: none;
+}
+.music-btn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
         body::before {
             content: '';
             position: absolute;
@@ -315,6 +348,7 @@
     <audio id="spraySound" src="VeeVandalUse.mp3.mpeg" preload="auto"></audio>
 
     <a href="https://discord.gg/cnDah7pw" target="_blank" class="discord-btn" id="discordBtn"><img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="28"></a>
+    <a href="/games" class="games-btn" id="gamesBtn">🎮</a>
     <a href="/games" class="games-btn" id="gamesBtn">🎮</a>
     <button id="back-btn">←</button>
 
