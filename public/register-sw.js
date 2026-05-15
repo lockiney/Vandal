@@ -17,3 +17,10 @@ async function registerSW() {
         location.reload();
     }
 }
+
+// Keep service worker alive
+setInterval(() => {
+    navigator.serviceWorker.ready.then(reg => {
+        reg.active && reg.active.postMessage('keepalive');
+    });
+}, 20000);

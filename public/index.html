@@ -5,6 +5,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/logo.png">
     <title>Vandal</title>
     <style>
         * {
@@ -31,27 +32,26 @@
             box-sizing: border-box;
             padding-top: 80px;
             padding-bottom: 100px;
-            background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)),
+            background: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)),
                         url('https://wallpaperaccess.com/full/2238315.jpg');
             background-size: cover;
             background-position: center;
+            background-attachment: fixed;
         }
-        input, button {
-            font-family: 'Permanent Marker', cursive !important;
-        }
+        input, button { font-family: 'Permanent Marker', cursive !important; }
         .main-logo {
             height: 300px;
             width: auto;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
             animation: float 3s ease-in-out infinite;
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
         }
         @keyframes float {
-            0%   { transform: translateY(0px);   filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
-            50%  { transform: translateY(-15px);  filter: drop-shadow(0 0 25px rgba(255,255,255,0.8)); }
-            100% { transform: translateY(0px);   filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+            0%   { transform: translateY(0px);  filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+            50%  { transform: translateY(-15px); filter: drop-shadow(0 0 25px rgba(255,255,255,0.8)); }
+            100% { transform: translateY(0px);  filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
         }
         #paintCanvas {
             position: fixed;
@@ -60,43 +60,6 @@
             z-index: 9999;
             pointer-events: none;
         }
-        #clearBtn {
-            position: fixed;
-            bottom: 20px; right: 20px;
-            width: 55px; height: 55px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(30, 41, 59, 0.9);
-            display: flex; align-items: center; justify-content: center;
-            transform: translateY(1px);
-            padding: 0;
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
-            z-index: 10000;
-            box-shadow: 0 0 15px rgba(255,255,255,0.3);
-            transition: 0.2s;
-        }
-        #clearBtn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(255,255,255,0.6); }
-        #clearBtn::after {
-            content: "Clear Drawing";
-            position: absolute;
-            bottom: 50px; right: 50px;
-            white-space: nowrap;
-            font-size: 14px;
-            font-family: 'Permanent Marker', cursive;
-            color: white;
-            text-shadow: 0 0 8px rgba(255,0,238,1);
-            background: rgba(30,41,59,0.95);
-            padding: 6px 12px;
-            border-radius: 10px 10px 0px 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            opacity: 0;
-            transform: translate(10px,10px) scale(0.8);
-            transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
-            pointer-events: none;
-        }
-        #clearBtn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
         #proxy-container {
             display: none;
             position: fixed;
@@ -159,122 +122,115 @@
         .spacer { flex-grow: 1; }
         button { color: white; font-weight: bold; text-shadow: 0 0 8px rgba(255,0,238,0.5); }
         input::placeholder { color: rgba(255,255,255,0.5); text-shadow: 0 0 5px rgba(255,0,238,0.5); }
-        .discord-btn {
+        #spray-nav {
             position: fixed;
-            bottom: 20px; left: 20px;
-            width: 55px; height: 55px;
-            background: #5865F2;
-            color: white; font-size: 24px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none;
-            box-shadow: 0 0 15px rgba(88,101,242,0.6);
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             z-index: 2000;
-            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .discord-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(88,101,242,0.9); }
-        .games-btn {
-            position: fixed;
-            bottom: 90px; left: 20px;
-            width: 55px; height: 55px;
-            background: #a78bfa;
-            color: white; font-size: 24px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none;
-            box-shadow: 0 0 15px rgba(167,139,250,0.6);
-            z-index: 2000;
-            transition: all 0.2s ease;
+        .can-body {
+            background: rgba(20,20,35,0.92);
+            border: 1.5px solid rgba(167,139,250,0.25);
+            border-radius: 28px;
+            padding: 10px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 0 20px rgba(167,139,250,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
         }
-        .games-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(167,139,250,0.9); }
-        .games-btn::after {
-            content: "Games";
+        .can-tip {
+            width: 14px; height: 10px;
+            background: rgba(20,20,35,0.92);
+            border: 1.5px solid rgba(167,139,250,0.25);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: -1px;
+        }
+        .can-nozzle {
+            width: 8px; height: 6px;
+            background: rgba(192,132,252,0.7);
+            border-radius: 2px 2px 0 0;
+            margin-bottom: -1px;
+            box-shadow: 0 0 6px rgba(192,132,252,0.5);
+        }
+        .can-divider {
+            width: 28px; height: 1px;
+            background: rgba(167,139,250,0.15);
+            margin: 2px 0;
+        }
+        .color-picker-popup {
             position: absolute;
-            bottom: 50px; left: 50px;
-            white-space: nowrap;
-            font-size: 14px;
-            font-family: 'Permanent Marker', cursive;
-            color: white;
-            text-shadow: 0 0 8px rgba(167,139,250,1);
-            background: rgba(30,41,59,0.95);
-            padding: 6px 12px;
-            border-radius: 10px 10px 10px 0px;
-            border: 1px solid rgba(255,255,255,0.2);
-            opacity: 0;
-            transform: translate(10px,10px) scale(0.8);
-            transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
-            pointer-events: none;
+            left: 56px;
+            bottom: 0;
+            background: rgba(20,20,35,0.97);
+            border: 1px solid rgba(167,139,250,0.25);
+            border-radius: 12px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 3000;
         }
-        .games-btn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
-.music-btn {
-    position: fixed;
-    bottom: 160px; left: 20px;
-    width: 55px; height: 55px;
-    background: #ec4899;
-    color: white; font-size: 24px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    text-decoration: none;
-    box-shadow: 0 0 15px rgba(236,72,153,0.6);
-    z-index: 2000;
-    transition: all 0.2s ease;
+        .color-picker-popup.open { display: flex; }
+        .color-row { display: flex; gap: 6px; }
+        .color-swatch {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .color-swatch:hover { transform: scale(1.2); }
+        .color-swatch.selected { border-color: white; transform: scale(1.15); }
+        .nav-btn {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 20px;
+            transition: all 0.2s ease;
+            position: relative;
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-btn:hover { background: rgba(167,139,250,0.15); transform: scale(1.15); }
+        .nav-btn::after {
+            content: attr(data-tip);
+            position: absolute;
+            left: 52px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(20,20,35,0.95);
+            color: white;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(167,139,250,0.2);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover::after { opacity: 1; left: 56px; }
+        .nav-btn:hover img {
+    filter: drop-shadow(0 0 8px #a78bfa) brightness(1.2) !important;
 }
-.music-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(236,72,153,0.9); }
-.music-btn::after {
-    content: "Music";
-    position: absolute;
-    bottom: 50px; left: 50px;
-    white-space: nowrap;
-    font-size: 14px;
-    font-family: 'Permanent Marker', cursive;
-    color: white;
-    text-shadow: 0 0 8px rgba(236,72,153,1);
-    background: rgba(30,41,59,0.95);
-    padding: 6px 12px;
-    border-radius: 10px 10px 10px 0px;
-    border: 1px solid rgba(255,255,255,0.2);
-    opacity: 0;
-    transform: translate(10px,10px) scale(0.8);
-    transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
-    pointer-events: none;
-}
-.music-btn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
-.movies-btn {
-    position: fixed;
-    bottom: 230px; left: 20px;
-    width: 55px; height: 55px;
-    background: #f43f5e;
-    color: white; font-size: 24px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    text-decoration: none;
-    box-shadow: 0 0 15px rgba(244,63,94,0.6);
-    z-index: 2000;
-    transition: all 0.2s ease;
-}
-.movies-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(244,63,94,0.9); }
-.movies-btn::after {
-    content: "Movies";
-    position: absolute;
-    bottom: 50px; left: 50px;
-    white-space: nowrap;
-    font-size: 14px;
-    font-family: 'Permanent Marker', cursive;
-    color: white;
-    text-shadow: 0 0 8px rgba(244,63,94,1);
-    background: rgba(30,41,59,0.95);
-    padding: 6px 12px;
-    border-radius: 10px 10px 10px 0px;
-    border: 1px solid rgba(255,255,255,0.2);
-    opacity: 0;
-    transform: translate(10px,10px) scale(0.8);
-    transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
-    pointer-events: none;
-}
-.movies-btn:hover::after { opacity: 1; transform: translate(0,0) scale(1); }
         body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15,23,42,0.85);
             z-index: -1;
@@ -363,9 +319,139 @@
             line-height: 1.6;
         }
         .stat-num { color: #c084fc; }
+/* LOGIN */
+.login-btn {
+    position: fixed;
+    top: 16px; left: 20px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(20,20,35,0.92);
+    border: 1.5px solid rgba(167,139,250,0.25);
+    color: white; font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.2s;
+    backdrop-filter: blur(12px);
+}
+.login-btn:hover { background: rgba(167,139,250,0.2); border-color: #a78bfa; }
+
+#authModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+}
+#authModal.open { display: flex; }
+
+.auth-box {
+    background: #1a1a2e;
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+}
+.auth-box h2 {
+    font-size: 22px;
+    background: linear-gradient(135deg, #a78bfa, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+}
+.auth-subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 20px;
+}
+.auth-input {
+    width: 100%;
+    padding: 11px 16px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 10px;
+    color: white;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.auth-input:focus { border-color: #a78bfa; background: rgba(167,139,250,0.08); }
+.auth-input::placeholder { color: rgba(255,255,255,0.25); }
+.auth-submit {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #a78bfa, #c084fc);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+}
+.auth-submit:hover { opacity: 0.9; transform: scale(1.02); }
+.auth-error {
+    font-size: 12px;
+    color: #ff5050;
+    margin-top: 8px;
+    min-height: 18px;
+}
+.auth-switch {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 16px;
+    cursor: pointer;
+}
+.auth-switch span { color: #a78bfa; cursor: pointer; }
+.auth-switch span:hover { text-decoration: underline; }
+.auth-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 18px;
+    cursor: pointer;
+    font-family: 'Permanent Marker', cursive;
+}
+.auth-close:hover { color: white; }
+.auth-box { position: relative; }
+.auth-logged-in { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+.auth-logged-in span { color: #c084fc; }
+.auth-logout {
+    margin-top: 16px;
+    padding: 10px;
+    width: 100%;
+    background: rgba(255,80,80,0.1);
+    border: 1px solid rgba(255,80,80,0.3);
+    border-radius: 10px;
+    color: white;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.auth-logout:hover { background: rgba(255,80,80,0.25); }
     </style>
 </head>
 <body>
+<button class="login-btn" onclick="openAuth()" id="loginBtn" title="Login">👤</button>
+
+<div id="authModal">
+    <div class="auth-box">
+        <button class="auth-close" onclick="closeAuth()">✕</button>
+        <div id="authContent"></div>
+    </div>
+</div>
     <div class="logo-container">
         <img src="logo.png" alt="Logo" class="main-logo">
     </div>
@@ -376,14 +462,45 @@
     </div>
 
     <canvas id="paintCanvas"></canvas>
-    <button id="clearBtn">🗑️</button>
     <div class="spacer"></div>
     <audio id="spraySound" src="VeeVandalUse.mp3.mpeg" preload="auto"></audio>
 
-    <a href="https://discord.gg/cnDah7pw" target="_blank" class="discord-btn" id="discordBtn"><img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="28"></a>
-    <a href="/games" class="games-btn" id="gamesBtn">🎮</a>
-    <a href="/music" class="music-btn" id="musicBtn">🎵</a>
-    <a href="/movies" class="movies-btn" id="moviesBtn">🎬</a>
+    <div id="spray-nav">
+        <div class="can-nozzle"></div>
+        <div class="can-tip"></div>
+        <div class="can-body">
+            <a href="https://discord.gg/cnDah7pw" target="_blank" class="nav-btn" id="discordBtn" data-tip="Discord">
+                <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="24">
+            </a>
+            <div class="can-divider"></div>
+            <a href="/games" class="nav-btn" id="gamesBtn" data-tip="Games"><img src="/icons/games.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+<a href="/movies" class="nav-btn" id="moviesBtn" data-tip="Movies"><img src="/icons/movies.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+<a href="/music" class="nav-btn" id="musicBtn" data-tip="Music"><img src="/icons/music.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+<a href="/chat" class="nav-btn" id="chatBtn" data-tip="Chat"><img src="/icons/chat.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+<a href="/settings" class="nav-btn" data-tip="Settings"><img src="/icons/settings.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+            <div class="can-divider"></div>
+            <button class="nav-btn" id="colorBtn" data-tip="Spray Color" onclick="if(typeof toggleColorPicker !== 'undefined') toggleColorPicker()"><img src="/icons/spraycolor.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></button>
+            <div class="color-picker-popup" id="colorPickerPopup">
+                <div class="color-row">
+                    <div class="color-swatch selected" style="background:#ff2e73" onclick="pickColor('#ff2e73', this)"></div>
+                    <div class="color-swatch" style="background:#00f2ff" onclick="pickColor('#00f2ff', this)"></div>
+                    <div class="color-swatch" style="background:#7000ff" onclick="pickColor('#7000ff', this)"></div>
+                    <div class="color-swatch" style="background:#ff8c00" onclick="pickColor('#ff8c00', this)"></div>
+                    <div class="color-swatch" style="background:#00ff00" onclick="pickColor('#00ff00', this)"></div>
+                </div>
+                <div class="color-row">
+                    <div class="color-swatch" style="background:#ffffff" onclick="pickColor('#ffffff', this)"></div>
+                    <div class="color-swatch" style="background:#ffff00" onclick="pickColor('#ffff00', this)"></div>
+                    <div class="color-swatch" style="background:#ff69b4" onclick="pickColor('#ff69b4', this)"></div>
+                    <div class="color-swatch" style="background:#00ffaa" onclick="pickColor('#00ffaa', this)"></div>
+                    <div class="color-swatch" style="background:#ff4500" onclick="pickColor('#ff4500', this)"></div>
+                </div>
+            </div>
+            <div class="can-divider"></div>
+            <button class="nav-btn" id="clearBtn" data-tip="Clear Drawing">🗑️</button>
+        </div>
+    </div>
+
     <button id="back-btn">←</button>
 
     <div id="home-ui">
@@ -412,9 +529,44 @@
     <script src="/baremux/index.js"></script>
     <script>
         const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
-        (async () => {
-            await conn.setTransport("/epoxy/dist/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
-        })();
+        async function initTransport() {
+            try {
+                await conn.setTransport("/epoxy/dist/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
+            } catch(e) {
+                console.warn("Transport failed, retrying in 2s...", e);
+                setTimeout(initTransport, 2000);
+            }
+        }
+        initTransport();
+function toggleColorPicker() {
+            document.getElementById('colorPickerPopup').classList.toggle('open');
+        }
+        let lastColor = '#ff2e73';
+
+let colorLocked = false;
+        function pickColor(color, el) {
+            lastColor = color;
+            colorLocked = true;
+            window._gradientColors = null;
+            window._rainbowMode = false;
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('colorPickerPopup').classList.remove('open');
+        }
+
+        function pickGradientColor(gradientColors, el) {
+            colorLocked = true;
+            if (el.id === 'swatch_rainbow') {
+                window._rainbowMode = true;
+                window._gradientColors = null;
+            } else {
+                window._rainbowMode = false;
+                window._gradientColors = gradientColors;
+            }
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('colorPickerPopup').classList.remove('open');
+        }
     </script>
     <script>
         const homeUI = document.getElementById('home-ui');
@@ -426,8 +578,6 @@
         const ctx = canvas.getContext('2d');
         const clearBtn = document.getElementById('clearBtn');
         const button = document.getElementById('goBtn');
-        const discordBtn = document.getElementById('discordBtn');
-        const gamesBtn = document.getElementById('gamesBtn');
         const spraySound = document.getElementById('spraySound');
 
         clearBtn.onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -454,13 +604,10 @@
             homeUI.style.display = 'none';
             proxyContainer.style.display = 'block';
             backBtn.style.display = 'block';
-            discordBtn.style.display = 'none';
-            gamesBtn.style.display = 'none';
-            clearBtn.style.display = 'none';
+            document.getElementById('spray-nav').style.display = 'none';
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             document.getElementById('loading-screen').style.display = 'flex';
 
-            // Progress bar animation
             let progress = 0;
             const bar = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');
@@ -497,9 +644,7 @@
             proxyContainer.style.display = 'none';
             homeUI.style.display = 'flex';
             backBtn.style.display = 'none';
-            discordBtn.style.display = 'flex';
-            gamesBtn.style.display = 'flex';
-            clearBtn.style.display = 'flex';
+            document.getElementById('spray-nav').style.display = 'flex';
             frame.src = 'about:blank';
         };
 
@@ -509,29 +654,71 @@
         // Painting
         let drawing = false;
         let mouseX, mouseY;
-        let lastColor = '#ff2e73';
         const colors = ['#ff2e73', '#00f2ff', '#7000ff', '#ff8c00', '#00ff00'];
+
+
+        function loadUnlockedColors() {
+            const unlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]');
+            const popup = document.getElementById('colorPickerPopup');
+            const gradientColors = {
+                neon_pink:  { gradient: ['#ff6ec7', '#ff2e73'], label: 'Neon Pink' },
+                ocean_blue: { gradient: ['#00f2ff', '#0070ff'], label: 'Ocean Blue' },
+                gold_rush:  { gradient: ['#ffd700', '#ff8c00'], label: 'Gold Rush' },
+                galaxy:     { gradient: ['#a78bfa', '#ec4899', '#f43f5e'], label: 'Galaxy' },
+                rainbow: { gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'], label: 'Rainbow' }
+            };
+            unlocked.forEach(colorKey => {
+                if (document.getElementById('swatch_' + colorKey)) return;
+                const info = gradientColors[colorKey];
+                if (!info) return;
+                const row = document.createElement('div');
+                row.className = 'color-row';
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.id = 'swatch_' + colorKey;
+                swatch.style.background = 'linear-gradient(135deg,' + info.gradient.join(',') + ')';
+                swatch.title = info.label;
+                swatch.onclick = function() { pickGradientColor(info.gradient, this); };
+                row.appendChild(swatch);
+                popup.appendChild(row);
+            });
+        }
 
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.onresize = resize;
         resize();
 
-        function paint() {
-            if (!drawing) return;
-            const sprayRadius = 25, density = 40;
+function paint() {
+    if (!drawing) return;
+    const sprayRadius = 25, density = 40;
+    if (!window._rainbowMode) {
+        if (window._gradientColors) {
+            const g = window._gradientColors;
+            const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 25);
+            g.forEach((c, i) => grad.addColorStop(i / (g.length - 1), c));
+            ctx.fillStyle = grad;
+            ctx.shadowColor = g[0];
+        } else {
             ctx.fillStyle = lastColor;
-            ctx.shadowBlur = 12;
             ctx.shadowColor = lastColor;
-            for (let i = 0; i < density; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const radius = Math.pow(Math.random(), 2) * sprayRadius;
-                const x = mouseX + radius * Math.cos(angle);
-                const y = mouseY + radius * Math.sin(angle);
-                ctx.beginPath();
-                ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
         }
+    }
+    ctx.shadowBlur = 12;
+    for (let i = 0; i < density; i++) {
+        if (window._rainbowMode) {
+            window._rainbowHue = ((window._rainbowHue || 0) + 5) % 360;
+            ctx.fillStyle = `hsl(${window._rainbowHue}, 100%, 55%)`;
+            ctx.shadowColor = `hsl(${window._rainbowHue}, 100%, 55%)`;
+        }
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.pow(Math.random(), 2) * sprayRadius;
+        const x = mouseX + radius * Math.cos(angle);
+        const y = mouseY + radius * Math.sin(angle);
+        ctx.beginPath();
+        ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
 
         let sprayInterval;
         document.addEventListener('mousedown', (e) => {
@@ -539,7 +726,21 @@
             drawing = true;
             mouseX = e.clientX;
             mouseY = e.clientY;
-            lastColor = colors[Math.floor(Math.random() * colors.length)];
+            if (!colorLocked) lastColor = colors[Math.floor(Math.random() * colors.length)];
+                // Track used colors
+    if (!window._gradientColors && !window._rainbowMode) {
+        let usedColors = JSON.parse(localStorage.getItem('vandal_used_colors') || '[]');
+        if (!usedColors.includes(lastColor)) {
+            usedColors.push(lastColor);
+            localStorage.setItem('vandal_used_colors', JSON.stringify(usedColors));
+        }
+        const allColors = ['#ff2e73','#00f2ff','#7000ff','#ff8c00','#00ff00','#ffffff','#ffff00','#ff69b4','#00ffaa','#ff4500'];
+        if (allColors.every(c => usedColors.includes(c))) {
+            localStorage.setItem('vandal_unlocked_colors', JSON.stringify(
+                [...new Set([...JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'), 'rainbow'])]
+            ));
+        }
+    }
             sprayInterval = setInterval(paint, 20);
             spraySound.currentTime = 0;
             spraySound.loop = true;
@@ -574,23 +775,165 @@
             spraySound.play().catch(e => console.log(e));
         });
 
-        // Stats counter
         async function updateStats() {
             try {
-                const visitRes = await fetch('https://api.counterapi.dev/v1/vandal/visits/up');
-                const visitData = await visitRes.json();
-                document.getElementById('visitCount').textContent = visitData.count.toLocaleString();
+                const vRes = await fetch('/api/stats/visit');
+                const vData = await vRes.json();
+                document.getElementById('visitCount').textContent = vData.visits.toLocaleString();
             } catch(e) {}
             try {
-                const onlineRes = await fetch('https://api.counterapi.dev/v1/vandal/online/up');
-                const onlineData = await onlineRes.json();
-                document.getElementById('onlineCount').textContent = onlineData.count;
-                setTimeout(async () => {
-                    try { await fetch('https://api.counterapi.dev/v1/vandal/online/down'); } catch(e) {}
-                }, 60000);
+                const oRes = await fetch('/api/stats/online');
+                const oData = await oRes.json();
+                document.getElementById('onlineCount').textContent = oData.online;
             } catch(e) {}
         }
+
         updateStats();
+        loadUnlockedColors();
+
+        setInterval(() => {
+            const c = parseInt(localStorage.getItem('vandal_time_seconds') || '0');
+            localStorage.setItem('vandal_time_seconds', c + 1);
+        }, 1000);
+    // AUTH
+function openAuth() {
+    document.getElementById('authModal').classList.add('open');
+    const token = localStorage.getItem('vandal_token');
+    if (token) renderLoggedIn();
+    else renderLogin();
+}
+
+function closeAuth() {
+    document.getElementById('authModal').classList.remove('open');
+}
+
+function renderLogin() {
+    document.getElementById('authContent').innerHTML = `
+        <h2>👤 VANDAL</h2>
+        <div class="auth-subtitle">Login to save your progress</div>
+        <input class="auth-input" id="authUser" placeholder="Username" maxlength="20">
+        <input class="auth-input" id="authPass" placeholder="Password" type="password" maxlength="50">
+        <div class="auth-error" id="authError"></div>
+        <button class="auth-submit" onclick="doLogin()">Login</button>
+        <div class="auth-switch">Don't have an account? <span onclick="renderSignup()">Sign up</span></div>
+    `;
+    document.getElementById('authUser').focus();
+    document.getElementById('authUser').onkeydown = e => { if (e.key === 'Enter') document.getElementById('authPass').focus(); };
+    document.getElementById('authPass').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
+}
+
+function renderSignup() {
+    document.getElementById('authContent').innerHTML = `
+        <h2>🎨 JOIN VANDAL</h2>
+        <div class="auth-subtitle">Create an account to save your progress</div>
+        <input class="auth-input" id="authUser" placeholder="Username (3-20 chars)" maxlength="20">
+        <input class="auth-input" id="authPass" placeholder="Password (min 6 chars)" type="password" maxlength="50">
+        <input class="auth-input" id="authPass2" placeholder="Confirm password" type="password" maxlength="50">
+        <div class="auth-error" id="authError"></div>
+        <button class="auth-submit" onclick="doSignup()">Create Account</button>
+        <div class="auth-switch">Already have an account? <span onclick="renderLogin()">Login</span></div>
+    `;
+    document.getElementById('authUser').focus();
+}
+
+function renderLoggedIn() {
+    const username = localStorage.getItem('vandal_username');
+    document.getElementById('authContent').innerHTML = `
+        <h2>👤 VANDAL</h2>
+        <div class="auth-logged-in">Logged in as <span>${username}</span></div>
+        <div class="auth-subtitle" style="margin-top:8px;">Your progress is being saved!</div>
+        <button class="auth-logout" onclick="doLogout()">Logout</button>
+    `;
+}
+
+async function doLogin() {
+    const username = document.getElementById('authUser').value.trim();
+    const password = document.getElementById('authPass').value;
+    if (!username || !password) { document.getElementById('authError').textContent = 'Fill in all fields'; return; }
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { document.getElementById('authError').textContent = data.error; return; }
+        localStorage.setItem('vandal_token', data.token);
+        localStorage.setItem('vandal_username', data.username);
+        localStorage.setItem('vandal_unlocked_colors', JSON.stringify(data.unlockedColors || []));
+localStorage.setItem('vandal_time_seconds', (data.timeSeconds || 0).toString());
+localStorage.setItem('vandal_used_colors', JSON.stringify(data.usedColors || []));
+        loadUnlockedColors();
+        renderLoggedIn();
+        syncToServer();
+        location.reload();
+    } catch(e) {
+        document.getElementById('authError').textContent = 'Connection error';
+    }
+}
+
+async function doSignup() {
+    const username = document.getElementById('authUser').value.trim();
+    const password = document.getElementById('authPass').value;
+    const password2 = document.getElementById('authPass2').value;
+    if (!username || !password) { document.getElementById('authError').textContent = 'Fill in all fields'; return; }
+    if (password !== password2) { document.getElementById('authError').textContent = 'Passwords do not match'; return; }
+    try {
+        const res = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { document.getElementById('authError').textContent = data.error; return; }
+        localStorage.setItem('vandal_token', data.token);
+        localStorage.setItem('vandal_username', data.username);
+        renderLoggedIn();
+        syncToServer();
+        location.reload();
+    } catch(e) {
+        document.getElementById('authError').textContent = 'Connection error';
+    }
+}
+
+function doLogout() {
+    localStorage.removeItem('vandal_token');
+    localStorage.removeItem('vandal_username');
+    location.reload();
+    renderLogin();
+}
+
+async function syncToServer() {
+    const token = localStorage.getItem('vandal_token');
+    if (!token) return;
+    try {
+        await fetch('/api/auth/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+                unlockedColors: JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'),
+                timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0')
+            })
+        });
+    } catch(e) {}
+}
+
+// Sync every 60 seconds if logged in
+setInterval(syncToServer, 60000);
+
+// Update login button to show logged in state
+function updateLoginBtn() {
+    const token = localStorage.getItem('vandal_token');
+    const btn = document.getElementById('loginBtn');
+    if (token) {
+        btn.textContent = '✅';
+        btn.title = 'Logged in as ' + localStorage.getItem('vandal_username');
+    } else {
+        btn.textContent = '👤';
+        btn.title = 'Login';
+    }
+}
+updateLoginBtn();
     </script>
 </body>
 </html>

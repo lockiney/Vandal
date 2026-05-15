@@ -635,30 +635,59 @@ function displayZones(list) {
 
 function openZone(file) {
     if (file.url.startsWith("http")) { window.open(file.url, "_blank"); return; }
-    const url = file.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
-    fetch(url + "?t=" + Date.now()).then(r => r.text()).then(html => {
-        if (zoneFrame.contentDocument === null) {
-            zoneFrame = document.createElement("iframe");
-            zoneFrame.id = "zoneFrame";
-            zoneViewer.appendChild(zoneFrame);
+    
+    const cdns = [
+        "https://cdn.jsdelivr.net/gh/freebuisness/html@main",
+        "https://rawcdn.githack.com/freebuisness/html/main",
+        "https://raw.githubusercontent.com/freebuisness/html/main"
+    ];
+    
+    const filename = file.url.replace("{HTML_URL}", "").replace("{COVER_URL}", coverURL);
+    
+    function tryCDN(index) {
+        if (index >= cdns.length) {
+            alert("Could not load game - try refreshing or use a different network");
+            return;
         }
-        zoneFrame.contentDocument.open();
-        zoneFrame.contentDocument.write(html);
-        zoneFrame.contentDocument.close();
-        document.getElementById('zoneName').textContent = file.name;
-        document.getElementById('zoneId').textContent = file.id;
-        document.getElementById('zoneAuthorDisplay').textContent = file.author ? 'by ' + file.author : '';
-        zoneViewer.classList.add('active');
-        try {
-            const u = new URL(window.location);
-            u.searchParams.set('id', file.id);
-            history.pushState(null, '', u.toString());
-        } catch(e) {}
-    }).catch(err => alert("Failed to load game: " + err));
+        const url = cdns[index] + filename + "?t=" + Date.now();
+        fetch(url, { redirect: 'follow' })
+            .then(r => { if (!r.ok) throw new Error('failed'); return r.text(); })
+            .then(html => {
+                zoneFrame = document.getElementById('zoneFrame');
+                if (!zoneFrame) {
+                    zoneFrame = document.createElement("iframe");
+                    zoneFrame.id = "zoneFrame";
+                    zoneViewer.appendChild(zoneFrame);
+                }
+                zoneFrame.contentDocument.open();
+                zoneFrame.contentDocument.write(html);
+                zoneFrame.contentDocument.close();
+                document.getElementById('zoneName').textContent = file.name;
+                document.getElementById('zoneId').textContent = file.id;
+                document.getElementById('zoneAuthorDisplay').textContent = file.author ? 'by ' + file.author : '';
+                zoneViewer.classList.add('active');
+                try {
+                    const u = new URL(window.location);
+                    u.searchParams.set('id', file.id);
+                    history.pushState(null, '', u.toString());
+                } catch(e) {}
+            })
+            .catch(() => tryCDN(index + 1));
+    }
+    
+    tryCDN(0);
 }
 
 function closeZone() {
     zoneViewer.classList.remove('active');
+    zoneFrame.src = 'about:blank';
+    setTimeout(() => {
+        try {
+            zoneFrame.contentDocument.open();
+            zoneFrame.contentDocument.write('');
+            zoneFrame.contentDocument.close();
+        } catch(e) {}
+    }, 100);
     try {
         const u = new URL(window.location);
         u.searchParams.delete('id');
