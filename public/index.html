@@ -529,24 +529,24 @@
     <script src="/baremux/index.js"></script>
     <script>
         const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
-        async function initTransport() {
-            try {
-                await conn.setTransport("/epoxy/dist/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
-            } catch(e) {
-                console.warn("Transport failed, retrying in 2s...", e);
-                setTimeout(initTransport, 2000);
-            }
-        }
+async function initTransport() {
+    try {
+        await conn.setTransport("/epoxy/dist/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
+    } catch(e) {
+        console.warn("Transport failed, retrying in 2s...", e);
+        setTimeout(initTransport, 2000);
+    }
+}
         initTransport();
+window.lastColor = '#ff2e73';
+window.colorLocked = false;
 function toggleColorPicker() {
             document.getElementById('colorPickerPopup').classList.toggle('open');
         }
-        let lastColor = '#ff2e73';
 
-let colorLocked = false;
         function pickColor(color, el) {
-            lastColor = color;
-            colorLocked = true;
+            window.lastColor = color;
+            window.colorLocked = true;
             window._gradientColors = null;
             window._rainbowMode = false;
             document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
@@ -555,7 +555,7 @@ let colorLocked = false;
         }
 
         function pickGradientColor(gradientColors, el) {
-            colorLocked = true;
+            window.colorLocked = true;
             if (el.id === 'swatch_rainbow') {
                 window._rainbowMode = true;
                 window._gradientColors = null;
@@ -634,7 +634,7 @@ let colorLocked = false;
             try {
                 await registerSW();
                 const encoded = __uv$config.encodeUrl(url);
-                frame.src = '/uv/service/' + encoded;
+frame.src = '/uv/service/' + encoded;
             } catch (err) {
                 console.error("VANDAL Engine Error:", err);
             }
@@ -699,8 +699,8 @@ function paint() {
             ctx.fillStyle = grad;
             ctx.shadowColor = g[0];
         } else {
-            ctx.fillStyle = lastColor;
-            ctx.shadowColor = lastColor;
+            ctx.fillStyle = window.lastColor;
+            ctx.shadowColor = window.lastColor;
         }
     }
     ctx.shadowBlur = 12;
@@ -726,12 +726,12 @@ function paint() {
             drawing = true;
             mouseX = e.clientX;
             mouseY = e.clientY;
-            if (!colorLocked) lastColor = colors[Math.floor(Math.random() * colors.length)];
+            if (!window.colorLocked) window.lastColor = colors[Math.floor(Math.random() * colors.length)];
                 // Track used colors
     if (!window._gradientColors && !window._rainbowMode) {
         let usedColors = JSON.parse(localStorage.getItem('vandal_used_colors') || '[]');
-        if (!usedColors.includes(lastColor)) {
-            usedColors.push(lastColor);
+        if (!usedColors.includes(window.lastColor)) {
+            usedColors.push(window.lastColor);
             localStorage.setItem('vandal_used_colors', JSON.stringify(usedColors));
         }
         const allColors = ['#ff2e73','#00f2ff','#7000ff','#ff8c00','#00ff00','#ffffff','#ffff00','#ff69b4','#00ffaa','#ff4500'];
@@ -739,6 +739,10 @@ function paint() {
             localStorage.setItem('vandal_unlocked_colors', JSON.stringify(
                 [...new Set([...JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'), 'rainbow'])]
             ));
+        localStorage.setItem('vandal_unlocked_colors', JSON.stringify(
+    [...new Set([...JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'), 'rainbow'])]
+));
+syncToServer();
         }
     }
             sprayInterval = setInterval(paint, 20);
@@ -912,7 +916,8 @@ async function syncToServer() {
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
             body: JSON.stringify({
                 unlockedColors: JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'),
-                timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0')
+                timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0'),
+                usedColors: JSON.parse(localStorage.getItem('vandal_used_colors') || '[]')
             })
         });
     } catch(e) {}

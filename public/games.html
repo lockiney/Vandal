@@ -381,6 +381,8 @@
             .game-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
         }
     </style>
+<script src="/uv/uv.bundle.js"></script>
+<script src="/uv/uv.config.js"></script>
 </head>
 <body>
 
@@ -495,6 +497,16 @@ async function listZones() {
         const response = await fetch(zonesURL + "?t=" + Date.now());
         const json = await response.json();
         zones = json;
+const customGames = [
+    {
+        name: "Scritchy Scratchy",
+        url: "https://scritchy-scratchy.com/gg/scritchy-scratchy/",
+        cover: "https://scritchy-scratchy.com/wp-content/uploads/2025/10/scritchy-scratchy-240x190.png",
+        special: ["idle", "clicker"],
+        author: "Lunch Money Games"
+    }
+];
+zones = [...customGames, ...zones];
         zones[0].featured = true;
         await Promise.all([fetchPopularity("year"), fetchPopularity("month"), fetchPopularity("week"), fetchPopularity("day")]);
 
@@ -634,8 +646,22 @@ function displayZones(list) {
 }
 
 function openZone(file) {
-    if (file.url.startsWith("http")) { window.open(file.url, "_blank"); return; }
-    
+    if (file.url.startsWith("http") && !file.id) { window.open(file.url, "_blank"); return; }
+    // Custom games with direct URLs load straight into iframe
+    if (file.id && file.url.startsWith("http")) {
+        zoneFrame = document.getElementById('zoneFrame');
+        if (!zoneFrame) {
+            zoneFrame = document.createElement("iframe");
+            zoneFrame.id = "zoneFrame";
+            zoneViewer.appendChild(zoneFrame);
+        }
+        zoneFrame.src = file.url;
+        document.getElementById('zoneName').textContent = file.name;
+        document.getElementById('zoneId').textContent = file.id;
+        document.getElementById('zoneAuthorDisplay').textContent = file.author ? 'by ' + file.author : '';
+        zoneViewer.classList.add('active');
+        return;
+    }
     const cdns = [
         "https://cdn.jsdelivr.net/gh/freebuisness/html@main",
         "https://rawcdn.githack.com/freebuisness/html/main",

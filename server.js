@@ -31,6 +31,8 @@ app.get('/uv/uv.config.js', (req, res) => res.sendFile(path.join(__dirname, 'pub
 const epoxyPath = path.join(require.resolve('@mercuryworkshop/epoxy-transport'), '../..');
 const bareMuxPath = path.join(require.resolve('@mercuryworkshop/bare-mux'), '..');
 app.use('/epoxy/', express.static(epoxyPath));
+const libcurlPath = path.join(require.resolve('@mercuryworkshop/libcurl-transport'), '../..');
+app.use('/libcurl/', express.static(libcurlPath));
 app.use('/baremux/', express.static(bareMuxPath));
 app.use('/uv/', express.static(uvPath));
 
@@ -49,14 +51,16 @@ app.get('/api/chat/messages', (req, res) => {
     res.json(chatMessages);
 });
 
-app.post('/api/chat/send', express.json(), (req, res) => {
+app.post('/api/chat/send', express.json({limit: '2mb'}), (req, res) => {
     const { username, message } = req.body;
     if (!username || !message) return res.status(400).json({ error: 'Missing fields' });
-    if (username.length > 20 || message.length > 500) return res.status(400).json({ error: 'Too long' });
+    if (username.length > 20) return res.status(400).json({ error: 'Username too long' });
+if (message && message.length > 500) return res.status(400).json({ error: 'Message too long' });
     const msg = {
         id: Date.now(),
         username: username.trim(),
         message: message.trim(),
+        image: req.body.image || null,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     chatMessages.push(msg);
@@ -100,7 +104,7 @@ app.post('/api/auth/login', express.json(), async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ error: 'Invalid username or password' });
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, username: user.username, unlockedColors: user.unlockedColors || [], timeSeconds: user.timeSeconds || 0 });
+    res.json({ token, username: user.username, unlockedColors: user.unlockedColors || [], timeSeconds: user.timeSeconds || 0, usedColors: user.usedColors || [] });
 });
 
 app.post('/api/auth/sync', express.json(), (req, res) => {
@@ -110,9 +114,10 @@ app.post('/api/auth/sync', express.json(), (req, res) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         const user = users.find(u => u.id === decoded.id);
         if (!user) return res.status(401).json({ error: 'User not found' });
-        const { unlockedColors, timeSeconds } = req.body;
+        const { unlockedColors, timeSeconds, usedColors } = req.body;
         if (unlockedColors) user.unlockedColors = unlockedColors;
         if (timeSeconds) user.timeSeconds = Math.max(user.timeSeconds || 0, timeSeconds);
+        if (usedColors) user.usedColors = usedColors;
         saveUsers();
         res.json({ success: true, unlockedColors: user.unlockedColors, timeSeconds: user.timeSeconds });
     } catch(e) {
