@@ -441,7 +441,25 @@
     transition: all 0.2s;
 }
 .auth-logout:hover { background: rgba(255,80,80,0.25); }
-    </style>
+@keyframes slideInNotif {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+.unlock-notif {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    background: linear-gradient(135deg, #a78bfa, #c084fc);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 14px;
+    z-index: 99999;
+    box-shadow: 0 4px 20px rgba(167,139,250,0.5);
+    animation: slideInNotif 0.3s ease;
+    pointer-events: none;
+}   
+ </style>
 </head>
 <body>
 <button class="login-btn" onclick="openAuth()" id="loginBtn" title="Login">👤</button>
@@ -469,7 +487,7 @@
         <div class="can-nozzle"></div>
         <div class="can-tip"></div>
         <div class="can-body">
-            <a href="https://discord.gg/cnDah7pw" target="_blank" class="nav-btn" id="discordBtn" data-tip="Discord">
+            <a href="https://discord.gg/sEZafQMpmc" target="_blank" class="nav-btn" id="discordBtn" data-tip="Discord">
                 <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="24">
             </a>
             <div class="can-divider"></div>
@@ -665,22 +683,42 @@ frame.src = '/uv/service/' + encoded;
                 ocean_blue: { gradient: ['#00f2ff', '#0070ff'], label: 'Ocean Blue' },
                 gold_rush:  { gradient: ['#ffd700', '#ff8c00'], label: 'Gold Rush' },
                 galaxy:     { gradient: ['#a78bfa', '#ec4899', '#f43f5e'], label: 'Galaxy' },
-                rainbow: { gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'], label: 'Rainbow' }
+                rainbow: { gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'], label: 'Rainbow' },
+                sharks:  { gradient: ['#007fff','#40e0d0','#880808'], label: 'Shark Blue' }
             };
-            unlocked.forEach(colorKey => {
-                if (document.getElementById('swatch_' + colorKey)) return;
+            unlocked.forEach((colorKey, index) => {
+    if (document.getElementById('swatch_' + colorKey)) return;
+    // Add divider before first special color
+    if (index === 0 && !document.getElementById('special-divider')) {
+        const divider = document.createElement('div');
+        divider.id = 'special-divider';
+        divider.style.cssText = 'width:100%;height:1px;background:rgba(167,139,250,0.3);margin:4px 0;position:relative;';
+        divider.innerHTML = '<span style="position:absolute;left:50%;transform:translateX(-50%);top:-8px;background:rgba(20,20,35,0.97);padding:0 6px;font-size:10px;color:rgba(167,139,250,0.6);">SPECIAL</span>';
+        popup.appendChild(divider);
+    }
                 const info = gradientColors[colorKey];
                 if (!info) return;
-                const row = document.createElement('div');
-                row.className = 'color-row';
                 const swatch = document.createElement('div');
-                swatch.className = 'color-swatch';
-                swatch.id = 'swatch_' + colorKey;
-                swatch.style.background = 'linear-gradient(135deg,' + info.gradient.join(',') + ')';
-                swatch.title = info.label;
-                swatch.onclick = function() { pickGradientColor(info.gradient, this); };
-                row.appendChild(swatch);
-                popup.appendChild(row);
+swatch.className = 'color-swatch';
+swatch.id = 'swatch_' + colorKey;
+swatch.style.background = 'linear-gradient(135deg,' + info.gradient.join(',') + ')';
+swatch.title = info.label;
+swatch.onclick = function() { pickGradientColor(info.gradient, this); };
+
+// Only show notification if this is a new unlock this session
+if (!sessionStorage.getItem('notif_' + colorKey)) {
+    sessionStorage.setItem('notif_' + colorKey, '1');
+    showUnlockNotif('🎨 Unlocked: ' + info.label + ' spray!', info.gradient.join(','));
+}
+// Add to existing last row or create new one if full
+let rows = popup.querySelectorAll('.color-row');
+let lastRow = rows[rows.length - 1];
+if (!lastRow || lastRow.children.length >= 5) {
+    lastRow = document.createElement('div');
+    lastRow.className = 'color-row';
+    popup.appendChild(lastRow);
+}
+lastRow.appendChild(swatch);
             });
         }
 
@@ -774,7 +812,18 @@ syncToServer();
                 }
             }, 30);
         }
-
+function showUnlockNotif(text, gradient) {
+    const notif = document.createElement('div');
+    notif.className = 'unlock-notif';
+    if (gradient) notif.style.background = `linear-gradient(135deg, ${gradient})`;
+    notif.textContent = text;
+    document.body.appendChild(notif);
+    setTimeout(() => {
+        notif.style.transition = 'opacity 0.5s';
+        notif.style.opacity = '0';
+        setTimeout(() => notif.remove(), 500);
+    }, 3500);
+}
         document.addEventListener("click", () => {
             spraySound.play().catch(e => console.log(e));
         });

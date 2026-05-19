@@ -275,7 +275,7 @@
                 </div>
                 <div class="milestone-time" id="time4">0:00 / 1:00:00</div>
             </div>
-        <div class="milestone" id="m_rainbow">
+<div class="milestone" id="m_rainbow">
     <div class="milestone-top">
         <div class="milestone-name"><span id="badge_rainbow">🔒</span> Rainbows and Mayhems!</div>
         <div class="milestone-reward">
@@ -287,6 +287,20 @@
         <div class="milestone-bar" id="bar_rainbow" style="background:linear-gradient(90deg,#ff0000,#ff8c00,#ffff00,#00ff00,#00f2ff,#7000ff,#ff69b4)"></div>
     </div>
     <div class="milestone-time" id="time_rainbow">Hint: Many colorful colors lead to rainbow 🌈</div>
+</div>
+
+<div class="milestone" id="m_sharks">
+    <div class="milestone-top">
+        <div class="milestone-name"><span id="badge_sharks">🔒</span> Swimming with the Sharks</div>
+        <div class="milestone-reward">
+            <span class="gradient-swatch" style="background:linear-gradient(135deg,#00f0ff,#0066ff,#0000cc)"></span>
+            ???
+        </div>
+    </div>
+    <div class="milestone-bar-wrap">
+        <div class="milestone-bar" id="bar_sharks" style="background:linear-gradient(90deg,#00f0ff,#0066ff,#0000cc)"></div>
+    </div>
+    <div class="milestone-time" id="time_sharks">Hint: Sharks vibe with music 🦈</div>
 </div>
         </div>
         <div class="total-time">Total time on Vandal: <span id="totalTimeDisplay">0:00</span></div>
@@ -369,6 +383,15 @@ const usedColors = JSON.parse(localStorage.getItem('vandal_used_colors') || '[]'
         document.getElementById('m_rainbow').querySelector('.milestone-reward').innerHTML =
             '<span class="gradient-swatch" style="background:linear-gradient(135deg,#ff0000,#ff8c00,#ffff00,#00ff00,#00f2ff,#7000ff,#ff69b4)"></span> Rainbow';
     }
+    const sharksUnlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('sharks');
+document.getElementById('bar_sharks').style.width = sharksUnlocked ? '100%' : '0%';
+if (sharksUnlocked) {
+    document.getElementById('m_sharks').classList.add('unlocked');
+    document.getElementById('badge_sharks').textContent = '🦈';
+    document.getElementById('time_sharks').textContent = 'Unlocked! Shark Blue spray is now available!';
+    document.getElementById('m_sharks').querySelector('.milestone-reward').innerHTML =
+        '<span class="gradient-swatch" style="background:linear-gradient(135deg,#00f0ff,#0066ff,#0000cc)"></span> Shark Blue';
+}
 }
 
 setInterval(function() {
