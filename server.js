@@ -15,35 +15,40 @@ const { createBareServer } = require('bare-server-node');
 const wisp = require('@mercuryworkshop/wisp-js');
 const path = require('node:path');
 const https = require('https');
+const fs = require('fs');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = 8080;
+const JWT_SECRET = 'vandal_secret_key_change_this';
 
 const bareServer = createBareServer('/bare/', {
     logErrors: false,
     httpsAgent: new https.Agent({ rejectUnauthorized: false })
 });
 
-// --- MIDDLEWARE & ROUTES ---
+// --- STATIC FILES ---
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/uv/uv.config.js', (req, res) => res.sendFile(path.join(__dirname, 'public', 'uv.config.js')));
 
 const epoxyPath = path.join(require.resolve('@mercuryworkshop/epoxy-transport'), '../..');
 const bareMuxPath = path.join(require.resolve('@mercuryworkshop/bare-mux'), '..');
-app.use('/epoxy/', express.static(epoxyPath));
 const libcurlPath = path.join(require.resolve('@mercuryworkshop/libcurl-transport'), '../..');
+app.use('/epoxy/', express.static(epoxyPath));
 app.use('/libcurl/', express.static(libcurlPath));
 app.use('/baremux/', express.static(bareMuxPath));
 app.use('/uv/', express.static(uvPath));
 
+// --- PAGE ROUTES ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get("/games", (req, res) => res.sendFile(path.join(__dirname, "public", "games.html")));
-app.get("/music", (req, res) => res.sendFile(path.join(__dirname, "public", "music.html")));
-app.get("/movies", (req, res) => res.sendFile(path.join(__dirname, "public", "movies.html")));
-app.get("/chat", (req, res) => res.sendFile(path.join(__dirname, "public", "chat.html")));
-app.get("/settings", (req, res) => res.sendFile(path.join(__dirname, "public", "settings.html")));
+app.get('/games', (req, res) => res.sendFile(path.join(__dirname, 'public', 'games.html')));
+app.get('/music', (req, res) => res.sendFile(path.join(__dirname, 'public', 'music.html')));
+app.get('/movies', (req, res) => res.sendFile(path.join(__dirname, 'public', 'movies.html')));
+app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'chat.html')));
+app.get('/settings', (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
 
-// Chat API
+// --- CHAT API ---
 let chatMessages = [];
 const MAX_MESSAGES = 100;
 
@@ -51,15 +56,15 @@ app.get('/api/chat/messages', (req, res) => {
     res.json(chatMessages);
 });
 
-app.post('/api/chat/send', express.json({limit: '2mb'}), (req, res) => {
+app.post('/api/chat/send', express.json({ limit: '2mb' }), (req, res) => {
     const { username, message } = req.body;
-    if (!username || !message) return res.status(400).json({ error: 'Missing fields' });
+    if (!username) return res.status(400).json({ error: 'Missing username' });
     if (username.length > 20) return res.status(400).json({ error: 'Username too long' });
-if (message && message.length > 500) return res.status(400).json({ error: 'Message too long' });
+    if (message && message.length > 500) return res.status(400).json({ error: 'Message too long' });
     const msg = {
         id: Date.now(),
         username: username.trim(),
-        message: message.trim(),
+        message: message ? message.trim() : '',
         image: req.body.image || null,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
@@ -68,11 +73,25 @@ if (message && message.length > 500) return res.status(400).json({ error: 'Messa
     res.json(msg);
 });
 
-// Stats
-const fs = require('fs');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = 'vandal_secret_key_change_this';
+// --- STATS API ---
+const statsFile = path.join(__dirname, 'stats.json');
+let stats = { visits: 0 };
+try { stats = JSON.parse(fs.readFileSync(statsFile)); } catch(e) {}
+let onlineUsers = 0;
+
+app.get('/api/stats/visit', (req, res) => {
+    stats.visits++;
+    fs.writeFileSync(statsFile, JSON.stringify(stats));
+    res.json({ visits: stats.visits });
+});
+
+app.get('/api/stats/online', (req, res) => {
+    onlineUsers++;
+    setTimeout(() => { onlineUsers = Math.max(0, onlineUsers - 1); }, 60000);
+    res.json({ online: onlineUsers });
+});
+
+// --- AUTH API ---
 const usersFile = path.join(__dirname, 'users.json');
 let users = [];
 try { users = JSON.parse(fs.readFileSync(usersFile)); } catch(e) { users = []; }
@@ -81,25 +100,39 @@ function saveUsers() {
     fs.writeFileSync(usersFile, JSON.stringify(users));
 }
 
-// Auth routes
 app.post('/api/auth/signup', express.json(), async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) return res.status(400).json({ error: 'Missing fields' });
     if (username.length < 3 || username.length > 20) return res.status(400).json({ error: 'Username must be 3-20 characters' });
     if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (!email.includes('@')) return res.status(400).json({ error: 'Invalid email' });
     if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) return res.status(400).json({ error: 'Username already taken' });
+    if (users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase())) return res.status(400).json({ error: 'Email already registered' });
     const hashed = await bcrypt.hash(password, 10);
-    const user = { id: Date.now().toString(), username, password: hashed, unlockedColors: [], timeSeconds: 0, createdAt: Date.now() };
+    const user = {
+        id: Date.now().toString(),
+        username,
+        email,
+        password: hashed,
+        unlockedColors: [],
+        timeSeconds: 0,
+        usedColors: [],
+        createdAt: Date.now(),
+        verified: true
+    };
     users.push(user);
     saveUsers();
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, username: user.username });
+    res.json({ token, username: user.username, message: 'Account created!' });
 });
 
 app.post('/api/auth/login', express.json(), async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
-    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    const user = users.find(u =>
+        u.username.toLowerCase() === username.toLowerCase() ||
+        (u.email && u.email.toLowerCase() === username.toLowerCase())
+    );
     if (!user) return res.status(400).json({ error: 'Invalid username or password' });
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ error: 'Invalid username or password' });
@@ -132,40 +165,22 @@ app.get('/api/auth/me', (req, res) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         const user = users.find(u => u.id === decoded.id);
         if (!user) return res.status(401).json({ error: 'User not found' });
-        res.json({ username: user.username, unlockedColors: user.unlockedColors || [], timeSeconds: user.timeSeconds || 0 });
+        res.json({ username: user.username, unlockedColors: user.unlockedColors || [], timeSeconds: user.timeSeconds || 0, usedColors: user.usedColors || [] });
     } catch(e) {
         res.status(401).json({ error: 'Invalid token' });
     }
 });
-const statsFile = path.join(__dirname, 'stats.json');
-let stats = { visits: 0 };
-try { stats = JSON.parse(fs.readFileSync(statsFile)); } catch(e) {}
-let onlineUsers = 0;
 
-app.get('/api/stats/visit', (req, res) => {
-    stats.visits++;
-    fs.writeFileSync(statsFile, JSON.stringify(stats));
-    res.json({ visits: stats.visits });
-});
-
-app.get('/api/stats/online', (req, res) => {
-    onlineUsers++;
-    setTimeout(() => { onlineUsers = Math.max(0, onlineUsers - 1); }, 60000);
-    res.json({ online: onlineUsers });
-});
-
+// --- 404 FALLBACK ---
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- SERVER INSTANCE ---
+// --- SERVER ---
 const server = createServer((req, res) => {
-    // 1. Add this listener to prevent crashing when the browser drops connection
     res.on('error', (err) => {
         console.error('Connection closed by client:', err.message);
     });
-
-    // 2. Logic to safely route the request
     try {
         if (bareServer.shouldRoute(req)) {
             bareServer.routeRequest(req, res);

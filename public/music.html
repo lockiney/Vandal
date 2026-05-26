@@ -602,16 +602,32 @@
 // Unlock sharks achievement on music page visit
 (function() {
     const unlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]');
-    if (!unlocked.includes('sharks')) {
-        unlocked.push('sharks');
-        localStorage.setItem('vandal_unlocked_colors', JSON.stringify(unlocked));
-        // Show unlock notification
+if (!unlocked.includes('sharks')) {
+    unlocked.push('sharks');
+    localStorage.setItem('vandal_unlocked_colors', JSON.stringify(unlocked));
+    // Sync to server
+    const token = localStorage.getItem('vandal_token');
+    if (token) {
+        fetch('/api/auth/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+                unlockedColors: unlocked,
+                timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0'),
+                usedColors: JSON.parse(localStorage.getItem('vandal_used_colors') || '[]')
+            })
+        }).catch(() => {});
+    }
+    // Show notification only once
+    if (!localStorage.getItem('notif_shown_sharks')) {
+        localStorage.setItem('notif_shown_sharks', '1');
         const notif = document.createElement('div');
-        notif.style.cssText = 'position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#00f0ff,#0066ff);color:white;padding:14px 20px;border-radius:12px;font-family:Permanent Marker,cursive;font-size:14px;z-index:99999;box-shadow:0 4px 20px rgba(0,102,255,0.5);animation:slideIn 0.3s ease;';
+        notif.style.cssText = 'position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#0d0d2b,#008080,#40e0d0,#8b0000);color:white;padding:14px 20px;border-radius:12px;font-family:Permanent Marker,cursive;font-size:14px;z-index:99999;box-shadow:0 4px 20px rgba(0,102,255,0.5);';
         notif.innerHTML = '🦈 Unlocked: Shark Blue spray!';
         document.body.appendChild(notif);
         setTimeout(() => notif.remove(), 4000);
     }
+}
 })();
 setInterval(() => {
     const c = parseInt(localStorage.getItem('vandal_time_seconds') || '0');

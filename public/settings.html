@@ -293,14 +293,27 @@
     <div class="milestone-top">
         <div class="milestone-name"><span id="badge_sharks">🔒</span> Swimming with the Sharks</div>
         <div class="milestone-reward">
-            <span class="gradient-swatch" style="background:linear-gradient(135deg,#00f0ff,#0066ff,#0000cc)"></span>
+            <span class="gradient-swatch" style="background:linear-gradient(135deg,#0d0d2b,#008080,#40e0d0,#8b0000)"></span>
             ???
         </div>
     </div>
     <div class="milestone-bar-wrap">
-        <div class="milestone-bar" id="bar_sharks" style="background:linear-gradient(90deg,#00f0ff,#0066ff,#0000cc)"></div>
+        <div class="milestone-bar" id="bar_sharks" style="background:linear-gradient(90deg,#0d0d2b,#008080,#40e0d0,#8b0000)"></div>
     </div>
     <div class="milestone-time" id="time_sharks">Hint: Sharks vibe with music 🦈</div>
+</div>
+<div class="milestone" id="m_royalty">
+    <div class="milestone-top">
+        <div class="milestone-name"><span id="badge_royalty">🔒</span> Royal Vandal</div>
+        <div class="milestone-reward">
+            <span class="gradient-swatch" style="background:linear-gradient(135deg,#8b0000,#ffd700,#7000ff)"></span>
+            ???
+        </div>
+    </div>
+    <div class="milestone-bar-wrap">
+        <div class="milestone-bar" id="bar_royalty" style="background:linear-gradient(90deg,#8b0000,#ffd700,#7000ff)"></div>
+    </div>
+    <div class="milestone-time" id="time_royalty">Hint: Keep your eyes on the screen 👀</div>
 </div>
         </div>
         <div class="total-time">Total time on Vandal: <span id="totalTimeDisplay">0:00</span></div>
@@ -368,6 +381,23 @@ function updateMilestones() {
             document.getElementById(m.badge).textContent = '🏆';
             if (unlocked.indexOf(m.color) === -1) {
                 unlocked.push(m.color);
+                if (unlocked.indexOf(m.color) === -1) {
+    unlocked.push(m.color);
+    localStorage.setItem('vandal_unlocked_colors', JSON.stringify(unlocked));
+    // Sync to server
+    const token = localStorage.getItem('vandal_token');
+    if (token) {
+        fetch('/api/auth/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({
+                unlockedColors: unlocked,
+                timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0'),
+                usedColors: JSON.parse(localStorage.getItem('vandal_used_colors') || '[]')
+            })
+        }).catch(() => {});
+    }
+}
                 localStorage.setItem('vandal_unlocked_colors', JSON.stringify(unlocked));
             }
         }
@@ -391,6 +421,15 @@ if (sharksUnlocked) {
     document.getElementById('time_sharks').textContent = 'Unlocked! Shark Blue spray is now available!';
     document.getElementById('m_sharks').querySelector('.milestone-reward').innerHTML =
         '<span class="gradient-swatch" style="background:linear-gradient(135deg,#00f0ff,#0066ff,#0000cc)"></span> Shark Blue';
+}
+const royaltyUnlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('royalty');
+document.getElementById('bar_royalty').style.width = royaltyUnlocked ? '100%' : '0%';
+if (royaltyUnlocked) {
+    document.getElementById('m_royalty').classList.add('unlocked');
+    document.getElementById('badge_royalty').textContent = '👑';
+    document.getElementById('time_royalty').textContent = 'Unlocked! Royalty spray is now available!';
+    document.getElementById('m_royalty').querySelector('.milestone-reward').innerHTML =
+        '<span class="gradient-swatch" style="background:linear-gradient(135deg,#8b0000,#ffd700,#7000ff)"></span> Royalty';
 }
 }
 

@@ -13,12 +13,210 @@
             -webkit-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            box-sizing: border-box;
         }
         input {
             -webkit-user-select: text;
             -ms-user-select: text;
             user-select: text;
         }
+
+        /* ===== AUTH GATE ===== */
+        #authGate {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0f;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-gate-inner {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 500px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(167,139,250,0.2);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(167,139,250,0.1);
+        }
+
+        /* Left: Form */
+        .auth-form-side {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-form-title {
+            font-size: 20px;
+            color: #a78bfa;
+            margin-bottom: 4px;
+            letter-spacing: 2px;
+        }
+
+        .auth-form-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 24px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(167,139,250,0.25);
+            border-radius: 10px;
+            color: white;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        .auth-input:focus { border-color: #a78bfa; background: rgba(167,139,250,0.08); }
+        .auth-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .auth-submit {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+        .auth-submit:hover { opacity: 0.9; transform: scale(1.01); }
+
+        .auth-guest {
+            width: 100%;
+            padding: 11px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.5);
+            font-family: 'Permanent Marker', cursive;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .auth-guest:hover { background: rgba(255,255,255,0.08); color: white; }
+
+        .auth-error {
+            font-size: 11px;
+            color: #ff5050;
+            margin-bottom: 8px;
+            min-height: 16px;
+        }
+
+        .auth-success {
+            font-size: 11px;
+            color: #22c55e;
+            margin-bottom: 8px;
+            min-height: 16px;
+        }
+
+        .auth-switch {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            margin-top: 14px;
+            text-align: center;
+        }
+        .auth-switch span { color: #a78bfa; cursor: pointer; }
+        .auth-switch span:hover { text-decoration: underline; }
+
+        /* Right: Branding */
+        .auth-brand-side {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(192,132,252,0.05));
+            border-left: 1px solid rgba(167,139,250,0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-brand-side::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('https://wallpaperaccess.com/full/2238315.jpg') center/cover;
+            opacity: 0.08;
+        }
+
+        .auth-logo {
+            width: 160px;
+            height: auto;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 0 20px rgba(167,139,250,0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .auth-brand-name {
+            font-size: 52px;
+            background: linear-gradient(to right, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 6px;
+            position: relative;
+            z-index: 1;
+            margin-top: 12px;
+        }
+
+        .auth-brand-tagline {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            position: relative;
+            z-index: 1;
+            margin-top: 8px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .auth-features {
+            margin-top: 24px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .auth-feature {
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 650px) {
+            .auth-brand-side { display: none; }
+            .auth-form-side { padding: 30px 24px; }
+        }
+
+        /* ===== MAIN APP ===== */
         body {
             margin: 0;
             padding: 0;
@@ -47,11 +245,6 @@
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
-        }
-        @keyframes float {
-            0%   { transform: translateY(0px);  filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
-            50%  { transform: translateY(-15px); filter: drop-shadow(0 0 25px rgba(255,255,255,0.8)); }
-            100% { transform: translateY(0px);  filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
         }
         #paintCanvas {
             position: fixed;
@@ -107,7 +300,6 @@
             font-size: 14px;
             color: rgba(255,255,255,0.4);
             margin-top: 8px;
-            font-family: 'Permanent Marker', cursive;
         }
         .search-container {
             transition: all 0.3s ease;
@@ -122,6 +314,8 @@
         .spacer { flex-grow: 1; }
         button { color: white; font-weight: bold; text-shadow: 0 0 8px rgba(255,0,238,0.5); }
         input::placeholder { color: rgba(255,255,255,0.5); text-shadow: 0 0 5px rgba(255,0,238,0.5); }
+
+        /* SPRAY CAN NAV */
         #spray-nav {
             position: fixed;
             left: 16px;
@@ -225,9 +419,12 @@
             transition: all 0.2s;
         }
         .nav-btn:hover::after { opacity: 1; left: 56px; }
-        .nav-btn:hover img {
-    filter: drop-shadow(0 0 8px #a78bfa) brightness(1.2) !important;
-}
+        .nav-btn:hover img { filter: drop-shadow(0 0 8px #a78bfa) brightness(1.2) !important; }
+
+        /* Guest locked buttons */
+        .nav-btn.guest-locked { opacity: 0.5; }
+        .nav-btn.guest-locked::after { content: attr(data-tip) ' (Sign in)'; }
+
         body::before {
             content: '';
             position: fixed;
@@ -309,7 +506,6 @@
             top: 16px; right: 20px;
             z-index: 9999;
             text-align: right;
-            font-family: 'Permanent Marker', cursive;
             pointer-events: none;
         }
         .stat-line {
@@ -319,675 +515,765 @@
             line-height: 1.6;
         }
         .stat-num { color: #c084fc; }
-/* LOGIN */
-.login-btn {
-    position: fixed;
-    top: 16px; left: 20px;
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: rgba(20,20,35,0.92);
-    border: 1.5px solid rgba(167,139,250,0.25);
-    color: white; font-size: 20px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    z-index: 9999;
-    transition: all 0.2s;
-    backdrop-filter: blur(12px);
-}
-.login-btn:hover { background: rgba(167,139,250,0.2); border-color: #a78bfa; }
 
-#authModal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 99999;
-    align-items: center;
-    justify-content: center;
-}
-#authModal.open { display: flex; }
+        /* User pill top left */
+        #userPill {
+            position: fixed;
+            top: 16px; left: 20px;
+            z-index: 9999;
+            background: rgba(20,20,35,0.92);
+            border: 1px solid rgba(167,139,250,0.25);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s;
+        }
+        #userPill:hover { border-color: #a78bfa; color: white; }
+        .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+        .guest-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 
-.auth-box {
-    background: #1a1a2e;
-    border: 1px solid rgba(167,139,250,0.3);
-    border-radius: 16px;
-    padding: 32px;
-    max-width: 360px;
-    width: 90%;
-    text-align: center;
+        /* Sign in required popup */
+        .signin-popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .signin-popup.open { display: flex; }
+        .signin-popup-box {
+            background: #1a1a2e;
+            border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 320px;
+            width: 90%;
+            text-align: center;
+        }
+        .signin-popup-box h3 { font-size: 18px; color: #a78bfa; margin-bottom: 8px; }
+        .signin-popup-box p { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+        .signin-popup-btns { display: flex; gap: 10px; }
+        .signin-popup-btns button { flex: 1; padding: 10px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Permanent Marker', cursive; font-size: 13px; }
+        .btn-signin { background: linear-gradient(135deg, #a78bfa, #c084fc); color: white; }
+        .btn-cancel { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1) !important; }
+
+        /* Unlock notif */
+        @keyframes slideInNotif {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .unlock-notif {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 99999;
+            box-shadow: 0 4px 20px rgba(167,139,250,0.5);
+            animation: slideInNotif 0.3s ease;
+            pointer-events: none;
+        }
+
+        /* LOGIN CSS (kept for account management popup) */
+        #accountModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+        }
+        #accountModal.open { display: flex; }
+        .account-box {
+            background: #1a1a2e;
+            border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+        .account-box h2 { font-size: 20px; color: #a78bfa; margin-bottom: 16px; }
+        .account-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: rgba(255,255,255,0.4); font-size: 18px; cursor: pointer; }
+        .account-close:hover { color: white; }
+        .account-info { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 20px; }
+        .account-info span { color: #c084fc; }
+        .account-logout { width: 100%; padding: 11px; background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.3); border-radius: 10px; color: white; font-family: 'Permanent Marker', cursive; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .account-logout:hover { background: rgba(255,80,80,0.25); }
+@keyframes flyAcross {
+    from { transform: translateX(0) rotate(0deg); }
+    to { transform: translateX(calc(100vw + 100px)) rotate(360deg); }
 }
-.auth-box h2 {
-    font-size: 22px;
-    background: linear-gradient(135deg, #a78bfa, #c084fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 6px;
-}
-.auth-subtitle {
-    font-size: 12px;
-    color: rgba(255,255,255,0.35);
-    margin-bottom: 20px;
-}
-.auth-input {
-    width: 100%;
-    padding: 11px 16px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(167,139,250,0.3);
-    border-radius: 10px;
-    color: white;
-    font-family: 'Permanent Marker', cursive;
-    font-size: 14px;
-    outline: none;
-    margin-bottom: 10px;
-    transition: all 0.2s;
-    box-sizing: border-box;
-}
-.auth-input:focus { border-color: #a78bfa; background: rgba(167,139,250,0.08); }
-.auth-input::placeholder { color: rgba(255,255,255,0.25); }
-.auth-submit {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #a78bfa, #c084fc);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-family: 'Permanent Marker', cursive;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 4px;
-}
-.auth-submit:hover { opacity: 0.9; transform: scale(1.02); }
-.auth-error {
-    font-size: 12px;
-    color: #ff5050;
-    margin-top: 8px;
-    min-height: 18px;
-}
-.auth-switch {
-    font-size: 12px;
-    color: rgba(255,255,255,0.35);
-    margin-top: 16px;
-    cursor: pointer;
-}
-.auth-switch span { color: #a78bfa; cursor: pointer; }
-.auth-switch span:hover { text-decoration: underline; }
-.auth-close {
-    position: absolute;
-    top: 12px; right: 16px;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.4);
-    font-size: 18px;
-    cursor: pointer;
-    font-family: 'Permanent Marker', cursive;
-}
-.auth-close:hover { color: white; }
-.auth-box { position: relative; }
-.auth-logged-in { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 8px; }
-.auth-logged-in span { color: #c084fc; }
-.auth-logout {
-    margin-top: 16px;
-    padding: 10px;
-    width: 100%;
-    background: rgba(255,80,80,0.1);
-    border: 1px solid rgba(255,80,80,0.3);
-    border-radius: 10px;
-    color: white;
-    font-family: 'Permanent Marker', cursive;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.auth-logout:hover { background: rgba(255,80,80,0.25); }
-@keyframes slideInNotif {
-    from { transform: translateX(100px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-.unlock-notif {
-    position: fixed;
-    bottom: 20px; right: 20px;
-    background: linear-gradient(135deg, #a78bfa, #c084fc);
-    color: white;
-    padding: 14px 20px;
-    border-radius: 12px;
-    font-family: 'Permanent Marker', cursive;
-    font-size: 14px;
-    z-index: 99999;
-    box-shadow: 0 4px 20px rgba(167,139,250,0.5);
-    animation: slideInNotif 0.3s ease;
-    pointer-events: none;
-}   
- </style>
+</style>
 </head>
 <body>
-<button class="login-btn" onclick="openAuth()" id="loginBtn" title="Login">👤</button>
 
-<div id="authModal">
-    <div class="auth-box">
-        <button class="auth-close" onclick="closeAuth()">✕</button>
-        <div id="authContent"></div>
+<!-- AUTH GATE -->
+<div id="authGate">
+    <div class="auth-gate-inner">
+        <!-- Left: Form -->
+        <div class="auth-form-side">
+            <div id="gateFormContent"></div>
+        </div>
+        <!-- Right: Branding -->
+        <div class="auth-brand-side">
+            <img src="/logo.png" class="auth-logo" alt="Vandal">
+            <div class="auth-brand-name">VANDAL</div>
+            <div class="auth-brand-tagline">Everything is your canvas 🎨</div>
+            <div class="auth-features">
+                <div class="auth-feature">🎮 Unblocked Games</div>
+                <div class="auth-feature">🎬 Movies & TV Shows</div>
+                <div class="auth-feature">🎵 Music Player</div>
+                <div class="auth-feature">💬 Global Chat</div>
+                <div class="auth-feature">🌐 Web Proxy</div>
+            </div>
+        </div>
     </div>
 </div>
-    <div class="logo-container">
-        <img src="logo.png" alt="Logo" class="main-logo">
+
+<!-- Sign in required popup -->
+<div class="signin-popup" id="signinPopup">
+    <div class="signin-popup-box">
+        <h3>🔒 Sign In Required</h3>
+        <p>Create a free account to access this feature!</p>
+        <div class="signin-popup-btns">
+            <button class="btn-signin" onclick="document.getElementById('signinPopup').classList.remove('open'); document.getElementById('authGate').style.display='flex'; renderGateLogin();">Sign In</button>
+            <button class="btn-cancel" onclick="document.getElementById('signinPopup').classList.remove('open')">Cancel</button>
+        </div>
     </div>
+</div>
 
-    <div id="stats-counter">
-        <div class="stat-line">🟢 Online: <span class="stat-num" id="onlineCount">...</span></div>
-        <div class="stat-line">👁 Visits: <span class="stat-num" id="visitCount">...</span></div>
+<!-- Account modal -->
+<div id="accountModal">
+    <div class="account-box">
+        <button class="account-close" onclick="document.getElementById('accountModal').classList.remove('open')">✕</button>
+        <div id="accountContent"></div>
     </div>
+</div>
 
-    <canvas id="paintCanvas"></canvas>
-    <div class="spacer"></div>
-    <audio id="spraySound" src="VeeVandalUse.mp3.mpeg" preload="auto"></audio>
+<!-- User pill -->
+<div id="userPill" onclick="openAccountModal()">
+    <div class="user-dot" id="userDot"></div>
+    <span id="userPillText">Loading...</span>
+</div>
 
-    <div id="spray-nav">
-        <div class="can-nozzle"></div>
-        <div class="can-tip"></div>
-        <div class="can-body">
-            <a href="https://discord.gg/sEZafQMpmc" target="_blank" class="nav-btn" id="discordBtn" data-tip="Discord">
-                <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="24">
-            </a>
-            <div class="can-divider"></div>
-            <a href="/games" class="nav-btn" id="gamesBtn" data-tip="Games"><img src="/icons/games.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
-<a href="/movies" class="nav-btn" id="moviesBtn" data-tip="Movies"><img src="/icons/movies.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
-<a href="/music" class="nav-btn" id="musicBtn" data-tip="Music"><img src="/icons/music.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
-<a href="/chat" class="nav-btn" id="chatBtn" data-tip="Chat"><img src="/icons/chat.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
-<a href="/settings" class="nav-btn" data-tip="Settings"><img src="/icons/settings.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
-            <div class="can-divider"></div>
-            <button class="nav-btn" id="colorBtn" data-tip="Spray Color" onclick="if(typeof toggleColorPicker !== 'undefined') toggleColorPicker()"><img src="/icons/spraycolor.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></button>
-            <div class="color-picker-popup" id="colorPickerPopup">
-                <div class="color-row">
-                    <div class="color-swatch selected" style="background:#ff2e73" onclick="pickColor('#ff2e73', this)"></div>
-                    <div class="color-swatch" style="background:#00f2ff" onclick="pickColor('#00f2ff', this)"></div>
-                    <div class="color-swatch" style="background:#7000ff" onclick="pickColor('#7000ff', this)"></div>
-                    <div class="color-swatch" style="background:#ff8c00" onclick="pickColor('#ff8c00', this)"></div>
-                    <div class="color-swatch" style="background:#00ff00" onclick="pickColor('#00ff00', this)"></div>
-                </div>
-                <div class="color-row">
-                    <div class="color-swatch" style="background:#ffffff" onclick="pickColor('#ffffff', this)"></div>
-                    <div class="color-swatch" style="background:#ffff00" onclick="pickColor('#ffff00', this)"></div>
-                    <div class="color-swatch" style="background:#ff69b4" onclick="pickColor('#ff69b4', this)"></div>
-                    <div class="color-swatch" style="background:#00ffaa" onclick="pickColor('#00ffaa', this)"></div>
-                    <div class="color-swatch" style="background:#ff4500" onclick="pickColor('#ff4500', this)"></div>
-                </div>
+<div id="stats-counter">
+    <div class="stat-line">🟢 Online: <span class="stat-num" id="onlineCount">...</span></div>
+    <div class="stat-line">👁 Visits: <span class="stat-num" id="visitCount">...</span></div>
+</div>
+
+<canvas id="paintCanvas"></canvas>
+<div class="logo-container">
+    <img src="/logo.png" alt="Logo" class="main-logo">
+</div>
+<div class="spacer"></div>
+<audio id="spraySound" src="VeeVandalUse.mp3.mpeg" preload="auto"></audio>
+
+<div id="spray-nav">
+    <div class="can-nozzle"></div>
+    <div class="can-tip"></div>
+    <div class="can-body">
+        <a href="https://discord.gg/sEZafQMpmc" target="_blank" class="nav-btn" id="discordBtn" data-tip="Discord">
+            <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="24">
+        </a>
+        <div class="can-divider"></div>
+        <a href="/games" class="nav-btn" id="gamesBtn" data-tip="Games"><img src="/icons/games.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+        <a class="nav-btn" id="moviesBtn" data-tip="Movies" onclick="guestCheck('/movies')"><img src="/icons/movies.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+        <a class="nav-btn" id="musicBtn" data-tip="Music" onclick="guestCheck('/music')"><img src="/icons/music.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+        <a class="nav-btn" id="chatBtn" data-tip="Chat" onclick="guestCheck('/chat')"><img src="/icons/chat.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+        <a class="nav-btn" id="settingsBtn" data-tip="Settings" onclick="guestCheck('/settings')"><img src="/icons/settings.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+        <div class="can-divider"></div>
+        <button class="nav-btn" id="colorBtn" data-tip="Spray Color" onclick="if(typeof toggleColorPicker !== 'undefined') toggleColorPicker()"><img src="/icons/spraycolor.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></button>
+        <div class="color-picker-popup" id="colorPickerPopup">
+            <div class="color-row">
+                <div class="color-swatch selected" style="background:#ff2e73" onclick="pickColor('#ff2e73', this)"></div>
+                <div class="color-swatch" style="background:#00f2ff" onclick="pickColor('#00f2ff', this)"></div>
+                <div class="color-swatch" style="background:#7000ff" onclick="pickColor('#7000ff', this)"></div>
+                <div class="color-swatch" style="background:#ff8c00" onclick="pickColor('#ff8c00', this)"></div>
+                <div class="color-swatch" style="background:#00ff00" onclick="pickColor('#00ff00', this)"></div>
             </div>
-            <div class="can-divider"></div>
-            <button class="nav-btn" id="clearBtn" data-tip="Clear Drawing">🗑️</button>
-        </div>
-    </div>
-
-    <button id="back-btn">←</button>
-
-    <div id="home-ui">
-        <div class="logo">VANDAL</div>
-        <div class="site-name">Everything is your canvas🎨🖌️</div>
-        <div class="search-container">
-            <input type="text" id="urlInput">
-            <button id="goBtn">Spray</button>
-        </div>
-    </div>
-
-    <div id="proxy-container">
-        <div id="loading-screen">
-            <div class="loader-text">LOADING...</div>
-            <div id="progress-bar-wrap">
-                <div id="progress-bar"></div>
+            <div class="color-row">
+                <div class="color-swatch" style="background:#ffffff" onclick="pickColor('#ffffff', this)"></div>
+                <div class="color-swatch" style="background:#ffff00" onclick="pickColor('#ffff00', this)"></div>
+                <div class="color-swatch" style="background:#ff69b4" onclick="pickColor('#ff69b4', this)"></div>
+                <div class="color-swatch" style="background:#00ffaa" onclick="pickColor('#00ffaa', this)"></div>
+                <div class="color-swatch" style="background:#ff4500" onclick="pickColor('#ff4500', this)"></div>
             </div>
-            <div id="progress-text">0%</div>
         </div>
-        <iframe id="proxyFrame"></iframe>
+        <div class="can-divider"></div>
+        <button class="nav-btn" id="clearBtn" data-tip="Clear Drawing">🗑️</button>
     </div>
+</div>
 
-    <script src="/uv/uv.bundle.js"></script>
-    <script src="/uv/uv.config.js"></script>
-    <script src="/register-sw.js"></script>
-    <script src="/baremux/index.js"></script>
-    <script>
-        const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
-async function initTransport() {
-    try {
-        await conn.setTransport("/epoxy/dist/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
-    } catch(e) {
-        console.warn("Transport failed, retrying in 2s...", e);
-        setTimeout(initTransport, 2000);
-    }
-}
-        initTransport();
-window.lastColor = '#ff2e73';
-window.colorLocked = false;
-function toggleColorPicker() {
-            document.getElementById('colorPickerPopup').classList.toggle('open');
+<button id="back-btn">←</button>
+
+<div id="home-ui">
+    <div class="logo">VANDAL</div>
+    <div class="site-name">Everything is your canvas🎨🖌️</div>
+    <div class="search-container">
+        <input type="text" id="urlInput">
+        <button id="goBtn">Spray</button>
+    </div>
+</div>
+
+<div id="proxy-container">
+    <div id="loading-screen">
+        <div class="loader-text">LOADING...</div>
+        <div id="progress-bar-wrap">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="progress-text">0%</div>
+    </div>
+    <iframe id="proxyFrame"></iframe>
+</div>
+
+<script src="/uv/uv.bundle.js"></script>
+<script src="/uv/uv.config.js"></script>
+<script src="/register-sw.js"></script>
+<script src="/baremux/index.js"></script>
+<script>
+    const conn = new BareMux.BareMuxConnection("/baremux/worker.js");
+    async function initTransport() {
+        try {
+            await conn.setTransport("/epoxy/dist/index.mjs", [{ wisp: `wss://${location.host}/wisp/` }]);
+        } catch(e) {
+            setTimeout(initTransport, 2000);
         }
+    }
+    initTransport();
 
-        function pickColor(color, el) {
-            window.lastColor = color;
-            window.colorLocked = true;
+    window.lastColor = '#ff2e73';
+    window.colorLocked = false;
+
+    function toggleColorPicker() {
+        document.getElementById('colorPickerPopup').classList.toggle('open');
+    }
+    function pickColor(color, el) {
+        window.lastColor = color;
+        window.colorLocked = true;
+        window._gradientColors = null;
+        window._rainbowMode = false;
+        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('colorPickerPopup').classList.remove('open');
+    }
+    function pickGradientColor(gradientColors, el) {
+        window.colorLocked = true;
+        if (el.id === 'swatch_rainbow') {
+            window._rainbowMode = true;
             window._gradientColors = null;
+        } else {
             window._rainbowMode = false;
-            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('colorPickerPopup').classList.remove('open');
+            window._gradientColors = gradientColors;
         }
-
-        function pickGradientColor(gradientColors, el) {
-            window.colorLocked = true;
-            if (el.id === 'swatch_rainbow') {
-                window._rainbowMode = true;
-                window._gradientColors = null;
-            } else {
-                window._rainbowMode = false;
-                window._gradientColors = gradientColors;
-            }
-            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('colorPickerPopup').classList.remove('open');
-        }
-    </script>
-    <script>
-        const homeUI = document.getElementById('home-ui');
-        const proxyContainer = document.getElementById('proxy-container');
-        const frame = document.getElementById('proxyFrame');
-        const backBtn = document.getElementById('back-btn');
-        const input = document.getElementById('urlInput');
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
-        const clearBtn = document.getElementById('clearBtn');
-        const button = document.getElementById('goBtn');
-        const spraySound = document.getElementById('spraySound');
-
-        clearBtn.onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const placeholderTexts = [
-            "Grab a can and start spraying!", "Shout out to DevvyE_yo", "Pls join the discord",
-            "Stud Tower Obby on Roblox!", "RAHH RAHH🛡️💀", "Manhattan cafe, search it up",
-            "Rate Vandal: 1-10", "AI making people dumb, start reading", "Click the screen!",
-            "Paint the web", "N_gge_ (It's nugget, u dirty mind)"
-        ];
-        input.placeholder = placeholderTexts[Math.floor(Math.random() * placeholderTexts.length)];
-
-        async function launchProxy(event) {
-            if (event) event.preventDefault();
-            let url = input.value;
-            if (!url) return;
-            if (!url.startsWith('http')) {
-                if (!url.includes('.')) {
-                    url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
-                } else {
-                    url = 'https://' + url;
-                }
-            }
-            homeUI.style.display = 'none';
-            proxyContainer.style.display = 'block';
-            backBtn.style.display = 'block';
-            document.getElementById('spray-nav').style.display = 'none';
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('loading-screen').style.display = 'flex';
-
-            let progress = 0;
-            const bar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-            const interval = setInterval(() => {
-                if (progress < 85) {
-                    progress += Math.random() * 8;
-                    progress = Math.min(progress, 85);
-                    bar.style.width = progress + '%';
-                    progressText.textContent = Math.round(progress) + '%';
-                }
-            }, 300);
-
-            frame.onload = () => {
-                clearInterval(interval);
-                bar.style.width = '100%';
-                progressText.textContent = '100%';
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    bar.style.width = '0%';
-                    progressText.textContent = '0%';
-                }, 300);
-            };
-
-            try {
-                await registerSW();
-                const encoded = __uv$config.encodeUrl(url);
-frame.src = '/uv/service/' + encoded;
-            } catch (err) {
-                console.error("VANDAL Engine Error:", err);
-            }
-        }
-
-        backBtn.onclick = () => {
-            proxyContainer.style.display = 'none';
-            homeUI.style.display = 'flex';
-            backBtn.style.display = 'none';
-            document.getElementById('spray-nav').style.display = 'flex';
-            frame.src = 'about:blank';
-        };
-
-        button.onclick = (e) => launchProxy(e);
-        input.onkeydown = (e) => { if (e.key === 'Enter') launchProxy(e); };
-
-        // Painting
-        let drawing = false;
-        let mouseX, mouseY;
-        const colors = ['#ff2e73', '#00f2ff', '#7000ff', '#ff8c00', '#00ff00'];
-
-
-        function loadUnlockedColors() {
-            const unlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]');
-            const popup = document.getElementById('colorPickerPopup');
-            const gradientColors = {
-                neon_pink:  { gradient: ['#ff6ec7', '#ff2e73'], label: 'Neon Pink' },
-                ocean_blue: { gradient: ['#00f2ff', '#0070ff'], label: 'Ocean Blue' },
-                gold_rush:  { gradient: ['#ffd700', '#ff8c00'], label: 'Gold Rush' },
-                galaxy:     { gradient: ['#a78bfa', '#ec4899', '#f43f5e'], label: 'Galaxy' },
-                rainbow: { gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'], label: 'Rainbow' },
-                sharks:  { gradient: ['#007fff','#40e0d0','#880808'], label: 'Shark Blue' }
-            };
-            unlocked.forEach((colorKey, index) => {
-    if (document.getElementById('swatch_' + colorKey)) return;
-    // Add divider before first special color
-    if (index === 0 && !document.getElementById('special-divider')) {
-        const divider = document.createElement('div');
-        divider.id = 'special-divider';
-        divider.style.cssText = 'width:100%;height:1px;background:rgba(167,139,250,0.3);margin:4px 0;position:relative;';
-        divider.innerHTML = '<span style="position:absolute;left:50%;transform:translateX(-50%);top:-8px;background:rgba(20,20,35,0.97);padding:0 6px;font-size:10px;color:rgba(167,139,250,0.6);">SPECIAL</span>';
-        popup.appendChild(divider);
+        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('colorPickerPopup').classList.remove('open');
     }
-                const info = gradientColors[colorKey];
-                if (!info) return;
-                const swatch = document.createElement('div');
-swatch.className = 'color-swatch';
-swatch.id = 'swatch_' + colorKey;
-swatch.style.background = 'linear-gradient(135deg,' + info.gradient.join(',') + ')';
-swatch.title = info.label;
-swatch.onclick = function() { pickGradientColor(info.gradient, this); };
+</script>
+<script>
+    // ===== AUTH GATE =====
+    let currentUser = null; // { username, isGuest, token }
 
-// Only show notification if this is a new unlock this session
-if (!sessionStorage.getItem('notif_' + colorKey)) {
-    sessionStorage.setItem('notif_' + colorKey, '1');
-    showUnlockNotif('🎨 Unlocked: ' + info.label + ' spray!', info.gradient.join(','));
-}
-// Add to existing last row or create new one if full
-let rows = popup.querySelectorAll('.color-row');
-let lastRow = rows[rows.length - 1];
-if (!lastRow || lastRow.children.length >= 5) {
-    lastRow = document.createElement('div');
-    lastRow.className = 'color-row';
-    popup.appendChild(lastRow);
-}
-lastRow.appendChild(swatch);
+    function renderGateLogin() {
+        document.getElementById('gateFormContent').innerHTML = `
+            <div class="auth-form-title">Welcome Back!</div>
+            <div class="auth-form-sub">Sign in to your Vandal account</div>
+            <input class="auth-input" id="gateEmail" placeholder="Email or Username">
+            <input class="auth-input" id="gatePass" placeholder="Password" type="password">
+            <div class="auth-error" id="gateError"></div>
+            <button class="auth-submit" onclick="doGateLogin()">Login 🎨</button>
+            <button class="auth-guest" onclick="doGuestLogin()">Continue as Guest</button>
+            <div class="auth-switch">No account? <span onclick="renderGateSignup()">Sign up free</span></div>
+        `;
+        document.getElementById('gateEmail').onkeydown = e => { if (e.key === 'Enter') document.getElementById('gatePass').focus(); };
+        document.getElementById('gatePass').onkeydown = e => { if (e.key === 'Enter') doGateLogin(); };
+        setTimeout(() => document.getElementById('gateEmail')?.focus(), 100);
+    }
+
+    function renderGateSignup() {
+        document.getElementById('gateFormContent').innerHTML = `
+            <div class="auth-form-title">Join Vandal!</div>
+            <div class="auth-form-sub">Create your free account</div>
+            <input class="auth-input" id="gateSignupEmail" placeholder="Gmail address">
+            <input class="auth-input" id="gateSignupUser" placeholder="Username (3-20 chars)">
+            <input class="auth-input" id="gateSignupPass" placeholder="Password (min 6 chars)" type="password">
+            <input class="auth-input" id="gateSignupPass2" placeholder="Confirm password" type="password">
+            <div class="auth-error" id="gateError"></div>
+            <div class="auth-success" id="gateSuccess"></div>
+            <button class="auth-submit" onclick="doGateSignup()">Create Account 🚀</button>
+            <div class="auth-switch">Already have one? <span onclick="renderGateLogin()">Login</span></div>
+        `;
+        setTimeout(() => document.getElementById('gateSignupEmail')?.focus(), 100);
+    }
+
+    async function doGateLogin() {
+        const emailOrUser = document.getElementById('gateEmail').value.trim();
+        const password = document.getElementById('gatePass').value;
+        if (!emailOrUser || !password) { document.getElementById('gateError').textContent = 'Fill in all fields'; return; }
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: emailOrUser, password })
+            });
+            const data = await res.json();
+            if (!res.ok) { document.getElementById('gateError').textContent = data.error; return; }
+            localStorage.setItem('vandal_token', data.token);
+            localStorage.setItem('vandal_username', data.username);
+            localStorage.setItem('vandal_unlocked_colors', JSON.stringify(data.unlockedColors || []));
+            localStorage.setItem('vandal_time_seconds', (data.timeSeconds || 0).toString());
+            localStorage.setItem('vandal_used_colors', JSON.stringify(data.usedColors || []));
+            location.reload();
+        } catch(e) {
+            document.getElementById('gateError').textContent = 'Connection error';
+        }
+    }
+
+    async function doGateSignup() {
+        const email = document.getElementById('gateSignupEmail').value.trim();
+        const username = document.getElementById('gateSignupUser').value.trim();
+        const password = document.getElementById('gateSignupPass').value;
+        const password2 = document.getElementById('gateSignupPass2').value;
+        if (!email || !username || !password) { document.getElementById('gateError').textContent = 'Fill in all fields'; return; }
+        if (password !== password2) { document.getElementById('gateError').textContent = 'Passwords do not match'; return; }
+        try {
+            const res = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) { document.getElementById('gateError').textContent = data.error; return; }
+            document.getElementById('gateError').textContent = '';
+            document.getElementById('gateSuccess').textContent = '✅ Check your email to verify your account!';
+            setTimeout(() => renderGateLogin(), 3000);
+        } catch(e) {
+            document.getElementById('gateError').textContent = 'Connection error';
+        }
+    }
+
+    function doGuestLogin() {
+        localStorage.removeItem('vandal_token');
+        localStorage.removeItem('vandal_username');
+        enterApp({ username: 'Guest', isGuest: true, token: null });
+    }
+
+    function enterApp(user) {
+        currentUser = user;
+        document.getElementById('authGate').style.display = 'none';
+
+        // Update user pill
+        const dot = document.getElementById('userDot');
+        const pillText = document.getElementById('userPillText');
+        if (user.isGuest) {
+            dot.classList.add('guest-dot');
+            pillText.textContent = 'Guest';
+        } else {
+            dot.classList.remove('guest-dot');
+            pillText.textContent = user.username;
+        }
+
+        // Apply guest restrictions
+        if (user.isGuest) {
+            ['moviesBtn', 'musicBtn', 'chatBtn', 'settingsBtn'].forEach(id => {
+                document.getElementById(id)?.classList.add('guest-locked');
             });
         }
 
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.onresize = resize;
-        resize();
-
-function paint() {
-    if (!drawing) return;
-    const sprayRadius = 25, density = 40;
-    if (!window._rainbowMode) {
-        if (window._gradientColors) {
-            const g = window._gradientColors;
-            const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 25);
-            g.forEach((c, i) => grad.addColorStop(i / (g.length - 1), c));
-            ctx.fillStyle = grad;
-            ctx.shadowColor = g[0];
-        } else {
-            ctx.fillStyle = window.lastColor;
-            ctx.shadowColor = window.lastColor;
-        }
-    }
-    ctx.shadowBlur = 12;
-    for (let i = 0; i < density; i++) {
-        if (window._rainbowMode) {
-            window._rainbowHue = ((window._rainbowHue || 0) + 5) % 360;
-            ctx.fillStyle = `hsl(${window._rainbowHue}, 100%, 55%)`;
-            ctx.shadowColor = `hsl(${window._rainbowHue}, 100%, 55%)`;
-        }
-        const angle = Math.random() * Math.PI * 2;
-        const radius = Math.pow(Math.random(), 2) * sprayRadius;
-        const x = mouseX + radius * Math.cos(angle);
-        const y = mouseY + radius * Math.sin(angle);
-        ctx.beginPath();
-        ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-        let sprayInterval;
-        document.addEventListener('mousedown', (e) => {
-            if (proxyContainer.style.display === 'block') return;
-            drawing = true;
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            if (!window.colorLocked) window.lastColor = colors[Math.floor(Math.random() * colors.length)];
-                // Track used colors
-    if (!window._gradientColors && !window._rainbowMode) {
-        let usedColors = JSON.parse(localStorage.getItem('vandal_used_colors') || '[]');
-        if (!usedColors.includes(window.lastColor)) {
-            usedColors.push(window.lastColor);
-            localStorage.setItem('vandal_used_colors', JSON.stringify(usedColors));
-        }
-        const allColors = ['#ff2e73','#00f2ff','#7000ff','#ff8c00','#00ff00','#ffffff','#ffff00','#ff69b4','#00ffaa','#ff4500'];
-        if (allColors.every(c => usedColors.includes(c))) {
-            localStorage.setItem('vandal_unlocked_colors', JSON.stringify(
-                [...new Set([...JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'), 'rainbow'])]
-            ));
-        localStorage.setItem('vandal_unlocked_colors', JSON.stringify(
-    [...new Set([...JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'), 'rainbow'])]
-));
-syncToServer();
-        }
-    }
-            sprayInterval = setInterval(paint, 20);
-            spraySound.currentTime = 0;
-            spraySound.loop = true;
-            spraySound.play().catch(() => {});
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!drawing) return;
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
-
-        document.addEventListener('mouseup', () => {
-            drawing = false;
-            clearInterval(sprayInterval);
-            stopSpraySound();
-        });
-
-        function stopSpraySound() {
-            let fade = setInterval(() => {
-                if (spraySound.volume > 0.05) {
-                    spraySound.volume -= 0.05;
-                } else {
-                    spraySound.pause();
-                    spraySound.volume = 1;
-                    clearInterval(fade);
-                }
-            }, 30);
-        }
-function showUnlockNotif(text, gradient) {
-    const notif = document.createElement('div');
-    notif.className = 'unlock-notif';
-    if (gradient) notif.style.background = `linear-gradient(135deg, ${gradient})`;
-    notif.textContent = text;
-    document.body.appendChild(notif);
-    setTimeout(() => {
-        notif.style.transition = 'opacity 0.5s';
-        notif.style.opacity = '0';
-        setTimeout(() => notif.remove(), 500);
-    }, 3500);
-}
-        document.addEventListener("click", () => {
-            spraySound.play().catch(e => console.log(e));
-        });
-
-        async function updateStats() {
-            try {
-                const vRes = await fetch('/api/stats/visit');
-                const vData = await vRes.json();
-                document.getElementById('visitCount').textContent = vData.visits.toLocaleString();
-            } catch(e) {}
-            try {
-                const oRes = await fetch('/api/stats/online');
-                const oData = await oRes.json();
-                document.getElementById('onlineCount').textContent = oData.online;
-            } catch(e) {}
-        }
-
+        loadUnlockedColors();
         updateStats();
-        loadUnlockedColors();
-
-        setInterval(() => {
-            const c = parseInt(localStorage.getItem('vandal_time_seconds') || '0');
-            localStorage.setItem('vandal_time_seconds', c + 1);
-        }, 1000);
-    // AUTH
-function openAuth() {
-    document.getElementById('authModal').classList.add('open');
-    const token = localStorage.getItem('vandal_token');
-    if (token) renderLoggedIn();
-    else renderLogin();
-}
-
-function closeAuth() {
-    document.getElementById('authModal').classList.remove('open');
-}
-
-function renderLogin() {
-    document.getElementById('authContent').innerHTML = `
-        <h2>👤 VANDAL</h2>
-        <div class="auth-subtitle">Login to save your progress</div>
-        <input class="auth-input" id="authUser" placeholder="Username" maxlength="20">
-        <input class="auth-input" id="authPass" placeholder="Password" type="password" maxlength="50">
-        <div class="auth-error" id="authError"></div>
-        <button class="auth-submit" onclick="doLogin()">Login</button>
-        <div class="auth-switch">Don't have an account? <span onclick="renderSignup()">Sign up</span></div>
-    `;
-    document.getElementById('authUser').focus();
-    document.getElementById('authUser').onkeydown = e => { if (e.key === 'Enter') document.getElementById('authPass').focus(); };
-    document.getElementById('authPass').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
-}
-
-function renderSignup() {
-    document.getElementById('authContent').innerHTML = `
-        <h2>🎨 JOIN VANDAL</h2>
-        <div class="auth-subtitle">Create an account to save your progress</div>
-        <input class="auth-input" id="authUser" placeholder="Username (3-20 chars)" maxlength="20">
-        <input class="auth-input" id="authPass" placeholder="Password (min 6 chars)" type="password" maxlength="50">
-        <input class="auth-input" id="authPass2" placeholder="Confirm password" type="password" maxlength="50">
-        <div class="auth-error" id="authError"></div>
-        <button class="auth-submit" onclick="doSignup()">Create Account</button>
-        <div class="auth-switch">Already have an account? <span onclick="renderLogin()">Login</span></div>
-    `;
-    document.getElementById('authUser').focus();
-}
-
-function renderLoggedIn() {
-    const username = localStorage.getItem('vandal_username');
-    document.getElementById('authContent').innerHTML = `
-        <h2>👤 VANDAL</h2>
-        <div class="auth-logged-in">Logged in as <span>${username}</span></div>
-        <div class="auth-subtitle" style="margin-top:8px;">Your progress is being saved!</div>
-        <button class="auth-logout" onclick="doLogout()">Logout</button>
-    `;
-}
-
-async function doLogin() {
-    const username = document.getElementById('authUser').value.trim();
-    const password = document.getElementById('authPass').value;
-    if (!username || !password) { document.getElementById('authError').textContent = 'Fill in all fields'; return; }
-    try {
-        const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (!res.ok) { document.getElementById('authError').textContent = data.error; return; }
-        localStorage.setItem('vandal_token', data.token);
-        localStorage.setItem('vandal_username', data.username);
-        localStorage.setItem('vandal_unlocked_colors', JSON.stringify(data.unlockedColors || []));
-localStorage.setItem('vandal_time_seconds', (data.timeSeconds || 0).toString());
-localStorage.setItem('vandal_used_colors', JSON.stringify(data.usedColors || []));
-        loadUnlockedColors();
-        renderLoggedIn();
         syncToServer();
-        location.reload();
-    } catch(e) {
-        document.getElementById('authError').textContent = 'Connection error';
     }
-}
 
-async function doSignup() {
-    const username = document.getElementById('authUser').value.trim();
-    const password = document.getElementById('authPass').value;
-    const password2 = document.getElementById('authPass2').value;
-    if (!username || !password) { document.getElementById('authError').textContent = 'Fill in all fields'; return; }
-    if (password !== password2) { document.getElementById('authError').textContent = 'Passwords do not match'; return; }
-    try {
-        const res = await fetch('/api/auth/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (!res.ok) { document.getElementById('authError').textContent = data.error; return; }
-        localStorage.setItem('vandal_token', data.token);
-        localStorage.setItem('vandal_username', data.username);
-        renderLoggedIn();
-        syncToServer();
-        location.reload();
-    } catch(e) {
-        document.getElementById('authError').textContent = 'Connection error';
+    function guestCheck(url) {
+        if (currentUser && !currentUser.isGuest) {
+            window.location.href = url;
+        } else {
+            document.getElementById('signinPopup').classList.add('open');
+        }
     }
-}
 
-function doLogout() {
-    localStorage.removeItem('vandal_token');
-    localStorage.removeItem('vandal_username');
-    location.reload();
-    renderLogin();
-}
+    function openAccountModal() {
+        const modal = document.getElementById('accountModal');
+        const content = document.getElementById('accountContent');
+        if (currentUser && !currentUser.isGuest) {
+            content.innerHTML = `
+                <h2>👤 Account</h2>
+                <div class="account-info">Logged in as <span>${currentUser.username}</span></div>
+                <button class="account-logout" onclick="doLogout()">Logout</button>
+            `;
+        } else {
+            content.innerHTML = `
+                <h2>👤 Guest</h2>
+                <div class="account-info">You're browsing as a guest.<br>Sign in to unlock all features!</div>
+                <button class="auth-submit" onclick="document.getElementById('accountModal').classList.remove('open'); document.getElementById('authGate').style.display='flex'; renderGateLogin();">Sign In / Sign Up</button>
+            `;
+        }
+        modal.classList.add('open');
+    }
 
-async function syncToServer() {
-    const token = localStorage.getItem('vandal_token');
-    if (!token) return;
-    try {
-        await fetch('/api/auth/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({
-                unlockedColors: JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'),
-                timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0'),
-                usedColors: JSON.parse(localStorage.getItem('vandal_used_colors') || '[]')
+    function doLogout() {
+        localStorage.removeItem('vandal_token');
+        localStorage.removeItem('vandal_username');
+        document.getElementById('accountModal').classList.remove('open');
+        document.getElementById('authGate').style.display = 'flex';
+        renderGateLogin();
+        currentUser = null;
+    }
+
+    // Check if already logged in
+    const savedToken = localStorage.getItem('vandal_token');
+    const savedUsername = localStorage.getItem('vandal_username');
+    if (savedToken && savedUsername) {
+        // Verify token is still valid
+        fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + savedToken } })
+            .then(r => r.json())
+            .then(data => {
+                if (data.username) {
+                    localStorage.setItem('vandal_unlocked_colors', JSON.stringify(data.unlockedColors || []));
+                    localStorage.setItem('vandal_time_seconds', Math.max(parseInt(localStorage.getItem('vandal_time_seconds') || 0), data.timeSeconds || 0).toString());
+                    enterApp({ username: data.username, isGuest: false, token: savedToken });
+                } else {
+                    renderGateLogin();
+                }
             })
-        });
-    } catch(e) {}
-}
-
-// Sync every 60 seconds if logged in
-setInterval(syncToServer, 60000);
-
-// Update login button to show logged in state
-function updateLoginBtn() {
-    const token = localStorage.getItem('vandal_token');
-    const btn = document.getElementById('loginBtn');
-    if (token) {
-        btn.textContent = '✅';
-        btn.title = 'Logged in as ' + localStorage.getItem('vandal_username');
+            .catch(() => renderGateLogin());
     } else {
-        btn.textContent = '👤';
-        btn.title = 'Login';
+        renderGateLogin();
     }
+
+    // ===== MAIN APP =====
+    const homeUI = document.getElementById('home-ui');
+    const proxyContainer = document.getElementById('proxy-container');
+    const frame = document.getElementById('proxyFrame');
+    const backBtn = document.getElementById('back-btn');
+    const input = document.getElementById('urlInput');
+    const canvas = document.getElementById('paintCanvas');
+    const ctx = canvas.getContext('2d');
+    const clearBtn = document.getElementById('clearBtn');
+    const button = document.getElementById('goBtn');
+    const spraySound = document.getElementById('spraySound');
+
+    clearBtn.onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const placeholderTexts = [
+        "Grab a can and start spraying!", "Shout out to DevvyE_yo", "Pls join the discord",
+        "Stud Tower Obby on Roblox!", "RAHH RAHH🛡️💀", "Manhattan cafe, search it up",
+        "Rate Vandal: 1-10", "AI making people dumb, start reading", "Click the screen!",
+        "Paint the web", "N_gge_ (It's nugget, u dirty mind)"
+    ];
+    input.placeholder = placeholderTexts[Math.floor(Math.random() * placeholderTexts.length)];
+
+    async function launchProxy(event) {
+        if (event) event.preventDefault();
+        let url = input.value;
+        if (!url) return;
+        if (!url.startsWith('http')) {
+            if (!url.includes('.')) {
+                url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+            } else {
+                url = 'https://' + url;
+            }
+        }
+        homeUI.style.display = 'none';
+        proxyContainer.style.display = 'block';
+        backBtn.style.display = 'block';
+        document.getElementById('spray-nav').style.display = 'none';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('loading-screen').style.display = 'flex';
+
+        let progress = 0;
+        const bar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const interval = setInterval(() => {
+            if (progress < 85) {
+                progress += Math.random() * 8;
+                progress = Math.min(progress, 85);
+                bar.style.width = progress + '%';
+                progressText.textContent = Math.round(progress) + '%';
+            }
+        }, 300);
+
+        frame.onload = () => {
+            clearInterval(interval);
+            bar.style.width = '100%';
+            progressText.textContent = '100%';
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                bar.style.width = '0%';
+                progressText.textContent = '0%';
+            }, 300);
+        };
+
+        try {
+            await registerSW();
+            const encoded = __uv$config.encodeUrl(url);
+            frame.src = '/uv/service/' + encoded;
+        } catch (err) {
+            console.error("VANDAL Engine Error:", err);
+        }
+    }
+
+    backBtn.onclick = () => {
+        proxyContainer.style.display = 'none';
+        homeUI.style.display = 'flex';
+        backBtn.style.display = 'none';
+        document.getElementById('spray-nav').style.display = 'flex';
+        frame.src = 'about:blank';
+    };
+
+    button.onclick = (e) => launchProxy(e);
+    input.onkeydown = (e) => { if (e.key === 'Enter') launchProxy(e); };
+
+    // Painting
+    let drawing = false;
+    let mouseX, mouseY;
+    const colors = ['#ff2e73', '#00f2ff', '#7000ff', '#ff8c00', '#00ff00'];
+
+    function loadUnlockedColors() {
+        const unlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]');
+        const popup = document.getElementById('colorPickerPopup');
+        const gradientColors = {
+            neon_pink:  { gradient: ['#ff6ec7', '#ff2e73'], label: 'Neon Pink' },
+            ocean_blue: { gradient: ['#00f2ff', '#0070ff'], label: 'Ocean Blue' },
+            gold_rush:  { gradient: ['#ffd700', '#ff8c00'], label: 'Gold Rush' },
+            galaxy:     { gradient: ['#a78bfa', '#ec4899', '#f43f5e'], label: 'Galaxy' },
+            rainbow:    { gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'], label: 'Rainbow' },
+            sharks: { gradient: ['#0d0d2b', '#008080', '#40e0d0', '#8b0000'], label: 'Shark Blue' },
+            royalty: { gradient: ['#8b0000', '#ffd700', '#7000ff'], label: 'Royalty' }
+        };
+        unlocked.forEach((colorKey, index) => {
+            if (document.getElementById('swatch_' + colorKey)) return;
+            if (index === 0 && !document.getElementById('special-divider')) {
+                const divider = document.createElement('div');
+                divider.id = 'special-divider';
+                divider.style.cssText = 'width:100%;height:1px;background:rgba(167,139,250,0.3);margin:4px 0;position:relative;';
+                divider.innerHTML = '<span style="position:absolute;left:50%;transform:translateX(-50%);top:-8px;background:rgba(20,20,35,0.97);padding:0 6px;font-size:10px;color:rgba(167,139,250,0.6);">SPECIAL</span>';
+                popup.appendChild(divider);
+            }
+            const info = gradientColors[colorKey];
+            if (!info) return;
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.id = 'swatch_' + colorKey;
+            swatch.style.background = 'linear-gradient(135deg,' + info.gradient.join(',') + ')';
+            swatch.title = info.label;
+            swatch.onclick = function() { pickGradientColor(info.gradient, this); };
+
+            if (!localStorage.getItem('notif_shown_' + colorKey)) {
+                localStorage.setItem('notif_shown_' + colorKey, '1');
+                showUnlockNotif('🎨 Unlocked: ' + info.label + ' spray!', info.gradient.join(','));
+            }
+
+            	let specialRows = popup.querySelectorAll('.color-row.special-row');
+let lastSpecialRow = specialRows[specialRows.length - 1];
+if (!lastSpecialRow || lastSpecialRow.children.length >= 5) {
+    lastSpecialRow = document.createElement('div');
+    lastSpecialRow.className = 'color-row special-row';
+    popup.appendChild(lastSpecialRow);
 }
-updateLoginBtn();
-    </script>
+lastSpecialRow.appendChild(swatch);
+        });
+    }
+
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.onresize = resize;
+    resize();
+
+    function paint() {
+        if (!drawing) return;
+        const sprayRadius = 25, density = 40;
+        if (!window._rainbowMode) {
+            if (window._gradientColors) {
+                const g = window._gradientColors;
+                const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 25);
+                g.forEach((c, i) => grad.addColorStop(i / (g.length - 1), c));
+                ctx.fillStyle = grad;
+                ctx.shadowColor = g[0];
+            } else {
+                ctx.fillStyle = window.lastColor;
+                ctx.shadowColor = window.lastColor;
+            }
+        }
+        ctx.shadowBlur = 12;
+        for (let i = 0; i < density; i++) {
+            if (window._rainbowMode) {
+                window._rainbowHue = ((window._rainbowHue || 0) + 5) % 360;
+                ctx.fillStyle = `hsl(${window._rainbowHue}, 100%, 55%)`;
+                ctx.shadowColor = `hsl(${window._rainbowHue}, 100%, 55%)`;
+            }
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.pow(Math.random(), 2) * sprayRadius;
+            const x = mouseX + radius * Math.cos(angle);
+            const y = mouseY + radius * Math.sin(angle);
+            ctx.beginPath();
+            ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    let sprayInterval;
+    document.addEventListener('mousedown', (e) => {
+        if (proxyContainer.style.display === 'block') return;
+        drawing = true;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        if (!window.colorLocked) window.lastColor = colors[Math.floor(Math.random() * colors.length)];
+        if (!window._gradientColors && !window._rainbowMode) {
+            let usedColors = JSON.parse(localStorage.getItem('vandal_used_colors') || '[]');
+            if (!usedColors.includes(window.lastColor)) {
+                usedColors.push(window.lastColor);
+                localStorage.setItem('vandal_used_colors', JSON.stringify(usedColors));
+            }
+            const allColors = ['#ff2e73','#00f2ff','#7000ff','#ff8c00','#00ff00','#ffffff','#ffff00','#ff69b4','#00ffaa','#ff4500'];
+            if (allColors.every(c => usedColors.includes(c))) {
+                const existing = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]');
+                if (!existing.includes('rainbow')) {
+                    existing.push('rainbow');
+                    localStorage.setItem('vandal_unlocked_colors', JSON.stringify(existing));
+                    syncToServer();
+                    loadUnlockedColors();
+                }
+            }
+        }
+        sprayInterval = setInterval(paint, 20);
+        spraySound.currentTime = 0;
+        spraySound.loop = true;
+        spraySound.play().catch(() => {});
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!drawing) return;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    document.addEventListener('mouseup', () => {
+        drawing = false;
+        clearInterval(sprayInterval);
+        stopSpraySound();
+    });
+
+    function stopSpraySound() {
+        let fade = setInterval(() => {
+            if (spraySound.volume > 0.05) {
+                spraySound.volume -= 0.05;
+            } else {
+                spraySound.pause();
+                spraySound.volume = 1;
+                clearInterval(fade);
+            }
+        }, 30);
+    }
+
+    function showUnlockNotif(text, gradient) {
+        const notif = document.createElement('div');
+        notif.className = 'unlock-notif';
+        if (gradient) notif.style.background = `linear-gradient(135deg, ${gradient})`;
+        notif.textContent = text;
+        document.body.appendChild(notif);
+        setTimeout(() => {
+            notif.style.transition = 'opacity 0.5s';
+            notif.style.opacity = '0';
+            setTimeout(() => notif.remove(), 500);
+        }, 3500);
+    }
+
+    document.addEventListener("click", () => {
+        spraySound.play().catch(e => console.log(e));
+    });
+function spawnFlyingCan() {
+    if (JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('royalty')) return;
+    const existing = document.getElementById('flyingCan');
+    if (existing) existing.remove();
+
+    const can = document.createElement('img');
+    can.id = 'flyingCan';
+    can.src = '/icons/goldspray.png';
+    can.style.cssText = `
+        position: fixed;
+        width: 80px;
+        height: 80px;
+        cursor: pointer;
+        z-index: 99999;
+        top: 40%;
+        left: 0;
+        filter: drop-shadow(0 0 12px gold);
+        pointer-events: auto;
+        animation: flyAcross 15s linear forwards;
+    `;
+    can.onclick = () => {
+        can.remove();
+        const unlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]');
+        if (!unlocked.includes('royalty')) {
+            unlocked.push('royalty');
+            localStorage.setItem('vandal_unlocked_colors', JSON.stringify(unlocked));
+            syncToServer();
+            loadUnlockedColors();
+            showUnlockNotif('👑 Unlocked: Royalty spray!', '#8b0000,#ffd700,#7000ff');
+        }
+    };
+    document.body.appendChild(can);
+    setTimeout(() => { if (can.parentNode) can.remove(); }, 16000);
+}
+// Spawn flying can randomly every 3-8 minutes
+function scheduleFlyCan() {
+    if (JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('royalty')) return;
+    const delay = (Math.random() * 5 + 3) * 60 * 1000;
+    setTimeout(() => {
+        spawnFlyingCan();
+        scheduleFlyCan();
+    }, delay);
+}
+scheduleFlyCan();
+    async function updateStats() {
+        try {
+            const vRes = await fetch('/api/stats/visit');
+            const vData = await vRes.json();
+            document.getElementById('visitCount').textContent = vData.visits.toLocaleString();
+        } catch(e) {}
+        try {
+            const oRes = await fetch('/api/stats/online');
+            const oData = await oRes.json();
+            document.getElementById('onlineCount').textContent = oData.online;
+        } catch(e) {}
+    }
+
+    async function syncToServer() {
+        const token = localStorage.getItem('vandal_token');
+        if (!token) return;
+        try {
+            await fetch('/api/auth/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({
+                    unlockedColors: JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'),
+                    timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0'),
+                    usedColors: JSON.parse(localStorage.getItem('vandal_used_colors') || '[]')
+                })
+            });
+        } catch(e) {}
+    }
+
+    setInterval(syncToServer, 60000);
+
+    setInterval(() => {
+        const c = parseInt(localStorage.getItem('vandal_time_seconds') || '0');
+        localStorage.setItem('vandal_time_seconds', c + 1);
+    }, 1000);
+</script>
 </body>
 </html>

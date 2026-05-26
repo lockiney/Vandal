@@ -23,6 +23,7 @@
     "express": "^5.2.1",
     "http-proxy-middleware": "^3.0.5",
     "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^8.0.7",
     "wisp-server-node": "^1.1.8"
   }
 }
