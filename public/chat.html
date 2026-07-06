@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
     <title>Vandal - Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
             font-family: 'Permanent Marker', cursive;
             background: #0a0a0f;
@@ -18,7 +18,7 @@
             overflow: hidden;
         }
 
-        /* TOPBAR */
+        /* TOP BAR */
         .topbar {
             display: flex;
             align-items: center;
@@ -28,7 +28,6 @@
             gap: 16px;
             flex-shrink: 0;
         }
-
         .back-btn {
             background: rgba(255,255,255,0.1);
             color: white;
@@ -40,7 +39,6 @@
             transition: all 0.2s;
         }
         .back-btn:hover { background: rgba(255,255,255,0.2); }
-
         .topbar-title {
             font-size: 22px;
             background: linear-gradient(135deg, #a78bfa, #c084fc);
@@ -49,8 +47,7 @@
             background-clip: text;
             letter-spacing: 3px;
         }
-
-        .online-count {
+        .topbar-right {
             margin-left: auto;
             font-size: 12px;
             color: rgba(255,255,255,0.4);
@@ -58,7 +55,6 @@
             align-items: center;
             gap: 6px;
         }
-
         .online-dot {
             width: 8px; height: 8px;
             border-radius: 50%;
@@ -66,7 +62,6 @@
             box-shadow: 0 0 6px #22c55e;
             animation: pulse-dot 2s infinite;
         }
-
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
@@ -77,12 +72,11 @@
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.85);
-            z-index: 10000;
+            z-index: 9999;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
         .modal-box {
             background: #1a1a2e;
             border: 1px solid rgba(167,139,250,0.3);
@@ -92,7 +86,6 @@
             width: 90%;
             text-align: center;
         }
-
         .modal-box h2 {
             font-size: 24px;
             background: linear-gradient(135deg, #a78bfa, #c084fc);
@@ -101,13 +94,11 @@
             background-clip: text;
             margin-bottom: 8px;
         }
-
         .modal-box p {
             font-size: 13px;
             color: rgba(255,255,255,0.4);
             margin-bottom: 20px;
         }
-
         .modal-input {
             width: 100%;
             padding: 12px 16px;
@@ -122,14 +113,8 @@
             margin-bottom: 16px;
             transition: all 0.2s;
         }
-
-        .modal-input:focus {
-            border-color: #a78bfa;
-            background: rgba(167,139,250,0.08);
-        }
-
+        .modal-input:focus { border-color: #a78bfa; background: rgba(167,139,250,0.08); }
         .modal-input::placeholder { color: rgba(255,255,255,0.25); }
-
         .modal-btn {
             width: 100%;
             padding: 12px;
@@ -142,10 +127,9 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+        .modal-btn:hover { opacity: 0.9; }
 
-        .modal-btn:hover { opacity: 0.9; transform: scale(1.02); }
-
-        /* CHAT AREA */
+        /* MESSAGES */
         #messages {
             flex: 1;
             overflow-y: auto;
@@ -154,23 +138,19 @@
             flex-direction: column;
             gap: 10px;
         }
-
         #messages::-webkit-scrollbar { width: 4px; }
-        #messages::-webkit-scrollbar-track { background: transparent; }
         #messages::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.3); border-radius: 2px; }
 
         .msg {
             display: flex;
             flex-direction: column;
             max-width: 75%;
-            animation: fadeIn 0.2s ease;
+            animation: fadeUp 0.2s ease;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .msg.mine { align-self: flex-end; align-items: flex-end; }
         .msg.theirs { align-self: flex-start; align-items: flex-start; }
 
@@ -181,7 +161,6 @@
             display: flex;
             gap: 6px;
         }
-
         .msg-username { color: #a78bfa; }
         .msg.mine .msg-username { color: #c084fc; }
 
@@ -192,13 +171,11 @@
             line-height: 1.5;
             word-break: break-word;
         }
-
         .msg.mine .msg-bubble {
             background: linear-gradient(135deg, #a78bfa, #c084fc);
             color: #1a0a2e;
             border-bottom-right-radius: 4px;
         }
-
         .msg.theirs .msg-bubble {
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.08);
@@ -206,12 +183,54 @@
             border-bottom-left-radius: 4px;
         }
 
-        .system-msg {
-            text-align: center;
+        .msg-img {
+            max-width: 220px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-top: 6px;
+            cursor: pointer;
+            display: block;
+        }
+
+        /* USERNAME TAG */
+        .user-tag {
             font-size: 12px;
             color: rgba(255,255,255,0.25);
-            padding: 4px 0;
+            padding: 5px 20px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        .change-name-btn {
+            color: #a78bfa;
+            cursor: pointer;
+            font-size: 11px;
+            background: none;
+            border: none;
+            font-family: 'Permanent Marker', cursive;
+        }
+        .change-name-btn:hover { text-decoration: underline; }
+
+        /* IMAGE PREVIEW */
+        .img-preview-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 20px;
+            background: rgba(167,139,250,0.07);
+            border-top: 1px solid rgba(167,139,250,0.15);
+            flex-shrink: 0;
+        }
+        .img-preview-bar.show { display: flex; }
+        .img-thumb { width: 38px; height: 38px; object-fit: cover; border-radius: 6px; }
+        .img-name { font-size: 12px; color: rgba(255,255,255,0.45); flex: 1; }
+        .img-remove {
+            background: none; border: none;
+            color: rgba(255,255,255,0.35);
+            cursor: pointer; font-size: 18px;
+        }
+        .img-remove:hover { color: #ff5050; }
 
         /* INPUT BAR */
         .input-bar {
@@ -222,47 +241,9 @@
             border-top: 1px solid rgba(255,255,255,0.06);
             flex-shrink: 0;
         }
-        .attach-btn {
-    padding: 12px 16px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(167,139,250,0.3);
-    border-radius: 50px;
-    color: rgba(255,255,255,0.6);
-    font-family: 'Permanent Marker', cursive;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-.attach-btn:hover { background: rgba(167,139,250,0.15); border-color: #a78bfa; color: white; }
-
-.msg-image {
-    max-width: 100%;
-    max-height: 200px;
-    border-radius: 10px;
-    margin-top: 6px;
-    cursor: pointer;
-    display: block;
-}
-
-.image-preview-wrap {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 20px;
-    background: rgba(167,139,250,0.08);
-    border-top: 1px solid rgba(167,139,250,0.15);
-}
-
-.image-preview-wrap.active { display: flex; }
-.image-preview-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
-.image-preview-name { font-size: 12px; color: rgba(255,255,255,0.5); flex: 1; }
-.image-preview-remove { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 16px; }
-.image-preview-remove:hover { color: #ff5050; }
-
         .chat-input {
             flex: 1;
-            padding: 12px 16px;
+            padding: 11px 16px;
             background: rgba(255,255,255,0.07);
             border: 1px solid rgba(167,139,250,0.3);
             border-radius: 50px;
@@ -270,18 +251,23 @@
             font-family: 'Permanent Marker', cursive;
             font-size: 14px;
             outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: #a78bfa; }
+        .chat-input::placeholder { color: rgba(255,255,255,0.2); }
+        .attach-btn {
+            padding: 11px 15px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 50px;
+            color: rgba(255,255,255,0.6);
+            font-size: 16px;
+            cursor: pointer;
             transition: all 0.2s;
         }
-
-        .chat-input:focus {
-            border-color: #a78bfa;
-            background: rgba(167,139,250,0.08);
-        }
-
-        .chat-input::placeholder { color: rgba(255,255,255,0.25); }
-
+        .attach-btn:hover { background: rgba(167,139,250,0.15); color: white; }
         .send-btn {
-            padding: 12px 20px;
+            padding: 11px 20px;
             background: linear-gradient(135deg, #a78bfa, #c084fc);
             border: none;
             border-radius: 50px;
@@ -289,212 +275,234 @@
             font-family: 'Permanent Marker', cursive;
             font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: opacity 0.2s;
             white-space: nowrap;
         }
+        .send-btn:hover { opacity: 0.88; }
+        .send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-        .send-btn:hover { opacity: 0.9; transform: scale(1.02); }
-        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-        .username-tag {
-            font-size: 12px;
-            color: rgba(255,255,255,0.3);
-            padding: 0 20px 8px;
-            flex-shrink: 0;
-            display: flex;
-            justify-content: space-between;
+        /* LIGHTBOX */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
             align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
         }
-
-        .change-name {
-            color: #a78bfa;
-            cursor: pointer;
-            font-size: 11px;
-            background: none;
-            border: none;
-            font-family: 'Permanent Marker', cursive;
-        }
-
-        .change-name:hover { text-decoration: underline; }
+        #lightbox.show { display: flex; }
+        #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<!-- Username Modal -->
 <div id="usernameModal">
     <div class="modal-box">
         <h2>💬 VANDAL CHAT</h2>
-        <p>Pick a username to join the global chatroom</p>
-        <input type="text" class="modal-input" id="usernameInput" placeholder="Your username..." maxlength="20">
-        <button class="modal-btn" onclick="setUsername()">Join Chat 🎨</button>
+        <p>Pick a spray tag to chat with</p>
+        <input class="modal-input" id="nameInput" placeholder="Your spray tag..." maxlength="20">
+        <button class="modal-btn" id="nameBtn">Enter Chat 🎨</button>
     </div>
 </div>
 
-<!-- Top Bar -->
 <div class="topbar">
     <a href="/" class="back-btn">← Back</a>
     <div class="topbar-title">💬 VANDAL CHAT</div>
-    <div class="online-count">
+    <div class="topbar-right">
         <div class="online-dot"></div>
-        <span id="onlineCount">Global Chat</span>
+        <span>Global Chat</span>
     </div>
 </div>
 
-<!-- Messages -->
 <div id="messages"></div>
 
-<!-- Username tag + input -->
-<div class="username-tag">
-    <span id="usernameTag">Not joined</span>
-    <button class="change-name" onclick="changeName()">Change name</button>
+<div class="user-tag">
+    <span id="userTag"></span>
+    <button class="change-name-btn" id="changeNameBtn">Change name</button>
 </div>
 
-<div class="image-preview-wrap" id="imagePreviewWrap">
-    <img class="image-preview-thumb" id="imagePreviewThumb" src="" alt="">
-    <span class="image-preview-name" id="imagePreviewName"></span>
-    <button class="image-preview-remove" onclick="removeImage()">✕</button>
+<div class="img-preview-bar" id="imgPreviewBar">
+    <img class="img-thumb" id="imgThumb" src="" alt="">
+    <span class="img-name" id="imgName"></span>
+    <button class="img-remove" onclick="removeImage()">✕</button>
 </div>
 
 <div class="input-bar">
-    <input type="text" class="chat-input" id="chatInput" placeholder="Say something..." maxlength="500" onkeydown="if(event.key==='Enter') sendMessage()">
-    <button class="attach-btn" onclick="document.getElementById('imageInput').click()">📎</button>
-    <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
-    <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send 🖌️</button>
+    <input class="chat-input" id="chatInput" placeholder="Say something..." maxlength="500">
+    <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <button class="send-btn" id="sendBtn">Send 🖌️</button>
+</div>
+
+<div id="lightbox" id="lightbox">
+    <img id="lightboxImg" src="" alt="">
 </div>
 
 <script>
+document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+    }
+});
+(function() {
     let username = localStorage.getItem('vandal_chat_username') || '';
-    let lastMessageId = 0;
-    let pollInterval;
+    let lastId = 0;
     let pendingImage = null;
 
-    // Auto-show modal or skip if username exists
-    if (username) {
-        document.getElementById('usernameModal').style.display = 'none';
-        document.getElementById('usernameTag').textContent = 'You: ' + username;
-        startChat();
-    } else {
-        document.getElementById('usernameInput').focus();
-    }
+    // ── USERNAME MODAL ─────────────────────────────────
+    const modal = document.getElementById('usernameModal');
+    const nameInput = document.getElementById('nameInput');
+    const nameBtn = document.getElementById('nameBtn');
 
-    document.getElementById('usernameInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') setUsername();
-    });
-
-    function setUsername() {
-        const input = document.getElementById('usernameInput').value.trim();
-        if (!input) return;
-        username = input;
+    function enterChat(name) {
+        username = name.trim();
         localStorage.setItem('vandal_chat_username', username);
-        document.getElementById('usernameModal').style.display = 'none';
-        document.getElementById('usernameTag').textContent = 'You: ' + username;
-        startChat();
-    }
-
-    function changeName() {
-        document.getElementById('usernameInput').value = username;
-        document.getElementById('usernameModal').style.display = 'flex';
-        document.getElementById('usernameInput').focus();
-        clearInterval(pollInterval);
-    }
-    function handleImageSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (file.size > 500 * 1024) {
-        alert('Image too large! Max 500KB');
-        return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        pendingImage = e.target.result;
-        document.getElementById('imagePreviewThumb').src = pendingImage;
-        document.getElementById('imagePreviewName').textContent = file.name;
-        document.getElementById('imagePreviewWrap').classList.add('active');
-    };
-    reader.readAsDataURL(file);
-    event.target.value = '';
-}
-
-function removeImage() {
-    pendingImage = null;
-    document.getElementById('imagePreviewWrap').classList.remove('active');
-    document.getElementById('imagePreviewThumb').src = '';
-}
-
-    function startChat() {
+        document.getElementById('userTag').textContent = 'Chatting as: ' + username;
+        modal.style.display = 'none';
         loadMessages();
-        pollInterval = setInterval(loadMessages, 2000);
+        setInterval(loadMessages, 2000);
         document.getElementById('chatInput').focus();
     }
 
+    if (username) {
+        enterChat(username);
+    } else {
+        modal.style.display = 'flex';
+        nameInput.focus();
+    }
+
+    nameBtn.addEventListener('click', () => {
+        const name = nameInput.value.trim();
+        if (!name) return;
+        enterChat(name);
+    });
+
+    nameInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') nameBtn.click();
+    });
+
+    document.getElementById('changeNameBtn').addEventListener('click', () => {
+        nameInput.value = username;
+        modal.style.display = 'flex';
+        nameInput.focus();
+    });
+
+    // ── IMAGE ──────────────────────────────────────────
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 500 * 1024) { alert('Max image size is 500KB!'); return; }
+        const reader = new FileReader();
+        reader.onload = ev => {
+            pendingImage = ev.target.result;
+            document.getElementById('imgThumb').src = pendingImage;
+            document.getElementById('imgName').textContent = file.name;
+            document.getElementById('imgPreviewBar').classList.add('show');
+        };
+        reader.readAsDataURL(file);
+        this.value = '';
+    });
+
+    function removeImage() {
+        pendingImage = null;
+        document.getElementById('imgPreviewBar').classList.remove('show');
+        document.getElementById('imgThumb').src = '';
+    }
+    window.removeImage = removeImage;
+
+    // ── LIGHTBOX ───────────────────────────────────────
+    const lightbox = document.getElementById('lightbox');
+    lightbox.addEventListener('click', () => lightbox.classList.remove('show'));
+
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        lightbox.classList.add('show');
+    }
+
+    // ── ESCAPE HTML ────────────────────────────────────
+    function esc(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;');
+    }
+
+    // ── RENDER MESSAGE ─────────────────────────────────
+    function renderMsg(msg) {
+        const isMine = msg.username === username;
+        const div = document.createElement('div');
+        div.className = 'msg ' + (isMine ? 'mine' : 'theirs');
+        div.innerHTML = `
+            <div class="msg-meta">
+                <span class="msg-username">${isMine ? 'You' : esc(msg.username)}</span>
+                <span>${msg.time}</span>
+            </div>
+            <div class="msg-bubble">
+                ${msg.message ? esc(msg.message) : ''}
+                ${msg.image ? `<img class="msg-img" src="${msg.image}" alt="image">` : ''}
+            </div>
+        `;
+        const imgEl = div.querySelector('.msg-img');
+        if (imgEl) imgEl.addEventListener('click', () => openLightbox(imgEl.src));
+        return div;
+    }
+
+    // ── LOAD MESSAGES ──────────────────────────────────
     async function loadMessages() {
         try {
             const res = await fetch('/api/chat/messages');
+            if (!res.ok) return;
             const msgs = await res.json();
-            if (!msgs.length) return;
-
-            const newMsgs = msgs.filter(m => m.id > lastMessageId);
+            const newMsgs = msgs.filter(m => m.id > lastId);
             if (!newMsgs.length) return;
-
             const container = document.getElementById('messages');
-            const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
-
-            newMsgs.forEach(msg => {
-                lastMessageId = Math.max(lastMessageId, msg.id);
-                const isMine = msg.username === username;
-                const div = document.createElement('div');
-                div.className = `msg ${isMine ? 'mine' : 'theirs'}`;
-                div.innerHTML = `
-    <div class="msg-meta">
-        <span class="msg-username">${isMine ? 'You' : msg.username}</span>
-        <span>${msg.time}</span>
-    </div>
-    <div class="msg-bubble">
-        ${msg.message ? escapeHtml(msg.message) : ''}
-        ${msg.image ? `<img class="msg-image" src="${msg.image}" alt="image" onclick="this.requestFullscreen()">` : ''}
-    </div>
-`;
-                container.appendChild(div);
+            const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+            newMsgs.forEach(m => {
+                lastId = Math.max(lastId, m.id);
+                container.appendChild(renderMsg(m));
             });
-
-            if (wasAtBottom) {
-                container.scrollTop = container.scrollHeight;
-            }
+            if (atBottom) container.scrollTop = container.scrollHeight;
         } catch(e) {}
     }
 
-async function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const message = input.value.trim();
-    if (!message && !pendingImage) return;
-
-    const btn = document.getElementById('sendBtn');
-    btn.disabled = true;
-    input.value = '';
-    const imageToSend = pendingImage;
-    removeImage();
-
-    try {
-        await fetch('/api/chat/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, message, image: imageToSend })
-        });
-        await loadMessages();
-    } catch(e) {}
-
-    btn.disabled = false;
-    input.focus();
-}
-
-    function escapeHtml(text) {
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+    // ── SEND MESSAGE ───────────────────────────────────
+    async function sendMessage() {
+        if (!username) return;
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg && !pendingImage) return;
+        const btn = document.getElementById('sendBtn');
+        btn.disabled = true;
+        input.value = '';
+        const imgToSend = pendingImage;
+        removeImage();
+        try {
+            await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, message: msg, image: imgToSend })
+            });
+            await loadMessages();
+        } catch(e) {}
+        btn.disabled = false;
+        input.focus();
     }
+
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // Time tracker
+    setInterval(() => {
+        const c = parseInt(localStorage.getItem('vandal_time_seconds') || '0');
+        localStorage.setItem('vandal_time_seconds', c + 1);
+    }, 1000);
+})();
 </script>
 </body>
 </html>

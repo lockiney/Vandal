@@ -692,7 +692,11 @@
         <a href="/games" class="nav-btn" id="gamesBtn" data-tip="Games"><img src="/icons/games.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
         <a class="nav-btn" id="moviesBtn" data-tip="Movies" onclick="guestCheck('/movies')"><img src="/icons/movies.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
         <a class="nav-btn" id="musicBtn" data-tip="Music" onclick="guestCheck('/music')"><img src="/icons/music.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
-        <a class="nav-btn" id="chatBtn" data-tip="Chat" onclick="guestCheck('/chat')"><img src="/icons/chat.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
+        <a class="nav-btn" id="chatBtn" data-tip="Chat" onclick="guestCheck('/chat')" style="position:relative;">
+    <img src="/icons/chat.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;">
+    <span id="chatBadge" style="display:none;position:absolute;top:2px;right:2px;background:#ff5050;color:white;border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;"></span>
+</a>
+<a class="nav-btn" id="giveawayBtn" data-tip="Giveaways" onclick="guestCheck('/giveaway')"><span style="font-size:24px;line-height:1;">🎁</span></a>
         <a class="nav-btn" id="settingsBtn" data-tip="Settings" onclick="guestCheck('/settings')"><img src="/icons/settings.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
         <div class="can-divider"></div>
         <button class="nav-btn" id="colorBtn" data-tip="Spray Color" onclick="if(typeof toggleColorPicker !== 'undefined') toggleColorPicker()"><img src="/icons/spraycolor.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></button>
@@ -1250,6 +1254,18 @@ scheduleFlyCan();
             const oData = await oRes.json();
             document.getElementById('onlineCount').textContent = oData.online;
         } catch(e) {}
+        // Check chat notifications
+try {
+    const notifRes = await fetch('/api/chat/notifications?username=' + (localStorage.getItem('vandal_username') || ''));
+    const notifData = await notifRes.json();
+    const badge = document.getElementById('chatBadge');
+    if (notifData.count > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = notifData.count;
+    } else {
+        badge.style.display = 'none';
+    }
+} catch(e) {}
     }
 
     async function syncToServer() {

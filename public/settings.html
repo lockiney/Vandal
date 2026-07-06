@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+if (!localStorage.getItem('vandal_token')) {
+    window.location.href = '/';
+}
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/logo.png">
@@ -304,7 +309,7 @@
 </div>
 <div class="milestone" id="m_royalty">
     <div class="milestone-top">
-        <div class="milestone-name"><span id="badge_royalty">🔒</span> Royal Vandal</div>
+        <div class="milestone-name"><span id="badge_royalty">🔒</span> Midas Touch</div>
         <div class="milestone-reward">
             <span class="gradient-swatch" style="background:linear-gradient(135deg,#8b0000,#ffd700,#7000ff)"></span>
             ???
@@ -439,6 +444,19 @@ setInterval(function() {
 }, 1000);
 
 updateMilestones();
+// Sync all unlocked colors to server on page load
+const token = localStorage.getItem('vandal_token');
+if (token) {
+    fetch('/api/auth/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({
+            unlockedColors: JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]'),
+            timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0'),
+            usedColors: JSON.parse(localStorage.getItem('vandal_used_colors') || '[]')
+        })
+    }).catch(() => {});
+}
 setInterval(updateMilestones, 5000);
 </script>
 </body>

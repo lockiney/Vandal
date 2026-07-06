@@ -45,6 +45,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.get('/games', (req, res) => res.sendFile(path.join(__dirname, 'public', 'games.html')));
 app.get('/music', (req, res) => res.sendFile(path.join(__dirname, 'public', 'music.html')));
 app.get('/movies', (req, res) => res.sendFile(path.join(__dirname, 'public', 'movies.html')));
+app.get('/giveaway', (req, res) => res.sendFile(path.join(__dirname, 'public', 'giveaway.html')));
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'chat.html')));
 app.get('/settings', (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
 
@@ -62,15 +63,32 @@ app.post('/api/chat/send', express.json({ limit: '2mb' }), (req, res) => {
     if (username.length > 20) return res.status(400).json({ error: 'Username too long' });
     if (message && message.length > 500) return res.status(400).json({ error: 'Message too long' });
     const msg = {
-        id: Date.now(),
-        username: username.trim(),
-        message: message ? message.trim() : '',
-        image: req.body.image || null,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    chatMessages.push(msg);
+    id: Date.now(),
+    username: username.trim(),
+    message: message ? message.trim() : '',
+    image: req.body.image || null,
+    replyTo: req.body.replyTo || null, // { id, username, message }
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+};
+chatMessages.push(msg);
     if (chatMessages.length > MAX_MESSAGES) chatMessages.shift();
+    if (msg.replyTo && msg.replyTo.username) {
+        chatNotifications[msg.replyTo.username] = (chatNotifications[msg.replyTo.username] || 0) + 1;
+    }
     res.json(msg);
+});
+
+let chatNotifications = {};
+
+app.get('/api/chat/notifications', (req, res) => {
+    const username = req.query.username;
+    res.json({ count: chatNotifications[username] || 0 });
+});
+
+app.post('/api/chat/notifications/clear', express.json(), (req, res) => {
+    const { username } = req.body;
+    chatNotifications[username] = 0;
+    res.json({ success: true });
 });
 
 // --- STATS API ---
@@ -78,7 +96,6 @@ const statsFile = path.join(__dirname, 'stats.json');
 let stats = { visits: 0 };
 try { stats = JSON.parse(fs.readFileSync(statsFile)); } catch(e) {}
 let onlineUsers = 0;
-
 app.get('/api/stats/visit', (req, res) => {
     stats.visits++;
     fs.writeFileSync(statsFile, JSON.stringify(stats));
@@ -170,6 +187,145 @@ app.get('/api/auth/me', (req, res) => {
         res.status(401).json({ error: 'Invalid token' });
     }
 });
+
+// ---- Giveaways ----
+const GIVEAWAYS_FILE = path.join(__dirname, 'giveaways.json');
+
+function loadGiveaways() {
+    try { return JSON.parse(fs.readFileSync(GIVEAWAYS_FILE, 'utf8')); }
+    catch { return []; }
+}
+function saveGiveaways(list) {
+    fs.writeFileSync(GIVEAWAYS_FILE, JSON.stringify(list, null, 2));
+}
+function getUserFromToken(req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return null;
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        return users.find(u => u.id === decoded.id) || null;
+    } catch {
+        return null;
+    }
+}
+
+// Pick winners from unique participants (one entry per account)
+function drawWinners(g) {
+    const participants = [...new Set((g.messages || []).map(m => m.user))];
+    for (let i = participants.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [participants[i], participants[j]] = [participants[j], participants[i]];
+    }
+    const n = Math.min(g.winnersCount || 1, participants.length);
+    g.winners = participants.slice(0, n);
+    g.drawn = true;
+}
+
+// Draw any ended-but-undrawn giveaways; returns true if anything changed
+function processEnded(list) {
+    const now = Date.now();
+    let changed = false;
+    list.forEach(g => {
+        if (g.endsAt <= now && !g.drawn) {
+            drawWinners(g);
+            changed = true;
+        }
+    });
+    return changed;
+}
+
+app.get('/api/giveaways', (req, res) => {
+    const list = loadGiveaways();
+    if (processEnded(list)) saveGiveaways(list);
+    res.json(list);
+});
+
+app.post('/api/giveaways', express.json(), (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+
+    const { name, prize, hours, description, winnersCount } = req.body;
+    if (!name || !prize || !hours) return res.status(400).json({ error: 'Missing fields' });
+
+    const list = loadGiveaways();
+
+    // one giveaway per user per 24h
+    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    const recent = list.find(g => g.creator === user.username && g.createdAt > dayAgo);
+    if (recent) return res.status(429).json({ error: 'You can only create one giveaway per day' });
+
+    const h = Math.max(0.1, Math.min(parseFloat(hours), 720)); // cap at 30 days
+    const wc = Math.max(1, Math.min(parseInt(winnersCount) || 1, 50));
+    const giveaway = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        name: String(name).slice(0, 80),
+        prize: String(prize).slice(0, 120),
+        description: String(description || '').slice(0, 1000),
+        winnersCount: wc,
+        creator: user.username,
+        createdAt: Date.now(),
+        endsAt: Date.now() + h * 60 * 60 * 1000,
+        messages: [],
+        winners: [],
+        drawn: false
+    };
+    list.push(giveaway);
+    saveGiveaways(list);
+    res.json(giveaway);
+});
+
+app.delete('/api/giveaways/:id', (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+    if (user.username !== 'lockiney') return res.status(403).json({ error: 'Not authorized' });
+
+    const list = loadGiveaways();
+    const filtered = list.filter(g => g.id !== req.params.id);
+    saveGiveaways(filtered);
+    res.json({ success: true });
+});
+
+// Get messages for a giveaway
+app.get('/api/giveaways/:id/messages', (req, res) => {
+    const list = loadGiveaways();
+    if (processEnded(list)) saveGiveaways(list);
+    const g = list.find(x => x.id === req.params.id);
+    if (!g) return res.status(404).json({ error: 'Not found' });
+    res.json({
+        messages: g.messages || [],
+        ended: g.endsAt <= Date.now(),
+        drawn: !!g.drawn,
+        winners: g.winners || [],
+        name: g.name,
+        prize: g.prize,
+        winnersCount: g.winnersCount || 1
+    });
+});
+
+// Post a message to a giveaway (login required, no posting after it ends)
+app.post('/api/giveaways/:id/messages', express.json(), (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+
+    const list = loadGiveaways();
+    const g = list.find(x => x.id === req.params.id);
+    if (!g) return res.status(404).json({ error: 'Not found' });
+    if (g.endsAt <= Date.now()) return res.status(403).json({ error: 'Giveaway has ended' });
+
+    const text = String(req.body.text || '').trim().slice(0, 500);
+    if (!text) return res.status(400).json({ error: 'Empty message' });
+
+    g.messages = g.messages || [];
+    g.messages.push({ user: user.username, text, at: Date.now() });
+    saveGiveaways(list);
+    res.json({ success: true });
+});
+
+// Safety net: draw winners every 60s even if nobody opens the page
+setInterval(() => {
+    const list = loadGiveaways();
+    if (processEnded(list)) saveGiveaways(list);
+}, 60000);
 
 // --- 404 FALLBACK ---
 app.use((req, res) => {

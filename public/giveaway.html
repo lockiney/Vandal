@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vandal - Giveaways</title>
+<script>
+if (!localStorage.getItem('vandal_token')) {
+    window.location.href = '/';
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Permanent Marker', cursive;
+        background: #0a0a0f;
+        color: #e8e8f0;
+        min-height: 100vh;
+        padding: 30px 20px 60px;
+        letter-spacing: 0.5px;
+    }
+    .topbar {
+        max-width: 900px;
+        margin: 0 auto 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .back {
+        color: #8a8aff;
+        text-decoration: none;
+        font-size: 17px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .back:hover { color: #b0b0ff; }
+    h1 {
+        font-size: 28px;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .add-btn {
+        background: #6a5cff;
+        border: none;
+        color: #fff;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        font-size: 26px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform .15s, box-shadow .15s;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .add-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 0 18px rgba(106,92,255,.6);
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .section-label {
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #6a6a8a;
+        margin: 28px 0 14px;
+    }
+    .card {
+        background: #15151f;
+        border: 1px solid #25253a;
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 14px;
+        position: relative;
+        transition: border-color .15s, transform .12s;
+        cursor: pointer;
+    }
+    .card:hover { border-color: #4a4a7a; transform: translateY(-2px); }
+    .card.past { opacity: .7; cursor: pointer; }
+    .card-name {
+        font-size: 22px;
+        margin-bottom: 4px;
+    }
+    .card-prize {
+        color: #ffd56a;
+        font-size: 17px;
+        margin-bottom: 8px;
+    }
+    .card-desc {
+        color: #b0b0c5;
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 10px;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .card-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 14px;
+        color: #7a7a9a;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .countdown { color: #7affb0; }
+    .countdown.ended { color: #ff7a7a; }
+    .winner-banner {
+        margin-top: 10px;
+        background: linear-gradient(90deg, #2a2410, #1a1808);
+        border: 1px solid #5a4a1a;
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: #ffd56a;
+        font-size: 16px;
+    }
+    .remove-btn {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: #2a1520;
+        border: 1px solid #5a2535;
+        color: #ff8a8a;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: 'Permanent Marker', cursive;
+        z-index: 2;
+    }
+    .remove-btn:hover { background: #3a1a2a; }
+    .empty {
+        text-align: center;
+        color: #5a5a7a;
+        padding: 40px 0;
+        font-size: 17px;
+    }
+    .hint {
+        font-size: 13px;
+        color: #5a5a7a;
+        margin-top: 6px;
+    }
+
+    /* Overlay shared */
+    .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 100;
+    }
+    .overlay.show { display: flex; }
+
+    /* Create modal */
+    .modal {
+        background: #15151f;
+        border: 1px solid #2a2a40;
+        border-radius: 16px;
+        padding: 26px;
+        width: 100%;
+        max-width: 420px;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .modal h2 { font-size: 22px; margin-bottom: 18px; }
+    .modal label {
+        display: block;
+        font-size: 14px;
+        color: #9a9aba;
+        margin: 12px 0 5px;
+    }
+    .modal input, .modal textarea {
+        width: 100%;
+        background: #0d0d15;
+        border: 1px solid #2a2a40;
+        border-radius: 9px;
+        padding: 10px 12px;
+        color: #e8e8f0;
+        font-size: 15px;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .modal input:focus, .modal textarea:focus {
+        outline: none;
+        border-color: #6a5cff;
+    }
+    .modal textarea { resize: vertical; min-height: 70px; }
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+    }
+    .modal-actions button {
+        flex: 1;
+        padding: 11px;
+        border-radius: 9px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .btn-cancel { background: #25253a; color: #c0c0d5; }
+    .btn-create { background: #6a5cff; color: #fff; }
+    .btn-create:disabled { opacity: .5; cursor: not-allowed; }
+    .err {
+        color: #ff8a8a;
+        font-size: 14px;
+        margin-top: 12px;
+        min-height: 16px;
+    }
+
+    /* Chat view */
+    .chat-modal {
+        background: #12121a;
+        border: 1px solid #2a2a40;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 520px;
+        height: 80vh;
+        max-height: 640px;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Permanent Marker', cursive;
+        overflow: hidden;
+    }
+    .chat-head {
+        padding: 18px 20px;
+        border-bottom: 1px solid #25253a;
+        flex-shrink: 0;
+    }
+    .chat-head .ch-title { font-size: 21px; }
+    .chat-head .ch-prize { color: #ffd56a; font-size: 15px; margin-top: 3px; }
+    .chat-head .ch-close {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        font-size: 26px;
+        color: #8a8aaa;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .chat-winner {
+        background: linear-gradient(90deg, #2a2410, #1a1808);
+        border-bottom: 1px solid #5a4a1a;
+        color: #ffd56a;
+        padding: 12px 20px;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    .chat-msgs {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .msg .msg-user {
+        font-size: 13px;
+        color: #8a8aff;
+        margin-bottom: 2px;
+    }
+    .msg .msg-user.win { color: #ffd56a; }
+    .msg .msg-text {
+        font-size: 16px;
+        color: #e0e0f0;
+        word-break: break-word;
+    }
+    .chat-input-row {
+        display: flex;
+        gap: 8px;
+        padding: 14px 16px;
+        border-top: 1px solid #25253a;
+        flex-shrink: 0;
+    }
+    .chat-input-row input {
+        flex: 1;
+        background: #0d0d15;
+        border: 1px solid #2a2a40;
+        border-radius: 9px;
+        padding: 10px 12px;
+        color: #e8e8f0;
+        font-size: 15px;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .chat-input-row input:focus { outline: none; border-color: #6a5cff; }
+    .chat-input-row button {
+        background: #6a5cff;
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 0 18px;
+        font-size: 16px;
+        cursor: pointer;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .chat-ended-note {
+        padding: 14px 16px;
+        text-align: center;
+        color: #7a7a9a;
+        font-size: 15px;
+        border-top: 1px solid #25253a;
+        flex-shrink: 0;
+    }
+</style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="/" class="back">← Back</a>
+        <h1>🎁 Giveaways</h1>
+        <button class="add-btn" id="addBtn" title="New giveaway">+</button>
+    </div>
+
+    <div class="container">
+        <div id="activeWrap"></div>
+        <div id="pastWrap"></div>
+    </div>
+
+    <!-- Create modal -->
+    <div class="overlay" id="overlay">
+        <div class="modal">
+            <h2>New Giveaway</h2>
+            <label>Name</label>
+            <input id="f-name" maxlength="80" placeholder="e.g. 1000 Robux Giveaway">
+            <label>Prize</label>
+            <input id="f-prize" maxlength="120" placeholder="e.g. 1000 Robux">
+            <label>End time (hours from now)</label>
+            <input id="f-hours" type="number" min="0.1" step="0.5" placeholder="e.g. 24">
+            <label>Number of winners</label>
+            <input id="f-winners" type="number" min="1" max="50" value="1">
+            <label>Description</label>
+            <textarea id="f-desc" maxlength="1000" placeholder="How to enter, rules, etc."></textarea>
+            <div class="err" id="formErr"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelBtn">Cancel</button>
+                <button class="btn-create" id="createBtn">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat view -->
+    <div class="overlay" id="chatOverlay">
+        <div class="chat-modal">
+            <div class="chat-head" style="position:relative;">
+                <button class="ch-close" id="chatClose">×</button>
+                <div class="ch-title" id="chatTitle"></div>
+                <div class="ch-prize" id="chatPrize"></div>
+            </div>
+            <div class="chat-winner" id="chatWinner" style="display:none;"></div>
+            <div class="chat-msgs" id="chatMsgs"></div>
+            <div class="chat-input-row" id="chatInputRow">
+                <input id="chatInput" maxlength="500" placeholder="Type a message... (e.g. your username)">
+                <button id="chatSend">Send</button>
+            </div>
+            <div class="chat-ended-note" id="chatEndedNote" style="display:none;">
+                This giveaway has ended. 🏆
+            </div>
+        </div>
+    </div>
+
+<script>
+const token = localStorage.getItem('vandal_token');
+let myUsername = null;
+let giveaways = [];
+let openGiveawayId = null;
+let chatPoll = null;
+
+async function loadMe() {
+    try {
+        const res = await fetch('/api/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            myUsername = data.username;
+        }
+    } catch (e) {}
+}
+
+function fmtCountdown(ms) {
+    if (ms <= 0) return 'Ended';
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    if (h > 0) return h + 'h ' + m + 'm left';
+    if (m > 0) return m + 'm ' + s + 's left';
+    return s + 's left';
+}
+
+function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+async function loadGiveaways() {
+    try {
+        const res = await fetch('/api/giveaways');
+        giveaways = await res.json();
+    } catch (e) {
+        giveaways = [];
+    }
+    render();
+}
+
+function render() {
+    const now = Date.now();
+    const active = giveaways.filter(g => g.endsAt > now).sort((a, b) => a.endsAt - b.endsAt);
+    const past = giveaways.filter(g => g.endsAt <= now).sort((a, b) => b.endsAt - a.endsAt);
+
+    const activeWrap = document.getElementById('activeWrap');
+    const pastWrap = document.getElementById('pastWrap');
+
+    let html = '<div class="section-label">Active</div>';
+    if (active.length === 0) {
+        html += '<div class="empty">No active giveaways yet. Be the first! 🎉</div>';
+    } else {
+        html += active.map(g => cardHtml(g, false)).join('');
+    }
+    activeWrap.innerHTML = html;
+
+    if (past.length > 0) {
+        pastWrap.innerHTML = '<div class="section-label">Past</div>' +
+            past.map(g => cardHtml(g, true)).join('');
+    } else {
+        pastWrap.innerHTML = '';
+    }
+}
+
+function cardHtml(g, isPast) {
+    const now = Date.now();
+    const remaining = g.endsAt - now;
+    const winnersTxt = (g.winnersCount && g.winnersCount > 1) ? (g.winnersCount + ' winners') : '1 winner';
+    const cd = isPast
+        ? '<span class="countdown ended">Ended</span>'
+        : '<span class="countdown" data-ends="' + g.endsAt + '">' + fmtCountdown(remaining) + '</span>';
+    const removeBtn = (myUsername === 'lockiney')
+        ? '<button class="remove-btn" data-id="' + g.id + '">Remove</button>'
+        : '';
+    const desc = g.description
+        ? '<div class="card-desc">' + escapeHtml(g.description) + '</div>'
+        : '';
+    let winnerBanner = '';
+    if (isPast && g.winners && g.winners.length) {
+        winnerBanner = '<div class="winner-banner">🏆 Winner' + (g.winners.length > 1 ? 's' : '') +
+            ': ' + g.winners.map(escapeHtml).join(', ') + '</div>';
+    } else if (isPast) {
+        winnerBanner = '<div class="winner-banner">No participants — no winner drawn.</div>';
+    }
+    return '<div class="card' + (isPast ? ' past' : '') + '" data-open="' + g.id + '">' +
+        removeBtn +
+        '<div class="card-name">' + escapeHtml(g.name) + '</div>' +
+        '<div class="card-prize">🏆 ' + escapeHtml(g.prize) + '</div>' +
+        desc +
+        '<div class="card-meta">' +
+            '<span>by ' + escapeHtml(g.creator) + '</span>' +
+            '<span>' + winnersTxt + '</span>' +
+            cd +
+        '</div>' +
+        winnerBanner +
+        '<div class="hint">Tap to open chat 💬</div>' +
+    '</div>';
+}
+
+// Live countdown tick
+setInterval(() => {
+    const now = Date.now();
+    let needsReload = false;
+    document.querySelectorAll('.countdown[data-ends]').forEach(el => {
+        const ends = parseInt(el.dataset.ends);
+        const rem = ends - now;
+        if (rem <= 0) {
+            needsReload = true;
+        } else {
+            el.textContent = fmtCountdown(rem);
+        }
+    });
+    if (needsReload) loadGiveaways();
+}, 1000);
+
+// Card click: open chat, unless clicking remove
+document.addEventListener('click', async e => {
+    if (e.target.classList.contains('remove-btn')) {
+        e.stopPropagation();
+        const id = e.target.dataset.id;
+        if (!confirm('Remove this giveaway?')) return;
+        try {
+            const res = await fetch('/api/giveaways/' + id, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+                loadGiveaways();
+            } else {
+                const d = await res.json();
+                alert(d.error || 'Failed to remove');
+            }
+        } catch (err) {
+            alert('Network error');
+        }
+        return;
+    }
+    const card = e.target.closest('.card[data-open]');
+    if (card) {
+        openChat(card.dataset.open);
+    }
+});
+
+// ---- Chat view ----
+const chatOverlay = document.getElementById('chatOverlay');
+
+async function openChat(id) {
+    openGiveawayId = id;
+    chatOverlay.classList.add('show');
+    await refreshChat();
+    if (chatPoll) clearInterval(chatPoll);
+    chatPoll = setInterval(refreshChat, 3000);
+}
+
+function closeChat() {
+    chatOverlay.classList.remove('show');
+    openGiveawayId = null;
+    if (chatPoll) { clearInterval(chatPoll); chatPoll = null; }
+    loadGiveaways();
+}
+
+document.getElementById('chatClose').addEventListener('click', closeChat);
+chatOverlay.addEventListener('click', e => {
+    if (e.target === chatOverlay) closeChat();
+});
+
+async function refreshChat() {
+    if (!openGiveawayId) return;
+    try {
+        const res = await fetch('/api/giveaways/' + openGiveawayId + '/messages');
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById('chatTitle').textContent = data.name;
+        document.getElementById('chatPrize').textContent = '🏆 ' + data.prize;
+
+        const winnerEl = document.getElementById('chatWinner');
+        const winnerSet = new Set(data.winners || []);
+        if (data.ended && data.drawn) {
+            if (data.winners && data.winners.length) {
+                winnerEl.style.display = 'block';
+                winnerEl.textContent = '🏆 Winner' + (data.winners.length > 1 ? 's' : '') +
+                    ': ' + data.winners.join(', ');
+            } else {
+                winnerEl.style.display = 'block';
+                winnerEl.textContent = 'No participants — no winner drawn.';
+            }
+        } else {
+            winnerEl.style.display = 'none';
+        }
+
+        // input vs ended note
+        document.getElementById('chatInputRow').style.display = data.ended ? 'none' : 'flex';
+        document.getElementById('chatEndedNote').style.display = data.ended ? 'block' : 'none';
+
+        const msgsEl = document.getElementById('chatMsgs');
+        const atBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 60;
+        msgsEl.innerHTML = (data.messages || []).map(m => {
+            const isWin = winnerSet.has(m.user);
+            return '<div class="msg">' +
+                '<div class="msg-user' + (isWin ? ' win' : '') + '">' +
+                    escapeHtml(m.user) + (isWin ? ' 🏆' : '') + '</div>' +
+                '<div class="msg-text">' + escapeHtml(m.text) + '</div>' +
+            '</div>';
+        }).join('');
+        if (atBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
+    } catch (e) {}
+}
+
+async function sendChatMsg() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text || !openGiveawayId) return;
+    input.value = '';
+    try {
+        const res = await fetch('/api/giveaways/' + openGiveawayId + '/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ text })
+        });
+        if (!res.ok) {
+            const d = await res.json();
+            if (d.error) alert(d.error);
+        }
+        refreshChat();
+    } catch (e) {}
+}
+
+document.getElementById('chatSend').addEventListener('click', sendChatMsg);
+document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); sendChatMsg(); }
+});
+
+// ---- Create modal ----
+const overlay = document.getElementById('overlay');
+document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('formErr').textContent = '';
+    overlay.classList.add('show');
+});
+document.getElementById('cancelBtn').addEventListener('click', () => {
+    overlay.classList.remove('show');
+});
+overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('show');
+});
+
+document.getElementById('createBtn').addEventListener('click', async () => {
+    const name = document.getElementById('f-name').value.trim();
+    const prize = document.getElementById('f-prize').value.trim();
+    const hours = document.getElementById('f-hours').value;
+    const winnersCount = document.getElementById('f-winners').value;
+    const description = document.getElementById('f-desc').value.trim();
+    const errEl = document.getElementById('formErr');
+    const btn = document.getElementById('createBtn');
+
+    if (!name || !prize || !hours) {
+        errEl.textContent = 'Name, prize, and end time are required.';
+        return;
+    }
+    btn.disabled = true;
+    try {
+        const res = await fetch('/api/giveaways', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ name, prize, hours, winnersCount, description })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            overlay.classList.remove('show');
+            document.getElementById('f-name').value = '';
+            document.getElementById('f-prize').value = '';
+            document.getElementById('f-hours').value = '';
+            document.getElementById('f-winners').value = '1';
+            document.getElementById('f-desc').value = '';
+            loadGiveaways();
+        } else {
+            errEl.textContent = data.error || 'Failed to create.';
+        }
+    } catch (err) {
+        errEl.textContent = 'Network error.';
+    }
+    btn.disabled = false;
+});
+
+// Init
+(async () => {
+    await loadMe();
+    await loadGiveaways();
+})();
+</script>
+</body>
+</html>
