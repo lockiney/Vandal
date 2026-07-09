@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Void Fight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+    body { margin:0; background:#111; }
+    /* ===== almost-invisible trigger button ===== */
+    #voidTrigger {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(150,80,255,0.25), rgba(80,40,140,0.08));
+        border: 1px solid rgba(160,110,255,0.15);
+        cursor: pointer;
+        z-index: 9998;
+        opacity: 0.12;
+        transition: opacity .3s, box-shadow .3s, transform .2s;
+    }
+    #voidTrigger:hover {
+        opacity: 0.85;
+        box-shadow: 0 0 14px rgba(150,80,255,0.8);
+        transform: scale(1.15);
+    }
+
+    /* ===== game overlay ===== */
+    #voidOverlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 30%, #1a0f2e 0%, #0a0612 70%, #050308 100%);
+        display: none;
+        z-index: 9999;
+        overflow: hidden;
+        font-family: 'Press Start 2P', 'Courier New', monospace;
+    }
+    #voidOverlay.show { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+    #voidClose {
+        position: absolute;
+        top: 14px; right: 18px;
+        background: none; border: none;
+        color: #b89aff; font-size: 22px;
+        cursor: pointer; z-index: 10001;
+        text-shadow: 0 0 8px #7a4fff;
+        font-family: 'Press Start 2P', monospace;
+    }
+
+    #gameCanvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        max-width: 96vw;
+        max-height: 82vh;
+        touch-action: none;
+        border: 2px solid rgba(140,90,255,0.25);
+        box-shadow: 0 0 40px rgba(120,60,220,0.35);
+        background: #0a0612;
+    }
+
+    #gameHud {
+        color: #d8c8ff;
+        letter-spacing: 1px;
+        text-shadow: 0 0 6px #6a3fd0;
+        margin-bottom: 12px;
+        font-size: 9px;
+        text-transform: uppercase;
+        display: flex;
+        gap: 18px;
+        align-items: center;
+    }
+    #hearts { color: #ff5a8a; text-shadow: 0 0 8px #ff3a6a; font-size: 12px; letter-spacing: 2px; }
+
+    #voidMsg {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%,-50%);
+        color: #e8d8ff;
+        font-size: 20px;
+        text-align: center;
+        line-height: 1.5;
+        text-shadow: 0 0 20px #9a5fff;
+        pointer-events: none;
+        z-index: 10000;
+        letter-spacing: 1px;
+        transition: opacity .4s;
+    }
+    #voidHint {
+        color: #7a6a9a;
+        font-size: 7px;
+        line-height: 1.6;
+        margin-top: 14px;
+        letter-spacing: 0px;
+        text-align: center;
+        padding: 0 10px;
+    }
+    .startBtn {
+        margin-top: 18px;
+        pointer-events: auto;
+        background: linear-gradient(135deg, #6a3fd0, #9a5fff);
+        color: #fff; border: none;
+        padding: 12px 20px;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 10px; letter-spacing: 1px;
+        border-radius: 8px; cursor: pointer;
+        text-transform: uppercase;
+        box-shadow: 0 0 20px rgba(150,80,255,0.5);
+    }
+    .startBtn:hover { transform: scale(1.05); }
+</style>
+</head>
+<body>
+
+<!-- Demo page background just so the button has something to sit on while testing -->
+<div style="color:#333;padding:40px;font-family:sans-serif;">Pretend this is the Vandal home page. Look bottom-right for the faint purple dot.</div>
+
+<!-- ===== The hidden trigger ===== -->
+<div id="voidTrigger" title=""></div>
+
+<!-- ===== The game overlay ===== -->
+<div id="voidOverlay">
+    <button id="voidClose">&times;</button>
+    <div id="gameHud">
+        <span id="phaseLabel">VOID</span>
+        <span id="hearts">&#10084;&#10084;&#10084;</span>
+        <span id="bossHpLabel">HP 100%</span>
+    </div>
+    <canvas id="gameCanvas" width="560" height="560"></canvas>
+    <div id="voidHint">WASD / ARROWS / SWIPE &middot; ONE TAP = ONE STEP</div>
+    <div id="voidMsg"></div>
+</div>
+
+<script>
+(function(){
+    const GRID = 7;
+    const CELL = 80;               // logical px per cell
+    const CANVAS = GRID * CELL;    // 560
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('voidOverlay');
+    const trigger = document.getElementById('voidTrigger');
+    const closeBtn = document.getElementById('voidClose');
+    const heartsEl = document.getElementById('hearts');
+    const phaseLabel = document.getElementById('phaseLabel');
+    const bossHpLabel = document.getElementById('bossHpLabel');
+    const msgEl = document.getElementById('voidMsg');
+
+    let state = null;
+    let rafId = null;
+    let lastTime = 0;
+
+    // preload boss art (300x500 transparent png served from /public)
+    const bossImg = new Image();
+    let bossImgReady = false;
+    bossImg.onload = () => { bossImgReady = true; };
+    bossImg.src = '/boss.png';
+
+    // ---------- game state ----------
+    function newGame() {
+        state = {
+            running: true,
+            phase: 0,          // 0=intro handled separately; 1..4 = attack phases
+            bossHp: 100,
+            hearts: 3,
+            px: 3, py: 3,      // player grid pos
+            danger: [],        // array of {x,y} currently lethal cells (fired)
+            warn: [],          // array of {x,y} telegraphed (about to fire)
+            orb: null,         // {x,y} collectible
+            invuln: 0,         // ms of i-frames after a hit
+            stars: makeStars(60),
+            bossX: 3.5, bossY: -1.4,  // boss position (in grid coords, can be outside)
+            bossAppear: 0,     // animation phase for boss
+            message: '',
+            msgTimer: 0,
+            phaseController: null,
+            time: 0,
+            shake: 0,
+            // final phase specifics
+            bossGridX: 3, bossGridY: 0,
+            bossCooldown: 0,
+            bossTelegraph: null
+        };
+        updateHud();
+    }
+
+    function makeStars(n){
+        const s=[];
+        for(let i=0;i<n;i++) s.push({
+            x: Math.random()*CANVAS, y: Math.random()*CANVAS,
+            r: Math.random()*1.6+0.4, tw: Math.random()*Math.PI*2, sp: Math.random()*2+0.5
+        });
+        return s;
+    }
+
+    function updateHud(){
+        heartsEl.textContent = '\u2764'.repeat(Math.max(0,state.hearts)) + '\u2661'.repeat(Math.max(0,3-state.hearts));
+        bossHpLabel.textContent = 'HP ' + Math.max(0,Math.round(state.bossHp)) + '%';
+        const names = ['','VOID ROCKS','VOID BEAMS','VOID FIELDS','THE VOID'];
+        phaseLabel.textContent = names[state.phase] || 'VOID';
+    }
+
+    function showMessage(txt, dur){
+        state.message = txt;
+        state.msgTimer = dur || 1600;
+        msgEl.textContent = txt;
+        msgEl.style.opacity = '1';
+    }
+
+    // ---------- helpers ----------
+    function cellsEqual(a,b){ return a.x===b.x && a.y===b.y; }
+    function inWarn(x,y){ return state.warn.some(c=>c.x===x&&c.y===y); }
+    function inDanger(x,y){ return state.danger.some(c=>c.x===x&&c.y===y); }
+    function randCell(){ return {x: Math.floor(Math.random()*GRID), y: Math.floor(Math.random()*GRID)}; }
+    function randSafeCell(){
+        let c, tries=0;
+        do { c=randCell(); tries++; }
+        while((inDanger(c.x,c.y)||inWarn(c.x,c.y)||(c.x===state.px&&c.y===state.py)) && tries<50);
+        return c;
+    }
+
+    function hitPlayer(){
+        if(state.invuln>0) return;
+        state.hearts--;
+        state.invuln = 1200;
+        state.shake = 18;
+        updateHud();
+        if(state.hearts<=0){ gameOver(); }
+    }
+
+    function damageBoss(pct){
+        state.bossHp -= pct;
+        state.shake = 12;
+        updateHud();
+    }
+
+    // ---------- movement ----------
+    function tryMove(dx,dy){
+        if(!state.running) return;
+        const nx = state.px+dx, ny = state.py+dy;
+        if(nx<0||nx>=GRID||ny<0||ny>=GRID) return;
+        state.px=nx; state.py=ny;
+        // collect orb
+        if(state.orb && state.px===state.orb.x && state.py===state.orb.y){
+            collectOrb();
+        }
+        // final-phase boss interaction on the cell we just stepped onto
+        if(state.phase===4 && state.px===state.bossGridX && state.py===state.bossGridY){
+            resolveBossContact();
+        }
+        // stepping into fired danger
+        if(inDanger(state.px,state.py)) hitPlayer();
+    }
+
+    function collectOrb(){
+        if(!state.orb) return;
+        state.orb=null;
+        damageBoss(25);
+        showMessage('-25%', 900);
+    }
+
+    // ================= PHASE CONTROLLERS =================
+    // Each phase is a small async-ish sequence driven by timers.
+    // We use a simple step scheduler.
+
+    function startPhase(n){
+        state.phase = n;
+        state.warn=[]; state.danger=[]; state.orb=null;
+        updateHud();
+        if(n===1) phaseRocks();
+        else if(n===2) phaseBeams();
+        else if(n===3) phaseFields();
+        else if(n===4) phaseFinal();
+    }
+
+    // schedule helper: run fn after ms (respecting pause/gameover)
+    function later(ms, fn){
+        const id = setTimeout(()=>{ if(state&&state.running) fn(); }, ms);
+        return id;
+    }
+
+    // ----- PHASE 1: VOID ROCKS (single random cells) -----
+    function phaseRocks(){
+        showMessage('VOID ROCKS', 1400);
+        let round=0;
+        function doRound(){
+            if(round>=4){ spawnOrbThen(()=>{}); return; }
+            round++;
+            // escalate: round 1=2 rocks, 2=3, 3=4, 4=5
+            const targets=[];
+            const count = round + 1;
+            for(let i=0;i<count;i++){ targets.push(randCell()); }
+            state.warn = targets.slice();
+            later(1000, ()=>{
+                state.danger = targets.slice();
+                state.warn=[];
+                // check hit
+                if(inDanger(state.px,state.py)) hitPlayer();
+                later(600, ()=>{
+                    state.danger=[];
+                    later(700, doRound);
+                });
+            });
+        }
+        later(1400, doRound);
+    }
+
+    // ----- PHASE 2: VOID BEAMS (full rows) -----
+    function phaseBeams(){
+        showMessage('VOID BEAMS', 1400);
+        let round=0;
+        function doRound(){
+            if(round>=4){ spawnOrbThen(()=>{}); return; }
+            round++;
+            const beams = round + 1;   // 2,3,4,5 rows
+            const rows=[];
+            while(rows.length<beams && rows.length<GRID-1){
+                const r=Math.floor(Math.random()*GRID);
+                if(!rows.includes(r)) rows.push(r);
+            }
+            const targets=[];
+            rows.forEach(r=>{ for(let x=0;x<GRID;x++) targets.push({x, y:r}); });
+            state.warn = targets.slice();
+            later(1100, ()=>{
+                state.danger = targets.slice();
+                state.warn=[];
+                if(inDanger(state.px,state.py)) hitPlayer();
+                later(650, ()=>{
+                    state.danger=[];
+                    later(750, doRound);
+                });
+            });
+        }
+        later(1400, doRound);
+    }
+
+    // ----- PHASE 3: VOID FIELDS (blocks of cells) -----
+    function phaseFields(){
+        showMessage('VOID FIELDS', 1400);
+        let round=0;
+        function doRound(){
+            if(round>=4){ spawnOrbThen(()=>{}); return; }
+            round++;
+            const groups = round + 1;   // 2,3,4,5 groups
+            const targets=[];
+            for(let g=0; g<groups; g++){
+                const size = 2; // 2x2 (smaller so more groups stay survivable)
+                const ox = Math.floor(Math.random()*(GRID-size+1));
+                const oy = Math.floor(Math.random()*(GRID-size+1));
+                for(let x=ox;x<ox+size;x++) for(let y=oy;y<oy+size;y++){
+                    if(!targets.some(c=>c.x===x&&c.y===y)) targets.push({x,y});
+                }
+            }
+            state.warn = targets.slice();
+            later(1200, ()=>{
+                state.danger = targets.slice();
+                state.warn=[];
+                if(inDanger(state.px,state.py)) hitPlayer();
+                later(700, ()=>{
+                    state.danger=[];
+                    later(750, doRound);
+                });
+            });
+        }
+        later(1400, doRound);
+    }
+
+    // spawn orb, wait for collect or timeout, then advance
+    function spawnOrbThen(cb){
+        const c = randSafeCell();
+        state.orb = {x:c.x, y:c.y};
+        showMessage('COLLECT THE ORB', 1200);
+        // if player already standing there
+        if(state.px===c.x && state.py===c.y) collectOrb();
+        // wait up to 5s for collection, then move on regardless
+        let waited=0;
+        const check = setInterval(()=>{
+            if(!state||!state.running){ clearInterval(check); return; }
+            waited+=200;
+            if(!state.orb){ // collected
+                clearInterval(check);
+                advancePhase();
+            } else if(waited>=5000){
+                clearInterval(check);
+                state.orb=null;
+                showMessage('MISSED...', 900);
+                // still advance so player isn't stuck; boss keeps her hp for that quarter? 
+                // Design choice: orb missed means no damage, replay same phase.
+                later(900, ()=> startPhase(state.phase));
+            }
+        }, 200);
+    }
+
+    function advancePhase(){
+        // decide next phase by boss hp
+        const hp = state.bossHp;
+        if(hp<=0){ victory(); return; }
+        if(hp<=25) later(700, ()=> startPhase(4));
+        else if(hp<=50) later(700, ()=> startPhase(3));
+        else if(hp<=75) later(700, ()=> startPhase(2));
+        else later(700, ()=> startPhase(1));
+    }
+
+    // ----- PHASE 4: THE VOID (boss enters grid) -----
+    function phaseFinal(){
+        showMessage('SHE APPROACHES', 1600);
+        state.bossHp = 25;               // ensure exactly 25% entering the duel
+        updateHud();
+        state.bossGridX = 3; state.bossGridY = 0;
+        state.bossCooldown = 2400;
+        state.bossTelegraph = null;
+        state.bossStun = 0;              // ms of vulnerable window remaining
+        state.attackCount = 0;           // vulnerable every 3rd attack
+        state.slamWave = null;           // active spreading-slam sequence
+    }
+
+    // handle player overlapping the boss's cell in final phase
+    function resolveBossContact(){
+        const knockOff = ()=>{
+            // push player one cell off the boss (toward grid interior)
+            const dir = state.bossGridX>=GRID-1 ? -1 : 1;
+            state.px = Math.max(0, Math.min(GRID-1, state.bossGridX + dir));
+        };
+        if(state.bossStun>0){
+            damageBoss(5);
+            showMessage('HIT! -5%', 600);
+            state.bossStun = 0;
+            state.invuln = Math.max(state.invuln, 1000); // i-frames so her counter doesn't feel cheap
+            knockOff();
+            if(state.bossHp<=0){ victory(); return; }
+            later(300, ()=> moveBoss());
+        } else {
+            hitPlayer();
+            knockOff();
+        }
+    }
+
+    function updateFinal(dt){
+        // stun window ticking down
+        if(state.bossStun>0){
+            state.bossStun -= dt;
+            if(state.px===state.bossGridX && state.py===state.bossGridY){
+                resolveBossContact();
+            }
+            return; // while stunned she doesn't attack
+        }
+
+        // not stunned: overlapping boss hurts player
+        if(state.px===state.bossGridX && state.py===state.bossGridY){
+            resolveBossContact();
+        }
+
+        // ----- spreading slam waves in progress -----
+        if(state.slamWave){
+            state.slamWave.t -= dt;
+            if(state.slamWave.t<=0){
+                // fire current ring
+                state.danger = state.slamWave.rings[state.slamWave.i].slice();
+                state.warn = [];
+                if(inDanger(state.px,state.py)) hitPlayer();
+                state.slamWave.i++;
+                if(state.slamWave.i >= state.slamWave.rings.length){
+                    // done: clear after a beat, then maybe go vulnerable
+                    const done = ()=>{ if(state) state.danger=[]; };
+                    later(450, done);
+                    finishAttack();
+                    state.slamWave = null;
+                } else {
+                    // telegraph next ring
+                    state.warn = state.slamWave.rings[state.slamWave.i].slice();
+                    state.slamWave.t = 650;
+                    later(400, ()=>{ if(state && state.slamWave) state.danger=[]; });
+                }
+            }
+            return;
+        }
+
+        state.bossCooldown -= dt;
+
+        // resolve a pending single-shot telegraph (void throw)
+        if(state.bossTelegraph){
+            state.bossTelegraph.t -= dt;
+            if(state.bossTelegraph.t<=0){
+                state.danger = state.bossTelegraph.cells.slice();
+                state.warn = [];
+                if(inDanger(state.px,state.py)) hitPlayer();
+                state.bossTelegraph=null;
+                later(500, ()=>{ if(state) state.danger=[]; });
+                finishAttack();
+            }
+        }
+
+        if(state.bossCooldown<=0 && !state.bossTelegraph && !state.slamWave && state.bossStun<=0){
+            chooseBossAttack();
+            state.bossCooldown = 3000; // 3s cooldown
+        }
+    }
+
+    // called after any attack fully resolves: count it, go vulnerable every 3rd
+    function finishAttack(){
+        state.attackCount = (state.attackCount||0) + 1;
+        if(state.attackCount % 3 === 0){
+            state.bossStun = 1600;
+            showMessage('VULNERABLE!', 900);
+        }
+    }
+
+    function moveBoss(){
+        if(!state||state.phase!==4) return;
+        const dx = Math.sign(state.px - state.bossGridX);
+        const dy = Math.sign(state.py - state.bossGridY);
+        if(Math.random()<0.6){
+            if(Math.abs(state.px-state.bossGridX) > Math.abs(state.py-state.bossGridY)){
+                state.bossGridX = Math.max(0,Math.min(GRID-1,state.bossGridX+dx));
+            } else {
+                state.bossGridY = Math.max(0,Math.min(GRID-1,state.bossGridY+dy));
+            }
+        }
+    }
+
+    function chooseBossAttack(){
+        const dist = Math.abs(state.px-state.bossGridX) + Math.abs(state.py-state.bossGridY);
+        if(dist<=2){
+            // GROUND SLAM: spreads outward in expanding rings (center + 3 more).
+            // Each ring leaves a "safe gap" so the player always has an escape,
+            // even when she's centered. The gap is in a consistent direction per slam.
+            const bx=state.bossGridX, by=state.bossGridY;
+            // pick a gap direction (angle) for this slam — cells near this angle stay safe
+            const gapAng = Math.random()*Math.PI*2;
+            const gx=Math.cos(gapAng), gy=Math.sin(gapAng);
+            const rings=[];
+            for(let r=1; r<=4; r++){
+                const ring=[];
+                for(let x=bx-r;x<=bx+r;x++) for(let y=by-r;y<=by+r;y++){
+                    const cheb=Math.max(Math.abs(x-bx),Math.abs(y-by));
+                    if(cheb!==r || x<0||x>=GRID||y<0||y>=GRID) continue;
+                    // is this cell in the safe gap? (roughly aligned with gap direction)
+                    const vx=x-bx, vy=y-by;
+                    const len=Math.hypot(vx,vy)||1;
+                    const dot=(vx/len)*gx + (vy/len)*gy;
+                    if(dot > 0.65) continue; // leave a wedge open as the escape
+                    ring.push({x,y});
+                }
+                if(ring.length) rings.push(ring);
+            }
+            state.slamWave = { rings, i:0, t:750 };
+            state.warn = rings.length?rings[0].slice():[];
+            showMessage('SLAM', 700);
+        } else {
+            // VOID THROW: your cell + 30 other random cells (always leave escapes)
+            const cells=[{x:state.px, y:state.py}];
+            const all=[];
+            for(let x=0;x<GRID;x++) for(let y=0;y<GRID;y++){
+                if(!(x===state.px&&y===state.py)) all.push({x,y});
+            }
+            // shuffle
+            for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+            // take up to 30, but always leave at least 4 safe cells on the board
+            const maxExtra = Math.min(30, GRID*GRID - 1 - 4);
+            for(let i=0;i<maxExtra;i++) cells.push(all[i]);
+            state.bossTelegraph = { cells, t: 950 };
+            state.warn = cells.slice();
+            showMessage('VOID STORM', 700);
+        }
+    }
+
+    // ---------- win / lose ----------
+    function gameOver(){
+        state.running=false;
+        msgEl.style.opacity='1';
+        msgEl.textContent='CONSUMED';
+        setTimeout(()=>{
+            if(!overlay.classList.contains('show')) return;
+            msgEl.style.opacity='1';
+            msgEl.innerHTML = 'CONSUMED<br><button class="startBtn" id="retryBtn">TRY AGAIN</button>';
+            document.getElementById('retryBtn').onclick = ()=>{ newGame(); introSequence(); };
+        }, 1800);
+    }
+
+    function victory(){
+        state.running=false;
+        state.bossHp=0; updateHud();
+        state.warn=[]; state.danger=[];
+        state.victoryAnim = 0; // triggers fade in draw
+        msgEl.style.opacity='1';
+        // Stage 1: her dialogue
+        msgEl.innerHTML = '<span style="font-size:13px;color:#d8c8ff;line-height:1.8;">"Y-y-you beat me?<br>I guess you are stronger<br>than the void..."</span>';
+        setTimeout(()=>{
+            if(!overlay.classList.contains('show')) return;
+            // Stage 2: reward reveal
+            msgEl.innerHTML =
+                '<div style="font-size:16px;color:#e8d8ff;text-shadow:0 0 20px #9a5fff;">VICTORY</div>' +
+                '<div style="margin:14px auto 4px;width:54px;height:54px;border-radius:50%;' +
+                    'background:radial-gradient(circle at 35% 35%, #2a1a4a, #0a0612);' +
+                    'box-shadow:0 0 24px #7a4fff, inset 0 0 12px #b89aff;' +
+                    'border:2px solid #9a5fff;position:relative;">' +
+                    '<span style="position:absolute;top:10px;left:14px;color:#fff;font-size:8px;">&#10022;</span>' +
+                    '<span style="position:absolute;top:26px;left:30px;color:#e8d8ff;font-size:6px;">&#10022;</span>' +
+                    '<span style="position:absolute;top:34px;left:12px;color:#c8b8ff;font-size:7px;">&#10022;</span>' +
+                '</div>' +
+                '<div style="font-size:9px;color:#b89aff;letter-spacing:1px;margin-top:10px;line-height:1.6;">VOID color earned</div>' +
+                '<button class="startBtn" id="againBtn">AGAIN</button>';
+            document.getElementById('againBtn').onclick = ()=>{ newGame(); introSequence(); };
+        }, 3400);
+    }
+
+    // ---------- intro ----------
+    function introSequence(){
+        msgEl.style.opacity='1';
+        msgEl.innerHTML = 'VOID FIGHT<br><span style="font-size:9px;color:#9a8aba;line-height:1.8;">reach her. survive.</span><br><button class="startBtn" id="beginBtn">BEGIN</button>';
+        document.getElementById('beginBtn').onclick = ()=>{
+            msgEl.style.opacity='0';
+            msgEl.innerHTML='';
+            startPhase(1);
+        };
+    }
+
+    // ================= RENDER =================
+    function draw(){
+        const s = state;
+        ctx.save();
+        // screen shake
+        let sx=0, sy=0;
+        if(s.shake>0){ sx=(Math.random()-0.5)*s.shake; sy=(Math.random()-0.5)*s.shake; s.shake*=0.85; if(s.shake<0.5)s.shake=0; }
+        ctx.clearRect(0,0,CANVAS,CANVAS);
+        ctx.translate(sx,sy);
+
+        // starfield background
+        s.stars.forEach(st=>{
+            const a = 0.4 + 0.6*Math.abs(Math.sin(s.time*0.002*st.sp + st.tw));
+            ctx.fillStyle = 'rgba(200,180,255,'+a*0.5+')';
+            ctx.fillRect(st.x, st.y, st.r, st.r);
+        });
+
+        // grid cells
+        for(let x=0;x<GRID;x++) for(let y=0;y<GRID;y++){
+            const px=x*CELL, py=y*CELL;
+            // base tile
+            ctx.fillStyle = ((x+y)%2===0)? '#171026' : '#120c1e';
+            ctx.fillRect(px,py,CELL,CELL);
+            // grid line
+            ctx.strokeStyle='rgba(120,90,200,0.12)';
+            ctx.strokeRect(px+0.5,py+0.5,CELL-1,CELL-1);
+        }
+
+        // warn (telegraph) cells — pulsing red outline/fill
+        const pulse = 0.35 + 0.35*Math.abs(Math.sin(s.time*0.008));
+        s.warn.forEach(c=>{
+            ctx.fillStyle='rgba(255,40,60,'+pulse*0.55+')';
+            ctx.fillRect(c.x*CELL, c.y*CELL, CELL, CELL);
+            ctx.strokeStyle='rgba(255,80,100,0.9)';
+            ctx.lineWidth=2;
+            ctx.strokeRect(c.x*CELL+2, c.y*CELL+2, CELL-4, CELL-4);
+        });
+        // danger (fired) cells — solid bright red
+        s.danger.forEach(c=>{
+            ctx.fillStyle='rgba(255,30,50,0.85)';
+            ctx.fillRect(c.x*CELL, c.y*CELL, CELL, CELL);
+            // crackle
+            ctx.fillStyle='rgba(255,180,200,0.6)';
+            ctx.fillRect(c.x*CELL+CELL*0.4, c.y*CELL+6, 4, CELL-12);
+        });
+
+        // orb
+        if(s.orb){
+            const ox=s.orb.x*CELL+CELL/2, oy=s.orb.y*CELL+CELL/2;
+            const g=0.6+0.4*Math.abs(Math.sin(s.time*0.006));
+            ctx.fillStyle='rgba(60,255,140,'+g+')';
+            ctx.beginPath(); ctx.arc(ox,oy,CELL*0.22,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle='rgba(200,255,220,0.9)';
+            ctx.beginPath(); ctx.arc(ox-4,oy-4,CELL*0.07,0,Math.PI*2); ctx.fill();
+            // glow ring
+            ctx.strokeStyle='rgba(60,255,140,'+g*0.5+')';
+            ctx.lineWidth=3;
+            ctx.beginPath(); ctx.arc(ox,oy,CELL*0.3,0,Math.PI*2); ctx.stroke();
+        }
+
+        // boss (outside grid phases 1-3, inside phase 4)
+        drawBoss();
+
+        // player — purple dot
+        const plx=s.px*CELL+CELL/2, ply=s.py*CELL+CELL/2;
+        const flick = (s.invuln>0 && Math.floor(s.time*0.02)%2===0);
+        if(!flick){
+            // glow
+            const grad=ctx.createRadialGradient(plx,ply,2,plx,ply,CELL*0.4);
+            grad.addColorStop(0,'rgba(190,120,255,0.9)');
+            grad.addColorStop(1,'rgba(120,60,220,0)');
+            ctx.fillStyle=grad;
+            ctx.fillRect(plx-CELL*0.4,ply-CELL*0.4,CELL*0.8,CELL*0.8);
+            // core
+            ctx.fillStyle='#c77dff';
+            ctx.beginPath(); ctx.arc(plx,ply,CELL*0.2,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle='#f0d8ff';
+            ctx.beginPath(); ctx.arc(plx-3,ply-3,CELL*0.07,0,Math.PI*2); ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    function drawBoss(){
+        const s=state;
+        let cx, cy, scale;
+        if(s.phase===4){
+            cx = s.bossGridX*CELL+CELL/2;
+            cy = s.bossGridY*CELL+CELL/2 + 8;
+            scale = 0.62;
+        } else {
+            // hover at the top, drifting; full body reads above the play area
+            cx = CANVAS/2 + Math.sin(s.time*0.001)*36;
+            cy = 60 + Math.sin(s.time*0.0015)*6;
+            scale = 0.78;
+        }
+        const t=s.time;
+        const stunned = (s.phase===4 && s.bossStun>0);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(scale,scale);
+
+        // ---- ambient void glow behind her (soft, shape-agnostic) ----
+        const pulse = 0.85 + 0.15*Math.sin(t*0.004);
+        const halo = ctx.createRadialGradient(0,4,4,0,4,70);
+        if(stunned){
+            halo.addColorStop(0,'rgba(190,150,255,'+(0.5*pulse)+')');
+            halo.addColorStop(0.5,'rgba(150,100,255,'+(0.22*pulse)+')');
+            halo.addColorStop(1,'rgba(120,70,220,0)');
+        } else {
+            halo.addColorStop(0,'rgba(140,95,235,'+(0.4*pulse)+')');
+            halo.addColorStop(0.5,'rgba(110,65,210,'+(0.16*pulse)+')');
+            halo.addColorStop(1,'rgba(90,50,170,0)');
+        }
+        ctx.fillStyle=halo;
+        ctx.fillRect(-80,-70,160,170);
+        // gentle float bob
+        const bob = Math.sin(t*0.002)*2;
+        ctx.translate(0, bob);
+
+        // ---- draw boss image (300x500 transparent png) ----
+        const imgH = 124;
+        const imgW = imgH * (300/500);
+        const drawX = -imgW/2;
+        const drawY = -62;
+
+        if(bossImgReady){
+            // GLOWING BACKLIGHT that follows her silhouette (shadowBlur emits from the
+            // non-transparent pixels only, so no rectangular box)
+            ctx.save();
+            ctx.shadowColor = stunned ? '#d8b8ff' : '#9a5fff';
+            ctx.shadowBlur = stunned ? (34 + 10*Math.sin(t*0.02)) : (22 + 6*Math.sin(t*0.005));
+            // draw a couple of passes to intensify the halo around her shape
+            ctx.drawImage(bossImg, drawX, drawY, imgW, imgH);
+            ctx.drawImage(bossImg, drawX, drawY, imgW, imgH);
+            ctx.restore();
+
+            // the actual character on top (no shadow)
+            ctx.drawImage(bossImg, drawX, drawY, imgW, imgH);
+
+            // when vulnerable, brighten her body with a shape-hugging tint
+            if(stunned){
+                ctx.save();
+                ctx.globalCompositeOperation = 'source-atop';
+                ctx.globalAlpha = 0.4 + 0.25*Math.abs(Math.sin(t*0.02));
+                ctx.fillStyle = 'rgba(200,160,255,1)';
+                ctx.fillRect(drawX, drawY, imgW, imgH);
+                ctx.restore();
+            }
+        } else {
+            // fallback dot until the image loads
+            ctx.fillStyle = '#1a0f2e';
+            ctx.beginPath(); ctx.arc(0,0,20,0,Math.PI*2); ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    // ================= LOOP =================
+    function loop(ts){
+        if(!state){ return; }
+        const dt = Math.min(50, ts - lastTime);
+        lastTime = ts;
+        state.time = ts;
+
+        if(state.running){
+            if(state.invuln>0) state.invuln -= dt;
+            if(state.msgTimer>0){ state.msgTimer-=dt; if(state.msgTimer<=0){ msgEl.style.opacity='0'; } }
+            if(state.phase===4) updateFinal(dt);
+        }
+        draw();
+        rafId = requestAnimationFrame(loop);
+    }
+
+    // ================= INPUT =================
+    function keyHandler(e){
+        if(!overlay.classList.contains('show')) return;
+        const k=e.key.toLowerCase();
+        if(k==='w'||k==='arrowup'){ e.preventDefault(); tryMove(0,-1); }
+        else if(k==='s'||k==='arrowdown'){ e.preventDefault(); tryMove(0,1); }
+        else if(k==='a'||k==='arrowleft'){ e.preventDefault(); tryMove(-1,0); }
+        else if(k==='d'||k==='arrowright'){ e.preventDefault(); tryMove(1,0); }
+        else if(k==='escape'){ closeGame(); }
+    }
+    document.addEventListener('keydown', keyHandler);
+
+    // swipe (mobile)
+    let touchStart=null;
+    canvas.addEventListener('touchstart', e=>{
+        touchStart={x:e.touches[0].clientX, y:e.touches[0].clientY};
+    }, {passive:true});
+    canvas.addEventListener('touchend', e=>{
+        if(!touchStart) return;
+        const dx=e.changedTouches[0].clientX-touchStart.x;
+        const dy=e.changedTouches[0].clientY-touchStart.y;
+        const ax=Math.abs(dx), ay=Math.abs(dy);
+        if(Math.max(ax,ay)<20){ touchStart=null; return; } // tap, ignore
+        if(ax>ay) tryMove(dx>0?1:-1,0);
+        else tryMove(0,dy>0?1:-1);
+        touchStart=null;
+    }, {passive:true});
+
+    // ================= OPEN / CLOSE =================
+    function openGame(){
+        overlay.classList.add('show');
+        newGame();
+        lastTime = performance.now();
+        if(rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(loop);
+        introSequence();
+    }
+    function closeGame(){
+        overlay.classList.remove('show');
+        state = null;
+        if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+    }
+    trigger.addEventListener('click', openGame);
+    closeBtn.addEventListener('click', closeGame);
+
+})();
+</script>
+</body>
+</html>

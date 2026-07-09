@@ -40,27 +40,6 @@
     "drawn": true
   },
   {
-    "id": "mr08pl48948pm",
-    "name": "Test",
-    "prize": "1 robux",
-    "description": "ddddd",
-    "winnersCount": 1,
-    "creator": "lockiney",
-    "createdAt": 1782799363880,
-    "endsAt": 1782799723880,
-    "messages": [
-      {
-        "user": "lockiney",
-        "text": "Testing to see if auto-picker works",
-        "at": 1782799377642
-      }
-    ],
-    "winners": [
-      "lockiney"
-    ],
-    "drawn": true
-  },
-  {
     "id": "mr483q8i27tue",
     "name": "US vs Belgium World Cup Match",
     "prize": "design",
@@ -104,9 +83,36 @@
         "user": "lockiney",
         "text": "STOP SPAMMING THE WORD",
         "at": 1783308754735
+      },
+      {
+        "user": "diegoo🥹",
+        "text": "fr",
+        "at": 1783315605579
+      },
+      {
+        "user": "brian",
+        "text": "ygs belhium is winning rn",
+        "at": 1783386211481
+      },
+      {
+        "user": "brian",
+        "text": "The us is officially out of the world cup 😔",
+        "at": 1783390169667
+      },
+      {
+        "user": "brian",
+        "text": "we had a good run",
+        "at": 1783390175401
+      },
+      {
+        "user": "brian",
+        "text": "but i dont think giveaway depends on that anyway",
+        "at": 1783390185821
       }
     ],
-    "winners": [],
-    "drawn": false
+    "winners": [
+      "brian"
+    ],
+    "drawn": true
   }
 ]
