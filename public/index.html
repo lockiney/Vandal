@@ -682,10 +682,24 @@
         font-size: 9px;
         text-transform: uppercase;
         display: flex;
-        gap: 18px;
+        gap: 24px;
         align-items: center;
+        width: 100%;
+        max-width: 560px;
+        justify-content: space-between;
     }
-    #hearts { color: #ff5a8a; text-shadow: 0 0 8px #ff3a6a; font-size: 12px; letter-spacing: 2px; }
+    #boardWrap { position: relative; display: inline-block; }
+    #hearts {
+        position: absolute;
+        left: 8px;
+        bottom: 8px;
+        color: #ff5a8a;
+        text-shadow: 0 0 10px #ff3a6a, 0 0 4px #000;
+        font-size: 26px;
+        letter-spacing: 4px;
+        z-index: 3;
+        pointer-events: none;
+    }
 
     #voidMsg {
         position: absolute;
@@ -725,19 +739,21 @@
     .startBtn:hover { transform: scale(1.05); }
 
     /* Boss health bar */
-    .boss-hp-wrap { display: inline-flex; flex-direction: column; gap: 4px; align-items: flex-start; }
-    .boss-hp-label { font-size: 8px; color: #b89aff; letter-spacing: 1px; }
+    .boss-hp-wrap { display: inline-flex; flex-direction: column; gap: 5px; align-items: flex-start; flex: 1; }
+    .boss-hp-label { font-size: 10px; color: #c8a8ff; letter-spacing: 2px; text-shadow: 0 0 6px #7a4fff; }
     .boss-hp-track {
-        width: 150px; height: 12px;
+        width: 100%; height: 20px;
         background: #1a1030;
-        border: 2px solid #4a3070;
-        border-radius: 3px;
+        border: 2px solid #5a3a90;
+        border-radius: 5px;
         overflow: hidden;
         display: inline-block;
+        box-shadow: 0 0 12px rgba(120,70,220,0.4), inset 0 0 8px rgba(0,0,0,0.5);
     }
     .boss-hp-fill {
         display: block; height: 100%; width: 100%;
-        background: linear-gradient(90deg, #9a5fff, #ff5a8a);
+        background: linear-gradient(90deg, #9a5fff, #d84fff, #ff5a8a);
+        box-shadow: 0 0 12px rgba(200,90,255,0.6);
         transition: width .3s ease;
     }
 
@@ -1509,13 +1525,15 @@ try {
     <button id="voidClose">&times;</button>
     <div id="gameHud">
         <span id="phaseLabel">VOID</span>
-        <span id="hearts">&#10084;&#10084;&#10084;</span>
         <span class="boss-hp-wrap">
-            <span class="boss-hp-label">BOSS HEALTH</span>
+            <span class="boss-hp-label">VOIDESS HEALTH</span>
             <span class="boss-hp-track"><span class="boss-hp-fill" id="bossHpFill"></span></span>
         </span>
     </div>
-    <canvas id="gameCanvas" width="560" height="560"></canvas>
+    <div id="boardWrap">
+        <canvas id="gameCanvas" width="560" height="560"></canvas>
+        <div id="hearts">&#10084;&#10084;&#10084;</div>
+    </div>
     <div id="voidHint">WASD / ARROWS / SWIPE &middot; ONE TAP = ONE STEP</div>
     <div id="voidMsg"></div>
 
@@ -1687,9 +1705,9 @@ try {
         function doRound(){
             if(round>=4){ spawnOrbThen(()=>{}); return; }
             round++;
-            // escalate: round 1=2 rocks, 2=3, 3=4, 4=5
+            // escalate: round 1=10 rocks, 2=12, 3=14, 4=16
             const targets=[];
-            const count = round + 1;
+            const count = 8 + round*2;
             for(let i=0;i<count;i++){ targets.push(randCell()); }
             state.warn = targets.slice();
             later(1000, ()=>{
@@ -1713,7 +1731,7 @@ try {
         function doRound(){
             if(round>=4){ spawnOrbThen(()=>{}); return; }
             round++;
-            const beams = round + 1;   // 2,3,4,5 rows
+            const beams = round + 2;   // 3,4,5,6 rows
             const rows=[];
             while(rows.length<beams && rows.length<GRID-1){
                 const r=Math.floor(Math.random()*GRID);
@@ -1742,15 +1760,29 @@ try {
         function doRound(){
             if(round>=4){ spawnOrbThen(()=>{}); return; }
             round++;
-            const groups = round + 1;   // 2,3,4,5 groups
+            const groups = round + 1;   // 2,3,4,5 groups (non-overlapping)
+            const size = 3; // 3x3 blocks
             const targets=[];
             for(let g=0; g<groups; g++){
-                const size = 2; // 2x2 (smaller so more groups stay survivable)
-                const ox = Math.floor(Math.random()*(GRID-size+1));
-                const oy = Math.floor(Math.random()*(GRID-size+1));
-                for(let x=ox;x<ox+size;x++) for(let y=oy;y<oy+size;y++){
-                    if(!targets.some(c=>c.x===x&&c.y===y)) targets.push({x,y});
+                // try to find a spot whose 3x3 area doesn't touch existing danger cells
+                let placed=false;
+                for(let attempt=0; attempt<40 && !placed; attempt++){
+                    const ox = Math.floor(Math.random()*(GRID-size+1));
+                    const oy = Math.floor(Math.random()*(GRID-size+1));
+                    // check overlap with already-chosen cells
+                    let overlaps=false;
+                    for(let x=ox;x<ox+size && !overlaps;x++)
+                        for(let y=oy;y<oy+size;y++){
+                            if(targets.some(c=>c.x===x&&c.y===y)){ overlaps=true; break; }
+                        }
+                    if(overlaps) continue;
+                    // place it
+                    for(let x=ox;x<ox+size;x++) for(let y=oy;y<oy+size;y++){
+                        targets.push({x,y});
+                    }
+                    placed=true;
                 }
+                // if no non-overlapping spot found after 40 tries, skip this group
             }
             state.warn = targets.slice();
             later(1200, ()=>{
@@ -1914,16 +1946,19 @@ try {
     function chooseBossAttack(){
         const dist = Math.abs(state.px-state.bossGridX) + Math.abs(state.py-state.bossGridY);
         if(dist<=2){
-            // GROUND SLAM: fills all directions ring by ring, but the OUTERMOST ring
-            // stays safe as the escape. She's centered at (3,3) on a 7x7, so the board
-            // edge is Chebyshev distance 3 — firing rings 1-2 leaves that whole edge clear.
+            // GROUND SLAM: expands ring by ring and fills everything EXCEPT the four
+            // grid corners — those stay safe. She's centered, so it spreads to the whole
+            // board over the waves; dive to a corner to survive.
             const bx=state.bossGridX, by=state.bossGridY;
+            const corners = [[0,0],[0,GRID-1],[GRID-1,0],[GRID-1,GRID-1]];
+            const isCorner = (x,y)=> corners.some(c=>c[0]===x && c[1]===y);
             const rings=[];
-            for(let r=1; r<=2; r++){   // rings 1-2 dangerous; ring 3 (the edge) is safe
+            for(let r=1; r<=GRID-1; r++){   // all rings out to the edge
                 const ring=[];
                 for(let x=bx-r;x<=bx+r;x++) for(let y=by-r;y<=by+r;y++){
                     const cheb=Math.max(Math.abs(x-bx),Math.abs(y-by));
                     if(cheb!==r || x<0||x>=GRID||y<0||y>=GRID) continue;
+                    if(isCorner(x,y)) continue;   // corners stay safe
                     ring.push({x,y});
                 }
                 if(ring.length) rings.push(ring);
@@ -2145,22 +2180,58 @@ try {
             ctx.strokeRect(px+0.5,py+0.5,CELL-1,CELL-1);
         }
 
-        // warn (telegraph) cells — pulsing neon purple outline/fill
+        // warn (telegraph) cells — pulsing void energy, hazy
         const pulse = 0.35 + 0.35*Math.abs(Math.sin(s.time*0.008));
         s.warn.forEach(c=>{
-            ctx.fillStyle='rgba(170,60,255,'+pulse*0.55+')';
-            ctx.fillRect(c.x*CELL, c.y*CELL, CELL, CELL);
-            ctx.strokeStyle='rgba(200,110,255,0.95)';
+            const px=c.x*CELL, py=c.y*CELL;
+            // radial haze from center
+            const g = ctx.createRadialGradient(px+CELL/2,py+CELL/2,2,px+CELL/2,py+CELL/2,CELL*0.7);
+            g.addColorStop(0,'rgba(190,90,255,'+(pulse*0.5)+')');
+            g.addColorStop(1,'rgba(120,40,220,'+(pulse*0.15)+')');
+            ctx.fillStyle=g;
+            ctx.fillRect(px,py,CELL,CELL);
+            // dashed warning border
+            ctx.strokeStyle='rgba(210,130,255,0.9)';
             ctx.lineWidth=2;
-            ctx.strokeRect(c.x*CELL+2, c.y*CELL+2, CELL-4, CELL-4);
+            ctx.setLineDash([5,4]);
+            ctx.strokeRect(px+3,py+3,CELL-6,CELL-6);
+            ctx.setLineDash([]);
         });
-        // danger (fired) cells — solid neon purple
+        // danger (fired) cells — textured void energy
         s.danger.forEach(c=>{
-            ctx.fillStyle='rgba(150,40,255,0.9)';
-            ctx.fillRect(c.x*CELL, c.y*CELL, CELL, CELL);
-            // crackle
-            ctx.fillStyle='rgba(220,170,255,0.75)';
-            ctx.fillRect(c.x*CELL+CELL*0.4, c.y*CELL+6, 4, CELL-12);
+            const px=c.x*CELL, py=c.y*CELL;
+            const cx=px+CELL/2, cy=py+CELL/2;
+            // base gradient (darker edges, glowing core)
+            const g=ctx.createRadialGradient(cx,cy,3,cx,cy,CELL*0.75);
+            g.addColorStop(0,'rgba(180,80,255,0.95)');
+            g.addColorStop(0.6,'rgba(120,30,220,0.9)');
+            g.addColorStop(1,'rgba(50,10,90,0.92)');
+            ctx.fillStyle=g;
+            ctx.fillRect(px,py,CELL,CELL);
+            // crackling void lightning (deterministic zigzag per cell)
+            const seed=(c.x*7+c.y*13);
+            ctx.strokeStyle='rgba(230,190,255,'+(0.5+0.3*Math.abs(Math.sin(s.time*0.01+seed)))+')';
+            ctx.lineWidth=1.5;
+            ctx.beginPath();
+            let zx=px+CELL*0.2, zy=py+4;
+            ctx.moveTo(zx,zy);
+            for(let k=1;k<=4;k++){
+                zx = px + CELL*(0.2 + 0.15*k) + ((seed+k)%3-1)*6;
+                zy = py + (CELL/4)*k;
+                ctx.lineTo(zx,zy);
+            }
+            ctx.stroke();
+            // star flecks
+            ctx.fillStyle='rgba(240,220,255,0.9)';
+            for(let k=0;k<3;k++){
+                const sx=px + ((seed*3+k*17)%CELL);
+                const sy=py + ((seed*5+k*29)%CELL);
+                ctx.fillRect(sx,sy,2,2);
+            }
+            // inner rim
+            ctx.strokeStyle='rgba(200,140,255,0.7)';
+            ctx.lineWidth=1;
+            ctx.strokeRect(px+2,py+2,CELL-4,CELL-4);
         });
 
         // orb
