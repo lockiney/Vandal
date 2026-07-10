@@ -2036,7 +2036,7 @@ try {
         { who:'player', text:"You put up a good fight, but I'll gladly take the color" },
         { who:'voidess', text:"Please, don't take it... It's everything that I have of the void" },
         { who:'player', text:"Sad to hear, but I can't let the weak take care of it" },
-        { who:'voidess', text:"*Cries* noo..." }
+        { who:'voidess', text:"*Cries*" }
     ];
 
     const dlgScene = document.getElementById('dialogueScene');
@@ -2399,7 +2399,7 @@ try {
         rafId = requestAnimationFrame(loop);
         // title screen -> BEGIN -> intro dialogue -> fight
         msgEl.style.opacity='1';
-        msgEl.innerHTML = 'VOID FIGHT<br><span style="font-size:9px;color:#9a8aba;line-height:1.8;">The Voidess's wrath</span><br><button class="startBtn" id="beginBtn">FIGHT</button>';
+        msgEl.innerHTML = 'VOID FIGHT<br><span style="font-size:9px;color:#9a8aba;line-height:1.8;">claim the void color</span><br><button class="startBtn" id="beginBtn">BEGIN</button>';
         document.getElementById('beginBtn').onclick = ()=>{ introSequence(); };
     }
     function closeGame(){
