@@ -432,22 +432,29 @@ document.addEventListener('keydown', e => {
     }
 
     // ── RENDER MESSAGE ─────────────────────────────────
-    function renderMsg(msg) {
+function renderMsg(msg) {
         const isMine = msg.username === username;
         const div = document.createElement('div');
         div.className = 'msg ' + (isMine ? 'mine' : 'theirs');
         div.innerHTML = `
             <div class="msg-meta">
                 <span class="msg-username">${isMine ? 'You' : esc(msg.username)}</span>
-                <span>${msg.time}</span>
+                <span>${esc(msg.time)}</span>
             </div>
             <div class="msg-bubble">
                 ${msg.message ? esc(msg.message) : ''}
-                ${msg.image ? `<img class="msg-img" src="${msg.image}" alt="image">` : ''}
             </div>
         `;
-        const imgEl = div.querySelector('.msg-img');
-        if (imgEl) imgEl.addEventListener('click', () => openLightbox(imgEl.src));
+        // Safely add image only if it's a real image data URL
+        if (msg.image && typeof msg.image === 'string' && msg.image.startsWith('data:image/')) {
+            const bubble = div.querySelector('.msg-bubble');
+            const imgEl = document.createElement('img');
+            imgEl.className = 'msg-img';
+            imgEl.alt = 'image';
+            imgEl.src = msg.image;
+            imgEl.addEventListener('click', () => openLightbox(imgEl.src));
+            bubble.appendChild(imgEl);
+        }
         return div;
     }
 

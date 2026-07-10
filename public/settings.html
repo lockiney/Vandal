@@ -320,6 +320,19 @@ if (!localStorage.getItem('vandal_token')) {
     </div>
     <div class="milestone-time" id="time_royalty">Hint: Keep your eyes on the screen 👀</div>
 </div>
+<div class="milestone" id="m_void">
+    <div class="milestone-top">
+        <div class="milestone-name"><span id="badge_void">🔒</span> Stronger Than The Void</div>
+        <div class="milestone-reward">
+            <span class="gradient-swatch" style="background:linear-gradient(135deg,#050308,#6a3fd0,#e8d8ff,#1a0f2e)"></span>
+            ???
+        </div>
+    </div>
+    <div class="milestone-bar-wrap">
+        <div class="milestone-bar" id="bar_void" style="background:linear-gradient(90deg,#050308,#6a3fd0,#e8d8ff,#1a0f2e)"></div>
+    </div>
+    <div class="milestone-time" id="time_void">Hint: something lurks in the corner of the void 🌌</div>
+</div>
         </div>
         <div class="total-time">Total time on Vandal: <span id="totalTimeDisplay">0:00</span></div>
     </div>
@@ -435,6 +448,15 @@ if (royaltyUnlocked) {
     document.getElementById('time_royalty').textContent = 'Unlocked! Royalty spray is now available!';
     document.getElementById('m_royalty').querySelector('.milestone-reward').innerHTML =
         '<span class="gradient-swatch" style="background:linear-gradient(135deg,#8b0000,#ffd700,#7000ff)"></span> Royalty';
+}
+const voidUnlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('void_star');
+document.getElementById('bar_void').style.width = voidUnlocked ? '100%' : '0%';
+if (voidUnlocked) {
+    document.getElementById('m_void').classList.add('unlocked');
+    document.getElementById('badge_void').textContent = '🌌';
+    document.getElementById('time_void').textContent = 'Unlocked! Void spray is now available!';
+    document.getElementById('m_void').querySelector('.milestone-reward').innerHTML =
+        '<span class="gradient-swatch" style="background:linear-gradient(135deg,#050308,#6a3fd0,#e8d8ff,#1a0f2e)"></span> Void';
 }
 }
 
