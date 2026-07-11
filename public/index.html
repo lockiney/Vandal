@@ -1552,9 +1552,10 @@ try {
 </div>
 <script>
 (function(){
-    const GRID = 7;
-    const CELL = 80;               // logical px per cell
-    const CANVAS = GRID * CELL;    // 560
+    let GRID = 7;                  // 7 in act 1, 9 in act 2
+    const CANVAS = 560;            // fixed canvas size
+    let CELL = CANVAS / GRID;      // logical px per cell (recomputed on grid change)
+    function setGrid(n){ GRID = n; CELL = CANVAS / GRID; }
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const overlay = document.getElementById('voidOverlay');
@@ -1577,14 +1578,18 @@ try {
 
     // ---------- game state ----------
     function newGame() {
+        setGrid(7);
         state = {
             running: true,
+            act: 1,            // 1 = first fight, 2 = phase two (9x9)
             phase: 0,          // 0=intro handled separately; 1..4 = attack phases
             bossHp: 100,
             hearts: 3,
             px: 3, py: 3,      // player grid pos
             danger: [],        // array of {x,y} currently lethal cells (fired)
             warn: [],          // array of {x,y} telegraphed (about to fire)
+            holes: [],         // array of {x,y} fallen tiles (instant death) - act 2
+            holeWarn: [],      // array of {x,y} tiles about to fall
             orb: null,         // {x,y} collectible
             invuln: 0,         // ms of i-frames after a hit
             stars: makeStars(60),
@@ -1595,10 +1600,17 @@ try {
             phaseController: null,
             time: 0,
             shake: 0,
+            fadeBlack: 0,      // 0..1 screen fade for act transition
             // final phase specifics
             bossGridX: 3, bossGridY: 0,
             bossCooldown: 0,
-            bossTelegraph: null
+            bossTelegraph: null,
+            crossAngle: 0,     // act2 spinning cross rotation
+            charging: null,    // act2 charge attack {path, t}
+            sword: null,       // act2 sword pickup {x,y,life}
+            armed: false,      // act2 player holding sword
+            swordTimer: 0,     // act2 ms until next sword spawn
+            a2Ready: false     // act2 final prep gate
         };
         updateHud();
     }
@@ -1614,8 +1626,16 @@ try {
 
     function updateHud(){
         heartsEl.textContent = '\u2764'.repeat(Math.max(0,state.hearts)) + '\u2661'.repeat(Math.max(0,3-state.hearts));
-        bossHpFill.style.width = Math.max(0, Math.min(100, state.bossHp)) + '%';
-        const names = ['','VOID ROCKS','VOID BEAMS','VOID FIELDS','THE VOID'];
+        // during the act-2 orb race, the bar shows orbs collected instead of boss hp
+        if(state.act===2 && state.phase===4 && state.totalOrbs){
+            const collected = state.totalOrbs - (state.voidOrbs?state.voidOrbs.length:0);
+            bossHpFill.style.width = (collected/state.totalOrbs*100) + '%';
+        } else {
+            bossHpFill.style.width = Math.max(0, Math.min(100, state.bossHp)) + '%';
+        }
+        const names = state.act===2
+            ? ['','VOID COLLAPSE','VOID GRID','VOID MAZE','THE TRUE VOID']
+            : ['','VOID ROCKS','VOID BEAMS','VOID FIELDS','THE VOID'];
         phaseLabel.textContent = names[state.phase] || 'VOID';
     }
 
@@ -1659,8 +1679,8 @@ try {
         const nx = state.px+dx, ny = state.py+dy;
         if(nx<0||nx>=GRID||ny<0||ny>=GRID) return;
         state.px=nx; state.py=ny;
-        // collect orb
-        if(state.orb && state.px===state.orb.x && state.py===state.orb.y){
+        // collect orb (not during the maze — that's handled by updateMaze)
+        if(state.orb && !state.mazeActive && state.px===state.orb.x && state.py===state.orb.y){
             collectOrb();
         }
         // final-phase boss interaction on the cell we just stepped onto
@@ -1685,7 +1705,15 @@ try {
     function startPhase(n){
         state.phase = n;
         state.warn=[]; state.danger=[]; state.orb=null;
+        state.holes=[]; state.holeWarn=[];
         updateHud();
+        if(state.act===2){
+            if(n===1) a2PhaseRocksFalling();
+            else if(n===2) a2PhaseCrossBeams();
+            else if(n===3) a2PhaseFallingWall();
+            else if(n===4) a2PhaseFinal();
+            return;
+        }
         if(n===1) phaseRocks();
         else if(n===2) phaseBeams();
         else if(n===3) phaseFields();
@@ -1984,6 +2012,288 @@ try {
         }
     }
 
+    // ================= ACT 2 PHASES (9x9) =================
+
+    // ----- A2 PHASE 1: rocks + falling floor -----
+    function a2PhaseRocksFalling(){
+        showMessage('VOID COLLAPSE', 1400);
+        let round=0;
+        function doRound(){
+            if(round>=4){ spawnOrbThen(()=>{}); return; }
+            round++;
+            // scale rocks with 9x9: ~ round*4 + 8  => 12,16,20,24
+            const rockCount = 8 + round*4;
+            const rocks=[];
+            for(let i=0;i<rockCount;i++) rocks.push(randCell());
+            // choose some tiles to collapse into holes (telegraphed)
+            const holeCount = 3 + round*2; // 5,7,9,11
+            const holeCells=[];
+            for(let i=0;i<holeCount;i++) holeCells.push(randCell());
+            // telegraph both: rocks as danger-warn, holes as holeWarn
+            state.warn = rocks.slice();
+            state.holeWarn = holeCells.slice();
+            later(1100, ()=>{
+                // rocks fire
+                state.danger = rocks.slice();
+                state.warn = [];
+                // holes open
+                state.holes = holeCells.slice();
+                state.holeWarn = [];
+                if(inDanger(state.px,state.py)) hitPlayer();
+                if(inHole(state.px,state.py)) killPlayer();
+                later(700, ()=>{
+                    state.danger=[];
+                    state.holes=[];   // reset holes after the attack
+                    later(650, doRound);
+                });
+            });
+        }
+        later(1400, doRound);
+    }
+
+    // ----- A2 PHASE 2: row + column beams -----
+    function a2PhaseCrossBeams(){
+        showMessage('VOID GRID', 1400);
+        let round=0;
+        function doRound(){
+            if(round>=4){ spawnOrbThen(()=>{}); return; }
+            round++;
+            const nRows = 1 + round;  // 2,3,4,5
+            const nCols = 1 + round;
+            const rows=[], cols=[];
+            while(rows.length<nRows && rows.length<GRID-1){ const r=Math.floor(Math.random()*GRID); if(!rows.includes(r)) rows.push(r); }
+            while(cols.length<nCols && cols.length<GRID-1){ const c=Math.floor(Math.random()*GRID); if(!cols.includes(c)) cols.push(c); }
+            const targets=[];
+            rows.forEach(r=>{ for(let x=0;x<GRID;x++) targets.push({x,y:r}); });
+            cols.forEach(c=>{ for(let y=0;y<GRID;y++){ if(!targets.some(t=>t.x===c&&t.y===y)) targets.push({x:c,y}); } });
+            state.warn = targets.slice();
+            later(1150, ()=>{
+                state.danger = targets.slice();
+                state.warn=[];
+                if(inDanger(state.px,state.py)) hitPlayer();
+                later(700, ()=>{
+                    state.danger=[];
+                    later(700, doRound);
+                });
+            });
+        }
+        later(1400, doRound);
+    }
+
+    // ----- A2 PHASE 3: MAZE — reach the orb before time runs out -----
+    function a2PhaseFallingWall(){
+        showMessage('VOID MAZE', 1400);
+        let round=0;
+        function doRound(){
+            if(round>=4){ state.mazeActive=false; spawnOrbThen(()=>{}); return; }
+            round++;
+            buildMaze(round);
+        }
+        function buildMaze(r){
+            // player starts top-left; orb spawns bottom-right
+            state.px = 0; state.py = 0;
+            const orb = { x: GRID-1, y: GRID-1 };
+            const safe = new Set();
+            const key=(x,y)=>x+','+y;
+            let cx=0, cy=0;
+            safe.add(key(cx,cy));
+            let guard=0;
+            while((cx!==orb.x || cy!==orb.y) && guard<400){
+                guard++;
+                const towardX = Math.sign(orb.x-cx), towardY = Math.sign(orb.y-cy);
+                let mx=0,my=0;
+                if(Math.random()<0.7){
+                    if(Math.random()<0.5 && towardX!==0) mx=towardX;
+                    else if(towardY!==0) my=towardY; else mx=towardX;
+                } else {
+                    if(Math.random()<0.5) mx = Math.random()<0.5?1:-1; else my = Math.random()<0.5?1:-1;
+                }
+                cx=Math.max(0,Math.min(GRID-1,cx+mx));
+                cy=Math.max(0,Math.min(GRID-1,cy+my));
+                safe.add(key(cx,cy));
+            }
+            const danger=[];
+            for(let x=0;x<GRID;x++) for(let y=0;y<GRID;y++){
+                if(!safe.has(key(x,y))) danger.push({x,y});
+            }
+            state.danger = danger;
+            state.warn = [];
+            state.orb = orb;
+            const limit = Math.max(4000, 8000 - r*1000);  // 7s,6s,5s,4s
+            state.mazeTimer = limit;
+            state.mazeActive = true;
+            showMessage('REACH THE ORB!', 1200);
+        }
+        later(1400, doRound);
+        state._mazeNextRound = ()=>{ later(600, doRound); };
+        state._mazeRebuild = ()=>{ buildMaze(round); };
+    }
+
+    function updateMaze(dt){
+        // stepping on a danger tile in the maze hurts (uses normal i-frames)
+        if(inDanger(state.px,state.py)) hitPlayer();
+        // reached the orb?
+        if(state.orb && state.px===state.orb.x && state.py===state.orb.y){
+            state.orb=null;
+            state.danger=[];
+            state.mazeActive=false;
+            showMessage('SOLVED!', 900);
+            if(state._mazeNextRound) state._mazeNextRound();
+            return;
+        }
+        // countdown
+        state.mazeTimer -= dt;
+        if(state.mazeTimer<=0){
+            // failed: whole grid "damages" the player, orb respawns, retry
+            state.mazeActive=false;
+            state.danger=[];
+            // flash the whole grid as damage
+            const all=[];
+            for(let x=0;x<GRID;x++) for(let y=0;y<GRID;y++) all.push({x,y});
+            state.danger = all;
+            state.shake = 20;
+            hitPlayer();  // lose a heart
+            showMessage('TOO SLOW!', 1100);
+            later(500, ()=>{ if(state){ state.danger=[]; if(state._mazeRebuild) state._mazeRebuild(); } });
+        }
+    }
+
+    // ----- A2 FINAL: orb collection race (45s) -----
+    function a2PhaseFinal(){
+        showMessage('THE VOIDESS AWAKENS', 1800);
+        state.bossHp = 100;   // health bar shows orbs remaining instead
+        const c = Math.floor(GRID/2);
+        state.bossGridX = c; state.bossGridY = c;
+        state.bossTelegraph = null;
+        state.charging = null;
+        state.a2Ready = false;
+        state.bossCooldown = 1200;
+        // fill the grid with tiny void orbs (every tile except her center)
+        const orbs=[];
+        for(let x=0;x<GRID;x++) for(let y=0;y<GRID;y++){
+            if(x===c && y===c) continue;
+            orbs.push({x,y});
+        }
+        state.voidOrbs = orbs;
+        state.totalOrbs = orbs.length;
+        state.raceTimer = 45000;   // 45 seconds
+        state.px = 0; state.py = 0;
+        updateHud();
+        later(1900, ()=>{ if(state && state.phase===4 && state.act===2) showMessage('COLLECT ALL ORBS! 45s', 1600); });
+        later(3300, ()=>{ if(state && state.phase===4 && state.act===2){ state.a2Ready = true; } });
+    }
+
+    function updateA2Final(dt){
+        if(!state.a2Ready) return;
+
+        // ----- collect void orbs by walking over them -----
+        if(state.voidOrbs && state.voidOrbs.length){
+            for(let i=state.voidOrbs.length-1;i>=0;i--){
+                if(state.voidOrbs[i].x===state.px && state.voidOrbs[i].y===state.py){
+                    state.voidOrbs.splice(i,1);
+                }
+            }
+            updateHud();
+            if(state.voidOrbs.length===0){
+                // collected them all — WIN
+                state.bossHp = 0; updateHud();
+                victory();
+                return;
+            }
+        }
+
+        // ----- race countdown -----
+        state.raceTimer -= dt;
+        if(state.raceTimer<=0){
+            // time's up — she wins
+            gameOver();
+            return;
+        }
+
+        // ----- her attacks (fast: beams / fields / storm) -----
+        if(state.charging){ state.charging=null; }  // no charge in this mode
+        state.bossCooldown -= dt;
+        if(state.bossTelegraph){
+            state.bossTelegraph.t -= dt;
+            if(state.bossTelegraph.t<=0){
+                state.danger = state.bossTelegraph.cells.slice();
+                state.warn=[];
+                if(inDanger(state.px,state.py)) hitPlayer();
+                state.bossTelegraph=null;
+                later(450, ()=>{ if(state) state.danger=[]; });
+            }
+        }
+        if(state.bossCooldown<=0 && !state.bossTelegraph){
+            chooseA2Attack();
+            state.bossCooldown = 1600;   // fast attacks so she keeps pressure
+        }
+    }
+
+    function finishAttackA2(){
+        state.attackCount = (state.attackCount||0)+1;
+    }
+
+    function chooseA2Attack(){
+        finishAttackA2();
+        const TOTAL = GRID*GRID;
+        const MAX_DANGER = TOTAL - 10;   // always leave >=10 cells open
+        const roll = Math.random();
+
+        if(roll < 0.4){
+            // VOID STORM: player cell + many random, capped
+            const cells=[{x:state.px,y:state.py}];
+            const all=[];
+            for(let x=0;x<GRID;x++) for(let y=0;y<GRID;y++) if(!(x===state.px&&y===state.py)) all.push({x,y});
+            for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+            const maxExtra = Math.min(all.length, MAX_DANGER-1);
+            for(let i=0;i<maxExtra;i++) cells.push(all[i]);
+            state.bossTelegraph = { cells, t: 700 };
+            state.warn = cells.slice();
+            showMessage('VOID STORM', 600);
+        } else if(roll < 0.7){
+            // VOID BEAMS: several full rows and columns
+            const cells=[];
+            let rows = 2 + Math.floor(Math.random()*2);
+            let cols = 2 + Math.floor(Math.random()*2);
+            const rs=[], cs=[];
+            while(rs.length<rows){ const r=Math.floor(Math.random()*GRID); if(!rs.includes(r)) rs.push(r); }
+            while(cs.length<cols){ const c=Math.floor(Math.random()*GRID); if(!cs.includes(c)) cs.push(c); }
+            rs.forEach(r=>{ for(let x=0;x<GRID;x++) addCell(cells,x,r); });
+            cs.forEach(c=>{ for(let y=0;y<GRID;y++) addCell(cells,c,y); });
+            while(cells.length > MAX_DANGER) cells.pop();
+            state.bossTelegraph = { cells, t: 750 };
+            state.warn = cells.slice();
+            showMessage('VOID BEAMS', 600);
+        } else {
+            // VOID FIELDS: a few 3x3 blocks (capped)
+            const cells=[];
+            const blocks = 2 + Math.floor(Math.random()*2);
+            for(let b=0;b<blocks;b++){
+                const ox=Math.floor(Math.random()*(GRID-2));
+                const oy=Math.floor(Math.random()*(GRID-2));
+                for(let x=ox;x<ox+3;x++) for(let y=oy;y<oy+3;y++) addCell(cells,x,y);
+            }
+            while(cells.length > MAX_DANGER) cells.pop();
+            state.bossTelegraph = { cells, t: 800 };
+            state.warn = cells.slice();
+            showMessage('VOID FIELDS', 600);
+        }
+    }
+
+    function addCell(arr,x,y){
+        if(x>=0&&x<GRID&&y>=0&&y<GRID && !arr.some(c=>c.x===x&&c.y===y)) arr.push({x,y});
+    }
+
+    function inHole(x,y){ return state.holes.some(c=>c.x===x&&c.y===y); }
+    function killPlayer(){
+        if(state.invuln>0) return;
+        state.hearts = 0;
+        state.shake = 22;
+        updateHud();
+        gameOver();
+    }
+
+
     // ---------- win / lose ----------
     function gameOver(){
         state.running=false;
@@ -2000,12 +2310,21 @@ try {
     function victory(){
         state.running=false;
         state.bossHp=0; updateHud();
-        state.warn=[]; state.danger=[];
+        state.warn=[]; state.danger=[]; state.holes=[]; state.holeWarn=[];
+        state.charging=null;
         msgEl.style.opacity='0';
         msgEl.innerHTML='';
-        // unlock the real VOID color in the Vandal account (once)
+
+        if(state.act===1){
+            // Not the real ending — she reveals phase two
+            playDialogue(ACT2_INTRO_SCRIPT, ()=>{
+                startAct2Transition();
+            });
+            return;
+        }
+
+        // ACT 2 defeated — the TRUE ending
         try { if(typeof window.unlockVoidColor === 'function') window.unlockVoidColor(); } catch(e){}
-        // play victory dialogue, then reveal the reward
         playDialogue(VICTORY_SCRIPT, ()=>{
             msgEl.style.opacity='1';
             msgEl.innerHTML =
@@ -2024,6 +2343,40 @@ try {
         });
     }
 
+    // Fade to black, switch to 9x9, begin act 2
+    function startAct2Transition(){
+        state.running = true;
+        state.fadeBlack = 0;
+        const fadeIn = setInterval(()=>{
+            if(!state){ clearInterval(fadeIn); return; }
+            state.fadeBlack = Math.min(1, state.fadeBlack + 0.04);
+            if(state.fadeBlack>=1){
+                clearInterval(fadeIn);
+                // switch to act 2 on the 9x9 board
+                setGrid(9);
+                state.act = 2;
+                state.bossHp = 100;
+                state.px = 4; state.py = 4;
+                state.danger=[]; state.warn=[]; state.holes=[]; state.holeWarn=[]; state.orb=null;
+                state.stars = makeStars(80);
+                updateHud();
+                showMessage('THE TRUE VOID', 1800);
+                // hold on black a beat, then fade back in and start
+                setTimeout(()=>{
+                    if(!state) return;
+                    const fadeOut = setInterval(()=>{
+                        if(!state){ clearInterval(fadeOut); return; }
+                        state.fadeBlack = Math.max(0, state.fadeBlack - 0.03);
+                        if(state.fadeBlack<=0){
+                            clearInterval(fadeOut);
+                            startPhase(1);
+                        }
+                    }, 40);
+                }, 1400);
+            }
+        }, 40);
+    }
+
     // ---------- dialogue (visual novel) ----------
     const INTRO_SCRIPT = [
         { who:'player', text:"I come to seek the void spray color, and I presume that you have it" },
@@ -2037,6 +2390,11 @@ try {
         { who:'voidess', text:"Please, don't take it... It's everything that I have of the void" },
         { who:'player', text:"Sad to hear, but I can't let the weak take care of it" },
         { who:'voidess', text:"*Cries*" }
+    ];
+    // Played after beating her FIRST form — leads into phase two
+    const ACT2_INTRO_SCRIPT = [
+        { who:'voidess', text:"You... you are a strong opponent. But you haven't seen the full power of the void" },
+        { who:'player', text:"What do you mean?" }
     ];
 
     const dlgScene = document.getElementById('dialogueScene');
@@ -2180,6 +2538,37 @@ try {
             ctx.strokeRect(px+0.5,py+0.5,CELL-1,CELL-1);
         }
 
+        // hole warnings — tiles about to fall (cracking)
+        if(s.holeWarn && s.holeWarn.length){
+            const hp = 0.4 + 0.4*Math.abs(Math.sin(s.time*0.012));
+            s.holeWarn.forEach(c=>{
+                const px=c.x*CELL, py=c.y*CELL;
+                ctx.strokeStyle='rgba(255,200,80,'+hp+')';
+                ctx.lineWidth=2;
+                ctx.beginPath();
+                ctx.moveTo(px+CELL*0.2,py+CELL*0.2);
+                ctx.lineTo(px+CELL*0.5,py+CELL*0.55);
+                ctx.lineTo(px+CELL*0.35,py+CELL*0.8);
+                ctx.moveTo(px+CELL*0.5,py+CELL*0.55);
+                ctx.lineTo(px+CELL*0.75,py+CELL*0.3);
+                ctx.stroke();
+            });
+        }
+        // holes — fallen tiles (instant death)
+        if(s.holes && s.holes.length){
+            s.holes.forEach(c=>{
+                const px=c.x*CELL, py=c.y*CELL;
+                ctx.fillStyle='#000';
+                ctx.fillRect(px+1,py+1,CELL-2,CELL-2);
+                // subtle void depth ring
+                const g=ctx.createRadialGradient(px+CELL/2,py+CELL/2,1,px+CELL/2,py+CELL/2,CELL*0.5);
+                g.addColorStop(0,'rgba(40,10,70,0.9)');
+                g.addColorStop(1,'rgba(0,0,0,1)');
+                ctx.fillStyle=g;
+                ctx.fillRect(px+1,py+1,CELL-2,CELL-2);
+            });
+        }
+
         // warn (telegraph) cells — pulsing void energy, hazy
         const pulse = 0.35 + 0.35*Math.abs(Math.sin(s.time*0.008));
         s.warn.forEach(c=>{
@@ -2234,6 +2623,54 @@ try {
             ctx.strokeRect(px+2,py+2,CELL-4,CELL-4);
         });
 
+        // sword pickup (act 2 final)
+        if(s.sword){
+            const sx=s.sword.x*CELL+CELL/2, sy=s.sword.y*CELL+CELL/2;
+            const blink = s.sword.life<1500 ? (Math.floor(s.time*0.015)%2===0) : true; // blink when about to vanish
+            if(blink){
+                const gl=0.6+0.4*Math.abs(Math.sin(s.time*0.008));
+                // glow
+                ctx.fillStyle='rgba(180,230,255,'+(gl*0.4)+')';
+                ctx.beginPath(); ctx.arc(sx,sy,CELL*0.34,0,Math.PI*2); ctx.fill();
+                // blade
+                ctx.strokeStyle='#dff0ff'; ctx.lineWidth=3; ctx.lineCap='round';
+                ctx.beginPath(); ctx.moveTo(sx, sy-CELL*0.28); ctx.lineTo(sx, sy+CELL*0.14); ctx.stroke();
+                // crossguard
+                ctx.strokeStyle='#b89aff'; ctx.lineWidth=3;
+                ctx.beginPath(); ctx.moveTo(sx-CELL*0.12, sy+CELL*0.1); ctx.lineTo(sx+CELL*0.12, sy+CELL*0.1); ctx.stroke();
+                // hilt
+                ctx.strokeStyle='#8a6fd0'; ctx.lineWidth=3;
+                ctx.beginPath(); ctx.moveTo(sx, sy+CELL*0.1); ctx.lineTo(sx, sy+CELL*0.24); ctx.stroke();
+            }
+        }
+
+        // tiny void orbs to collect (act-2 final race)
+        if(s.voidOrbs && s.voidOrbs.length){
+            s.voidOrbs.forEach(o=>{
+                const ox=o.x*CELL+CELL/2, oy=o.y*CELL+CELL/2;
+                const tw=0.55+0.45*Math.abs(Math.sin(s.time*0.005 + o.x*0.7 + o.y*1.3));
+                ctx.fillStyle='rgba(200,150,255,'+tw+')';
+                ctx.beginPath(); ctx.arc(ox,oy,CELL*0.11,0,Math.PI*2); ctx.fill();
+                ctx.fillStyle='rgba(245,230,255,'+(tw*0.9)+')';
+                ctx.beginPath(); ctx.arc(ox-2,oy-2,CELL*0.04,0,Math.PI*2); ctx.fill();
+            });
+        }
+
+        // race timer (act-2 final)
+        if(s.act===2 && s.phase===4 && s.a2Ready && s.raceTimer>0 && s.voidOrbs && s.voidOrbs.length){
+            const secs = Math.ceil(s.raceTimer/1000);
+            ctx.save();
+            ctx.font='bold 22px "Press Start 2P", monospace';
+            ctx.textAlign='center';
+            ctx.fillStyle = secs<=10 ? '#ff5a8a' : '#d8c8ff';
+            ctx.shadowColor='#7a4fff'; ctx.shadowBlur=12;
+            ctx.fillText(secs+'s', CANVAS/2, 34);
+            ctx.font='9px "Press Start 2P", monospace';
+            ctx.fillStyle='#b89aff';
+            ctx.fillText(s.voidOrbs.length+' ORBS LEFT', CANVAS/2, 52);
+            ctx.restore();
+        }
+
         // orb
         if(s.orb){
             const ox=s.orb.x*CELL+CELL/2, oy=s.orb.y*CELL+CELL/2;
@@ -2251,21 +2688,37 @@ try {
         // boss (outside grid phases 1-3, inside phase 4)
         drawBoss();
 
-        // player — purple dot
+        // player — purple dot (blue-white when armed with sword)
         const plx=s.px*CELL+CELL/2, ply=s.py*CELL+CELL/2;
         const flick = (s.invuln>0 && Math.floor(s.time*0.02)%2===0);
         if(!flick){
-            // glow
+            const armed = s.armed;
             const grad=ctx.createRadialGradient(plx,ply,2,plx,ply,CELL*0.4);
-            grad.addColorStop(0,'rgba(190,120,255,0.9)');
-            grad.addColorStop(1,'rgba(120,60,220,0)');
+            if(armed){
+                grad.addColorStop(0,'rgba(180,230,255,0.95)');
+                grad.addColorStop(1,'rgba(120,180,255,0)');
+            } else {
+                grad.addColorStop(0,'rgba(190,120,255,0.9)');
+                grad.addColorStop(1,'rgba(120,60,220,0)');
+            }
             ctx.fillStyle=grad;
             ctx.fillRect(plx-CELL*0.4,ply-CELL*0.4,CELL*0.8,CELL*0.8);
             // core
-            ctx.fillStyle='#c77dff';
+            ctx.fillStyle= armed ? '#9fd8ff' : '#c77dff';
             ctx.beginPath(); ctx.arc(plx,ply,CELL*0.2,0,Math.PI*2); ctx.fill();
             ctx.fillStyle='#f0d8ff';
             ctx.beginPath(); ctx.arc(plx-3,ply-3,CELL*0.07,0,Math.PI*2); ctx.fill();
+            // little blade when armed
+            if(armed){
+                ctx.strokeStyle='#eaffff'; ctx.lineWidth=2.5; ctx.lineCap='round';
+                ctx.beginPath(); ctx.moveTo(plx+CELL*0.18, ply-CELL*0.24); ctx.lineTo(plx+CELL*0.28, ply-CELL*0.02); ctx.stroke();
+            }
+        }
+
+        // act-transition fade to black
+        if(s.fadeBlack>0){
+            ctx.fillStyle='rgba(0,0,0,'+s.fadeBlack+')';
+            ctx.fillRect(-20,-20,CANVAS+40,CANVAS+40);
         }
 
         ctx.restore();
@@ -2356,7 +2809,8 @@ try {
         if(state.running){
             if(state.invuln>0) state.invuln -= dt;
             if(state.msgTimer>0){ state.msgTimer-=dt; if(state.msgTimer<=0){ msgEl.style.opacity='0'; } }
-            if(state.phase===4) updateFinal(dt);
+            if(state.phase===4){ if(state.act===2) updateA2Final(dt); else updateFinal(dt); }
+            if(state.act===2 && state.phase===3 && state.mazeActive) updateMaze(dt);
         }
         draw();
         rafId = requestAnimationFrame(loop);
