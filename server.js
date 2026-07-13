@@ -188,6 +188,41 @@ app.get('/api/auth/me', (req, res) => {
     }
 });
 
+// --- LEADERBOARD API ---
+const EXCLUSIVE_COLORS = [
+    { id: 'neon_pink',  label: 'Neon Pink',  gradient: ['#ff6ec7', '#ff2e73'] },
+    { id: 'ocean_blue', label: 'Ocean Blue', gradient: ['#00f2ff', '#0070ff'] },
+    { id: 'gold_rush',  label: 'Gold Rush',  gradient: ['#ffd700', '#ff8c00'] },
+    { id: 'galaxy',     label: 'Galaxy',     gradient: ['#a78bfa', '#ec4899', '#f43f5e'] },
+    { id: 'rainbow',    label: 'Rainbow',    gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'] },
+    { id: 'sharks',     label: 'Shark Blue', gradient: ['#0d0d2b', '#008080', '#40e0d0', '#8b0000'] },
+    { id: 'royalty',    label: 'Royalty',    gradient: ['#8b0000', '#ffd700', '#7000ff'] },
+    { id: 'void_star',  label: 'Void',       gradient: ['#050308', '#6a3fd0', '#e8d8ff', '#1a0f2e'] }
+];
+
+app.get('/api/stats/leaderboard', (req, res) => {
+    const timeLeaderboard = users
+        .filter(u => (u.timeSeconds || 0) > 0)
+        .sort((a, b) => (b.timeSeconds || 0) - (a.timeSeconds || 0))
+        .slice(0, 25)
+        .map(u => ({ username: u.username, timeSeconds: u.timeSeconds || 0 }));
+
+    const colorsLeaderboard = users
+        .filter(u => (u.unlockedColors || []).length > 0)
+        .sort((a, b) => (b.unlockedColors || []).length - (a.unlockedColors || []).length)
+        .slice(0, 25)
+        .map(u => ({ username: u.username, count: (u.unlockedColors || []).length }));
+
+    const colorOwners = EXCLUSIVE_COLORS.map(c => ({
+        id: c.id,
+        label: c.label,
+        gradient: c.gradient,
+        owners: users.filter(u => (u.unlockedColors || []).includes(c.id)).map(u => u.username)
+    }));
+
+    res.json({ timeLeaderboard, colorsLeaderboard, colorOwners, totalUsers: users.length });
+});
+
 // ---- Giveaways ----
 const GIVEAWAYS_FILE = path.join(__dirname, 'giveaways.json');
 

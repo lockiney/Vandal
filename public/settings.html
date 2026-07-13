@@ -182,6 +182,131 @@ if (!localStorage.getItem('vandal_token')) {
             border-top: 1px solid rgba(255,255,255,0.06);
         }
         .total-time span { color: #c084fc; }
+
+        /* ===== Stats / Leaderboard modal ===== */
+        .lb-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .lb-overlay.open { display: flex; }
+        .lb-modal {
+            background: #12121a;
+            border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .lb-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .lb-title {
+            font-size: 18px;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+        .lb-close {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 14px;
+        }
+        .lb-close:hover { background: rgba(255,255,255,0.2); }
+        .lb-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 12px 16px 0;
+        }
+        .lb-tab {
+            flex: 1;
+            text-align: center;
+            padding: 9px 8px;
+            font-size: 11px;
+            border-radius: 10px 10px 0 0;
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.45);
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-bottom: none;
+            transition: all 0.2s;
+        }
+        .lb-tab.active { background: rgba(167,139,250,0.15); color: #fff; border-color: rgba(167,139,250,0.35); }
+        .lb-body {
+            padding: 16px 20px 20px;
+            overflow-y: auto;
+        }
+        .lb-pane { display: none; flex-direction: column; gap: 8px; }
+        .lb-pane.active { display: flex; }
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .lb-rank {
+            width: 22px;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            flex-shrink: 0;
+        }
+        .lb-rank.gold { color: #ffd700; }
+        .lb-rank.silver { color: #c0c0c0; }
+        .lb-rank.bronze { color: #cd7f32; }
+        .lb-name { flex: 1; font-size: 13px; color: rgba(255,255,255,0.85); word-break: break-all; }
+        .lb-value { font-size: 12px; color: #c084fc; flex-shrink: 0; }
+        .lb-empty {
+            text-align: center;
+            padding: 30px 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+        }
+        .lb-loading {
+            text-align: center;
+            padding: 30px 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+        }
+        .lb-color-block {
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.02);
+        }
+        .lb-color-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .lb-color-name { font-size: 13px; color: white; flex: 1; }
+        .lb-color-count { font-size: 11px; color: rgba(255,255,255,0.4); }
+        .lb-owners { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.6; word-break: break-all; }
     </style>
 </head>
 <body>
@@ -217,6 +342,19 @@ if (!localStorage.getItem('vandal_token')) {
                     <option value="drive">📁 Google Drive</option>
                     <option value="canvas">🖼️ Canvas LMS</option>
                 </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">📊 Stats Viewer</div>
+        <div class="section-body">
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">Community Leaderboard</div>
+                    <div class="setting-desc">See who's spent the most time, unlocked the most colors, and who owns each exclusive spray</div>
+                </div>
+                <button class="action-btn" onclick="openLeaderboard()">View 🏆</button>
             </div>
         </div>
     </div>
@@ -337,6 +475,26 @@ if (!localStorage.getItem('vandal_token')) {
         <div class="total-time">Total time on Vandal: <span id="totalTimeDisplay">0:00</span></div>
     </div>
 
+</div>
+
+<!-- Stats / Leaderboard modal -->
+<div class="lb-overlay" id="lbOverlay" onclick="if(event.target===this) closeLeaderboard()">
+    <div class="lb-modal">
+        <div class="lb-header">
+            <div class="lb-title">📊 COMMUNITY STATS</div>
+            <button class="lb-close" onclick="closeLeaderboard()">✕</button>
+        </div>
+        <div class="lb-tabs">
+            <div class="lb-tab active" id="lbTabTime" onclick="switchLbTab('time')">⏱️ Time</div>
+            <div class="lb-tab" id="lbTabColors" onclick="switchLbTab('colors')">🎨 Colors</div>
+            <div class="lb-tab" id="lbTabOwners" onclick="switchLbTab('owners')">💎 Owners</div>
+        </div>
+        <div class="lb-body">
+            <div class="lb-pane active" id="lbPaneTime"><div class="lb-loading">Loading...</div></div>
+            <div class="lb-pane" id="lbPaneColors"><div class="lb-loading">Loading...</div></div>
+            <div class="lb-pane" id="lbPaneOwners"><div class="lb-loading">Loading...</div></div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -480,6 +638,109 @@ if (token) {
     }).catch(() => {});
 }
 setInterval(updateMilestones, 5000);
+
+// ===== Stats / Leaderboard modal =====
+var lbLoaded = false;
+var lbCurrentTab = 'time';
+
+function formatLbTime(seconds) {
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = seconds % 60;
+    if (h > 0) return h + 'h ' + String(m).padStart(2,'0') + 'm';
+    if (m > 0) return m + 'm ' + String(s).padStart(2,'0') + 's';
+    return s + 's';
+}
+
+function rankClass(i) {
+    if (i === 0) return 'gold';
+    if (i === 1) return 'silver';
+    if (i === 2) return 'bronze';
+    return '';
+}
+
+function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function openLeaderboard() {
+    document.getElementById('lbOverlay').classList.add('open');
+    if (!lbLoaded) {
+        fetchLeaderboard();
+    }
+}
+
+function closeLeaderboard() {
+    document.getElementById('lbOverlay').classList.remove('open');
+}
+
+function switchLbTab(tab) {
+    lbCurrentTab = tab;
+    ['Time','Colors','Owners'].forEach(function(t) {
+        document.getElementById('lbTab' + t).classList.toggle('active', t.toLowerCase() === tab);
+        document.getElementById('lbPane' + t).classList.toggle('active', t.toLowerCase() === tab);
+    });
+}
+
+function fetchLeaderboard() {
+    fetch('/api/stats/leaderboard')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            lbLoaded = true;
+            renderTimeLeaderboard(data.timeLeaderboard || []);
+            renderColorsLeaderboard(data.colorsLeaderboard || []);
+            renderColorOwners(data.colorOwners || []);
+        })
+        .catch(function() {
+            document.getElementById('lbPaneTime').innerHTML = '<div class="lb-empty">Couldn\'t load stats. Try again later.</div>';
+            document.getElementById('lbPaneColors').innerHTML = '<div class="lb-empty">Couldn\'t load stats. Try again later.</div>';
+            document.getElementById('lbPaneOwners').innerHTML = '<div class="lb-empty">Couldn\'t load stats. Try again later.</div>';
+        });
+}
+
+function renderTimeLeaderboard(list) {
+    var el = document.getElementById('lbPaneTime');
+    if (!list.length) { el.innerHTML = '<div class="lb-empty">No time tracked yet. Be the first!</div>'; return; }
+    el.innerHTML = list.map(function(u, i) {
+        return '<div class="lb-row">' +
+            '<div class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</div>' +
+            '<div class="lb-name">' + escapeHtml(u.username) + '</div>' +
+            '<div class="lb-value">' + formatLbTime(u.timeSeconds) + '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function renderColorsLeaderboard(list) {
+    var el = document.getElementById('lbPaneColors');
+    if (!list.length) { el.innerHTML = '<div class="lb-empty">No colors unlocked yet. Be the first!</div>'; return; }
+    el.innerHTML = list.map(function(u, i) {
+        return '<div class="lb-row">' +
+            '<div class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</div>' +
+            '<div class="lb-name">' + escapeHtml(u.username) + '</div>' +
+            '<div class="lb-value">' + u.count + ' 🎨</div>' +
+        '</div>';
+    }).join('');
+}
+
+function renderColorOwners(list) {
+    var el = document.getElementById('lbPaneOwners');
+    if (!list.length) { el.innerHTML = '<div class="lb-empty">No exclusive colors defined.</div>'; return; }
+    el.innerHTML = list.map(function(c) {
+        var swatch = '<span class="gradient-swatch" style="background:linear-gradient(135deg,' + c.gradient.join(',') + ')"></span>';
+        var ownersHtml = c.owners.length
+            ? escapeHtml(c.owners.join(', '))
+            : '<span style="color:rgba(255,255,255,0.25)">Nobody has unlocked this yet</span>';
+        return '<div class="lb-color-block">' +
+            '<div class="lb-color-top">' + swatch +
+                '<div class="lb-color-name">' + escapeHtml(c.label) + '</div>' +
+                '<div class="lb-color-count">' + c.owners.length + ' owner' + (c.owners.length === 1 ? '' : 's') + '</div>' +
+            '</div>' +
+            '<div class="lb-owners">' + ownersHtml + '</div>' +
+        '</div>';
+    }).join('');
+}
 </script>
 </body>
 </html>
