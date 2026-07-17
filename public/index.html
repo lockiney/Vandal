@@ -502,6 +502,21 @@
             font-weight: bold;
             pointer-events: auto;
         }
+#refresh-btn {
+    position: fixed;
+    top: 20px; left: 70px;
+    z-index: 99999;
+    display: none;
+    background: #c084fc;
+    color: #1e293b;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-weight: bold;
+    pointer-events: auto;
+}
         #stats-counter {
             position: fixed;
             top: 16px; right: 20px;
@@ -625,14 +640,14 @@
         position: fixed;
         bottom: 10px;
         right: 10px;
-        width: 26px;
-        height: 26px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: radial-gradient(circle, rgba(170,100,255,0.7), rgba(100,50,180,0.35));
         border: 1px solid rgba(180,130,255,0.5);
         cursor: pointer;
         z-index: 9998;
-        opacity: 0.4;
+        opacity: 0.7;
         transition: opacity .3s, box-shadow .3s, transform .2s;
     }
     #voidTrigger:hover {
@@ -906,7 +921,7 @@
     <img src="/icons/chat.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;">
     <span id="chatBadge" style="display:none;position:absolute;top:2px;right:2px;background:#ff5050;color:white;border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;"></span>
 </a>
-<a class="nav-btn" id="giveawayBtn" data-tip="Giveaways" onclick="guestCheck('/giveaway')"><span style="font-size:24px;line-height:1;">🎁</span></a>
+<a class="nav-btn" id="suggestionBtn" data-tip="Suggestions" onclick="guestCheck('/suggestion')"><span style="font-size:24px;line-height:1;">💡</span></a>
         <a class="nav-btn" id="settingsBtn" data-tip="Settings" onclick="guestCheck('/settings')"><img src="/icons/settings.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></a>
         <div class="can-divider"></div>
         <button class="nav-btn" id="colorBtn" data-tip="Spray Color" onclick="if(typeof toggleColorPicker !== 'undefined') toggleColorPicker()"><img src="/icons/spraycolor.png" width="28" height="28" style="filter:drop-shadow(0 0 0px #a78bfa);transition:filter 0.2s;"></button>
@@ -932,6 +947,7 @@
 </div>
 
 <button id="back-btn">←</button>
+<button id="refresh-btn">⟳</button>
 
 <div id="home-ui">
     <div class="logo">VANDAL</div>
@@ -1205,6 +1221,7 @@
         homeUI.style.display = 'none';
         proxyContainer.style.display = 'block';
         backBtn.style.display = 'block';
+        refreshBtn.style.display = 'block';
         document.getElementById('spray-nav').style.display = 'none';
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         document.getElementById('loading-screen').style.display = 'flex';
@@ -1245,13 +1262,21 @@
         proxyContainer.style.display = 'none';
         homeUI.style.display = 'flex';
         backBtn.style.display = 'none';
+        refreshBtn.style.display = 'none';
         document.getElementById('spray-nav').style.display = 'flex';
         frame.src = 'about:blank';
     };
 
     button.onclick = (e) => launchProxy(e);
     input.onkeydown = (e) => { if (e.key === 'Enter') launchProxy(e); };
-
+const refreshBtn = document.getElementById('refresh-btn');
+refreshBtn.onclick = () => {
+    try {
+        frame.contentWindow.location.reload();
+    } catch (e) {
+        frame.src = frame.src;
+    }
+};
     // Painting
     let drawing = false;
     let mouseX, mouseY;

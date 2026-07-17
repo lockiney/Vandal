@@ -45,7 +45,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.get('/games', (req, res) => res.sendFile(path.join(__dirname, 'public', 'games.html')));
 app.get('/music', (req, res) => res.sendFile(path.join(__dirname, 'public', 'music.html')));
 app.get('/movies', (req, res) => res.sendFile(path.join(__dirname, 'public', 'movies.html')));
-app.get('/giveaway', (req, res) => res.sendFile(path.join(__dirname, 'public', 'giveaway.html')));
+app.get('/suggestion', (req, res) => res.sendFile(path.join(__dirname, 'public', 'suggestion.html')));
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'chat.html')));
 app.get('/settings', (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
 
@@ -223,15 +223,15 @@ app.get('/api/stats/leaderboard', (req, res) => {
     res.json({ timeLeaderboard, colorsLeaderboard, colorOwners, totalUsers: users.length });
 });
 
-// ---- Giveaways ----
-const GIVEAWAYS_FILE = path.join(__dirname, 'giveaways.json');
+// ---- Suggestions ----
+const SUGGESTIONS_FILE = path.join(__dirname, 'suggestions.json');
 
-function loadGiveaways() {
-    try { return JSON.parse(fs.readFileSync(GIVEAWAYS_FILE, 'utf8')); }
+function loadSuggestions() {
+    try { return JSON.parse(fs.readFileSync(SUGGESTIONS_FILE, 'utf8')); }
     catch { return []; }
 }
-function saveGiveaways(list) {
-    fs.writeFileSync(GIVEAWAYS_FILE, JSON.stringify(list, null, 2));
+function saveSuggestions(list) {
+    fs.writeFileSync(SUGGESTIONS_FILE, JSON.stringify(list, null, 2));
 }
 function getUserFromToken(req) {
     const token = req.headers.authorization?.split(' ')[1];
@@ -244,123 +244,130 @@ function getUserFromToken(req) {
     }
 }
 
-// Pick winners from unique participants (one entry per account)
-function drawWinners(g) {
-    const participants = [...new Set((g.messages || []).map(m => m.user))];
-    for (let i = participants.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [participants[i], participants[j]] = [participants[j], participants[i]];
+// Turn the votes map into counts the client can render
+function tallyVotes(s) {
+    const votes = s.votes || {};
+    let likes = 0, dislikes = 0;
+    for (const k in votes) {
+        if (votes[k] === 'like') likes++;
+        else if (votes[k] === 'dislike') dislikes++;
     }
-    const n = Math.min(g.winnersCount || 1, participants.length);
-    g.winners = participants.slice(0, n);
-    g.drawn = true;
+    return { likes, dislikes };
 }
 
-// Draw any ended-but-undrawn giveaways; returns true if anything changed
-function processEnded(list) {
-    const now = Date.now();
-    let changed = false;
-    list.forEach(g => {
-        if (g.endsAt <= now && !g.drawn) {
-            drawWinners(g);
-            changed = true;
-        }
-    });
-    return changed;
+// Shape a suggestion for the client, including this user's own vote
+function publicSuggestion(s, username) {
+    const { likes, dislikes } = tallyVotes(s);
+    return {
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        creator: s.creator,
+        createdAt: s.createdAt,
+        likes,
+        dislikes,
+        score: likes - dislikes,
+        myVote: (username && s.votes) ? (s.votes[username] || null) : null,
+        messageCount: (s.messages || []).length
+    };
 }
 
-app.get('/api/giveaways', (req, res) => {
-    const list = loadGiveaways();
-    if (processEnded(list)) saveGiveaways(list);
-    res.json(list);
+app.get('/api/suggestions', (req, res) => {
+    const user = getUserFromToken(req);
+    const list = loadSuggestions();
+    res.json(list.map(s => publicSuggestion(s, user ? user.username : null)));
 });
 
-app.post('/api/giveaways', express.json(), (req, res) => {
+app.post('/api/suggestions', express.json(), (req, res) => {
     const user = getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Login required' });
 
-    const { name, prize, hours, description, winnersCount } = req.body;
-    if (!name || !prize || !hours) return res.status(400).json({ error: 'Missing fields' });
+    const { title, description } = req.body;
+    if (!title) return res.status(400).json({ error: 'Missing title' });
 
-    const list = loadGiveaways();
+    const list = loadSuggestions();
 
-    // one giveaway per user per 24h
+    // one suggestion per user per 24h
     const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    const recent = list.find(g => g.creator === user.username && g.createdAt > dayAgo);
-    if (recent) return res.status(429).json({ error: 'You can only create one giveaway per day' });
+    const recent = list.find(s => s.creator === user.username && s.createdAt > dayAgo);
+    if (recent) return res.status(429).json({ error: 'You can only post one suggestion per day' });
 
-    const h = Math.max(0.1, Math.min(parseFloat(hours), 720)); // cap at 30 days
-    const wc = Math.max(1, Math.min(parseInt(winnersCount) || 1, 50));
-    const giveaway = {
+    const suggestion = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-        name: String(name).slice(0, 80),
-        prize: String(prize).slice(0, 120),
+        title: String(title).slice(0, 100),
         description: String(description || '').slice(0, 1000),
-        winnersCount: wc,
         creator: user.username,
         createdAt: Date.now(),
-        endsAt: Date.now() + h * 60 * 60 * 1000,
-        messages: [],
-        winners: [],
-        drawn: false
+        votes: {},
+        messages: []
     };
-    list.push(giveaway);
-    saveGiveaways(list);
-    res.json(giveaway);
+    list.push(suggestion);
+    saveSuggestions(list);
+    res.json(publicSuggestion(suggestion, user.username));
 });
 
-app.delete('/api/giveaways/:id', (req, res) => {
+app.delete('/api/suggestions/:id', (req, res) => {
     const user = getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Login required' });
     if (user.username !== 'lockiney') return res.status(403).json({ error: 'Not authorized' });
 
-    const list = loadGiveaways();
-    const filtered = list.filter(g => g.id !== req.params.id);
-    saveGiveaways(filtered);
+    const list = loadSuggestions();
+    const filtered = list.filter(s => s.id !== req.params.id);
+    saveSuggestions(filtered);
     res.json({ success: true });
 });
 
-// Get messages for a giveaway
-app.get('/api/giveaways/:id/messages', (req, res) => {
-    const list = loadGiveaways();
-    if (processEnded(list)) saveGiveaways(list);
-    const g = list.find(x => x.id === req.params.id);
-    if (!g) return res.status(404).json({ error: 'Not found' });
-    res.json({
-        messages: g.messages || [],
-        ended: g.endsAt <= Date.now(),
-        drawn: !!g.drawn,
-        winners: g.winners || [],
-        name: g.name,
-        prize: g.prize,
-        winnersCount: g.winnersCount || 1
-    });
-});
-
-// Post a message to a giveaway (login required, no posting after it ends)
-app.post('/api/giveaways/:id/messages', express.json(), (req, res) => {
+// Vote on a suggestion: like / dislike / undo (send same vote again to remove it)
+app.post('/api/suggestions/:id/vote', express.json(), (req, res) => {
     const user = getUserFromToken(req);
     if (!user) return res.status(401).json({ error: 'Login required' });
 
-    const list = loadGiveaways();
-    const g = list.find(x => x.id === req.params.id);
-    if (!g) return res.status(404).json({ error: 'Not found' });
-    if (g.endsAt <= Date.now()) return res.status(403).json({ error: 'Giveaway has ended' });
+    const vote = req.body.vote;
+    if (vote !== 'like' && vote !== 'dislike') return res.status(400).json({ error: 'Invalid vote' });
+
+    const list = loadSuggestions();
+    const s = list.find(x => x.id === req.params.id);
+    if (!s) return res.status(404).json({ error: 'Not found' });
+
+    s.votes = s.votes || {};
+    if (s.votes[user.username] === vote) {
+        delete s.votes[user.username];      // clicking the same vote undoes it
+    } else {
+        s.votes[user.username] = vote;      // new vote, or switch sides
+    }
+    saveSuggestions(list);
+    res.json(publicSuggestion(s, user.username));
+});
+
+// Get messages for a suggestion
+app.get('/api/suggestions/:id/messages', (req, res) => {
+    const list = loadSuggestions();
+    const s = list.find(x => x.id === req.params.id);
+    if (!s) return res.status(404).json({ error: 'Not found' });
+    res.json({
+        messages: s.messages || [],
+        title: s.title,
+        creator: s.creator
+    });
+});
+
+// Post a message to a suggestion (login required)
+app.post('/api/suggestions/:id/messages', express.json(), (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+
+    const list = loadSuggestions();
+    const s = list.find(x => x.id === req.params.id);
+    if (!s) return res.status(404).json({ error: 'Not found' });
 
     const text = String(req.body.text || '').trim().slice(0, 500);
     if (!text) return res.status(400).json({ error: 'Empty message' });
 
-    g.messages = g.messages || [];
-    g.messages.push({ user: user.username, text, at: Date.now() });
-    saveGiveaways(list);
+    s.messages = s.messages || [];
+    s.messages.push({ user: user.username, text, at: Date.now() });
+    saveSuggestions(list);
     res.json({ success: true });
 });
-
-// Safety net: draw winners every 60s even if nobody opens the page
-setInterval(() => {
-    const list = loadGiveaways();
-    if (processEnded(list)) saveGiveaways(list);
-}, 60000);
 
 // --- 404 FALLBACK ---
 app.use((req, res) => {
