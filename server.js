@@ -117,6 +117,40 @@ function saveUsers() {
     fs.writeFileSync(usersFile, JSON.stringify(users));
 }
 
+// ---- Referral system ----
+const REFERRAL_STAGES = 5; // each referral fills one stage (20% each)
+
+function genReferralCode() {
+    // short, unambiguous code (no confusing chars)
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    let code;
+    do {
+        code = '';
+        for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    } while (users.some(u => u.referralCode === code));
+    return code;
+}
+
+// Backfill missing referral fields for existing accounts (runs once at boot)
+let _refBackfill = false;
+users.forEach(u => {
+    if (!u.referralCode) { u.referralCode = genReferralCode(); _refBackfill = true; }
+    if (typeof u.referralCount !== 'number') { u.referralCount = 0; _refBackfill = true; }
+    if (!('referredBy' in u)) { u.referredBy = null; _refBackfill = true; }
+    if (!u.equippedTitle) { u.equippedTitle = null; _refBackfill = true; }
+    if (!u.searchLine) { u.searchLine = ''; _refBackfill = true; }
+});
+if (_refBackfill) saveUsers();
+
+// What each stage unlocks (kept in sync with the client)
+const REFERRAL_REWARDS = [
+    { stage: 1, id: 'refer_color',  label: 'Referral Color' },
+    { stage: 2, id: 'refer_tag',    label: 'Exclusive Tag' },
+    { stage: 3, id: 'refer_discord',label: 'Discord Role' },
+    { stage: 4, id: 'refer_search', label: 'Custom Search Line' },
+    { stage: 5, id: 'refer_title',  label: 'Glowing Title' }
+];
+
 app.post('/api/auth/signup', express.json(), async (req, res) => {
     const { username, email, password } = req.body;
     if (!username || !email || !password) return res.status(400).json({ error: 'Missing fields' });
@@ -126,6 +160,15 @@ app.post('/api/auth/signup', express.json(), async (req, res) => {
     if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) return res.status(400).json({ error: 'Username already taken' });
     if (users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase())) return res.status(400).json({ error: 'Email already registered' });
     const hashed = await bcrypt.hash(password, 10);
+
+    // optional referral code -> credit the code's OWNER (the referrer)
+    let referrer = null;
+    const rawCode = (req.body.referralCode || '').trim().toUpperCase();
+    if (rawCode) {
+        referrer = users.find(u => u.referralCode === rawCode);
+        if (!referrer) return res.status(400).json({ error: 'Invalid referral code' });
+    }
+
     const user = {
         id: Date.now().toString(),
         username,
@@ -135,10 +178,25 @@ app.post('/api/auth/signup', express.json(), async (req, res) => {
         timeSeconds: 0,
         usedColors: [],
         createdAt: Date.now(),
-        verified: true
+        verified: true,
+        referralCode: genReferralCode(),
+        referredBy: referrer ? referrer.referralCode : null,
+        referralCount: 0,
+        equippedTitle: null,
+        searchLine: ''
     };
     users.push(user);
+
+    // credit the referrer (cap at 5 stages), and auto-grant their referral color at stage 1
+    if (referrer) {
+        referrer.referralCount = Math.min(REFERRAL_STAGES, (referrer.referralCount || 0) + 1);
+        if (referrer.referralCount >= 1) {
+            referrer.unlockedColors = referrer.unlockedColors || [];
+            if (!referrer.unlockedColors.includes('refer_color')) referrer.unlockedColors.push('refer_color');
+        }
+    }
     saveUsers();
+
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, username: user.username, message: 'Account created!' });
 });
@@ -182,10 +240,73 @@ app.get('/api/auth/me', (req, res) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         const user = users.find(u => u.id === decoded.id);
         if (!user) return res.status(401).json({ error: 'User not found' });
-        res.json({ username: user.username, unlockedColors: user.unlockedColors || [], timeSeconds: user.timeSeconds || 0, usedColors: user.usedColors || [] });
+        res.json({
+            username: user.username,
+            unlockedColors: user.unlockedColors || [],
+            timeSeconds: user.timeSeconds || 0,
+            usedColors: user.usedColors || [],
+            referralCode: user.referralCode || null,
+            referralCount: user.referralCount || 0,
+            equippedTitle: user.equippedTitle || null,
+            searchLine: user.searchLine || ''
+        });
     } catch(e) {
         res.status(401).json({ error: 'Invalid token' });
     }
+});
+
+// --- REFERRAL API ---
+// Progress + code for the logged-in user
+app.get('/api/referral/me', (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+    res.json({
+        referralCode: user.referralCode,
+        referralCount: user.referralCount || 0,
+        stages: REFERRAL_STAGES,
+        rewards: REFERRAL_REWARDS,
+        equippedTitle: user.equippedTitle || null,
+        searchLine: user.searchLine || ''
+    });
+});
+
+// Equip / unequip a referral title (tag = stage 2, glow title = stage 5)
+app.post('/api/referral/title', express.json(), (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+    const which = req.body.title; // 'tag' | 'glow' | null
+    const count = user.referralCount || 0;
+    if (which === null || which === '') {
+        user.equippedTitle = null;
+    } else if (which === 'tag') {
+        if (count < 2) return res.status(403).json({ error: 'Not unlocked' });
+        user.equippedTitle = 'tag';
+    } else if (which === 'glow') {
+        if (count < 5) return res.status(403).json({ error: 'Not unlocked' });
+        user.equippedTitle = 'glow';
+    } else {
+        return res.status(400).json({ error: 'Invalid title' });
+    }
+    saveUsers();
+    res.json({ equippedTitle: user.equippedTitle });
+});
+
+// Set the custom search-bar line (stage 4)
+app.post('/api/referral/searchline', express.json(), (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+    if ((user.referralCount || 0) < 4) return res.status(403).json({ error: 'Not unlocked' });
+    user.searchLine = String(req.body.line || '').slice(0, 60);
+    saveUsers();
+    res.json({ searchLine: user.searchLine });
+});
+
+// Public: look up a user's equipped title by username (chat uses this to render tags)
+app.get('/api/referral/title-of', (req, res) => {
+    const uname = (req.query.username || '').toLowerCase();
+    const u = users.find(x => x.username.toLowerCase() === uname);
+    if (!u) return res.json({ equippedTitle: null });
+    res.json({ equippedTitle: u.equippedTitle || null, referralCount: u.referralCount || 0 });
 });
 
 // --- LEADERBOARD API ---
@@ -220,7 +341,19 @@ app.get('/api/stats/leaderboard', (req, res) => {
         owners: users.filter(u => (u.unlockedColors || []).includes(c.id)).map(u => u.username)
     }));
 
-    res.json({ timeLeaderboard, colorsLeaderboard, colorOwners, totalUsers: users.length });
+    // referral progress leaderboard + who has unlocked stages 3 (discord) & 4 (search line)
+    const referralLeaderboard = users
+        .filter(u => (u.referralCount || 0) > 0)
+        .sort((a, b) => (b.referralCount || 0) - (a.referralCount || 0))
+        .slice(0, 25)
+        .map(u => ({
+            username: u.username,
+            count: u.referralCount || 0,
+            discord: (u.referralCount || 0) >= 3,
+            searchLine: (u.referralCount || 0) >= 4 ? (u.searchLine || '') : ''
+        }));
+
+    res.json({ timeLeaderboard, colorsLeaderboard, colorOwners, referralLeaderboard, totalUsers: users.length });
 });
 
 // ---- Suggestions ----
@@ -394,9 +527,27 @@ const server = createServer((req, res) => {
     }
 });
 
+// Only allow wisp connections coming from our own domains.
+// Stops strangers from routing their traffic through the droplet (bandwidth + IP reputation).
+const ALLOWED_WISP_ORIGINS = [
+    'https://vandal.mooo.com',
+    'https://vandal.chickenkiller.com',
+    'https://school.sucks.so.i.helped.making.it.better.speedinsure.hk'
+];
+
 server.on('upgrade', (req, socket, head) => {
     if (req.url.startsWith('/wisp/')) {
-        wisp.server.routeRequest(req, socket, head);
+        const origin = req.headers.origin;
+        const host = req.headers.host || '';
+        const hostAllowed = host.startsWith('vandal.mooo.com')
+            || host.startsWith('vandal.chickenkiller.com')
+            || host.startsWith('school.sucks.so.i.helped.making.it.better.speedinsure.hk');
+        const originAllowed = origin && ALLOWED_WISP_ORIGINS.includes(origin);
+        if (originAllowed || (!origin && hostAllowed)) {
+            wisp.server.routeRequest(req, socket, head);
+        } else {
+            socket.destroy();
+        }
     } else {
         socket.end();
     }

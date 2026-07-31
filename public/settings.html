@@ -307,7 +307,168 @@ if (!localStorage.getItem('vandal_token')) {
         .lb-color-name { font-size: 13px; color: white; flex: 1; }
         .lb-color-count { font-size: 11px; color: rgba(255,255,255,0.4); }
         .lb-owners { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.6; word-break: break-all; }
+
+        /* ===== Referral section ===== */
+        .ref-code-row { display:flex; align-items:center; gap:10px; background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); border-radius:12px; padding:12px 14px; }
+        .ref-code-label { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:4px; }
+        .ref-code-value { font-size:22px; letter-spacing:3px; color:#c084fc; }
+        .ref-copy-btn { margin-left:auto; padding:9px 16px; border-radius:10px; border:1px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.15); color:#fff; font-family:'Permanent Marker',cursive; font-size:12px; cursor:pointer; white-space:nowrap; transition:all 0.2s; }
+        .ref-copy-btn:hover { background:rgba(167,139,250,0.3); }
+        .ref-progress-wrap { margin-top:4px; }
+        .ref-bar { display:flex; gap:5px; margin-bottom:6px; }
+        .ref-seg { flex:1; height:16px; border-radius:5px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); transition:all 0.4s; }
+        .ref-seg.filled { background:linear-gradient(90deg,#a78bfa,#c084fc); border-color:rgba(192,132,252,0.6); box-shadow:0 0 10px rgba(167,139,250,0.5); }
+        .ref-count-label { font-size:12px; color:rgba(255,255,255,0.5); text-align:right; }
+        .ref-count-label span { color:#c084fc; }
+        .ref-rewards { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+        .ref-reward { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); }
+        .ref-reward.unlocked { border-color:rgba(167,139,250,0.4); background:rgba(167,139,250,0.05); }
+        .ref-reward-icon { font-size:18px; width:26px; text-align:center; flex-shrink:0; }
+        .ref-reward-body { flex:1; }
+        .ref-reward-name { font-size:13px; color:rgba(255,255,255,0.85); }
+        .ref-reward-desc { font-size:11px; color:rgba(255,255,255,0.35); margin-top:2px; }
+        .ref-reward-stage { font-size:10px; color:rgba(255,255,255,0.4); padding:3px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); flex-shrink:0; }
+        .ref-reward.unlocked .ref-reward-stage { color:#c084fc; border-color:rgba(167,139,250,0.5); }
+        .ref-searchline { margin-top:6px; display:none; }
+        .ref-searchline.show { display:block; }
+        .ref-searchline input { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(167,139,250,0.3); border-radius:10px; color:#fff; font-family:'Permanent Marker',cursive; font-size:13px; padding:10px 12px; outline:none; }
+        .lb-ref-badges { display:flex; gap:6px; flex-shrink:0; }
+        .lb-badge { font-size:14px; }
     </style>
+<!-- ===== GRAFFITI / STREET THEME — paste this whole block just before </head> ===== -->
+<style>
+    /* Textured wallpaper background like the home page */
+    body {
+        background:
+            linear-gradient(rgba(10,8,20,0.82), rgba(10,8,20,0.88)),
+            url('https://wallpaperaccess.com/full/2238315.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+    }
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(circle at 12% 22%, rgba(255,46,115,0.10), transparent 22%),
+            radial-gradient(circle at 85% 15%, rgba(0,242,255,0.10), transparent 20%),
+            radial-gradient(circle at 78% 80%, rgba(255,140,0,0.08), transparent 24%),
+            radial-gradient(circle at 25% 85%, rgba(112,0,255,0.12), transparent 26%);
+    }
+    .topbar, .content { position: relative; z-index: 1; }
+
+    /* ===== Top bar: gradient street header ===== */
+    .topbar {
+        background: linear-gradient(135deg, rgba(255,46,115,0.22), rgba(112,0,255,0.28), rgba(0,242,255,0.18)) !important;
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) 1 !important;
+    }
+    .topbar-title {
+        background: linear-gradient(90deg, #ff2e73, #ffd700, #00f2ff, #c084fc) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 0 18px rgba(192,132,252,0.4);
+        letter-spacing: 2px;
+    }
+
+    /* ===== Section cards: sprayed sticker panels ===== */
+    .section {
+        background: rgba(20,14,32,0.72) !important;
+        border: 1px solid rgba(167,139,250,0.28) !important;
+        border-radius: 4px 16px 16px 16px !important;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.35) !important;
+        backdrop-filter: blur(6px);
+    }
+    .section-header {
+        background: linear-gradient(90deg, rgba(255,46,115,0.18), rgba(192,132,252,0.14), transparent) !important;
+        border-bottom: 1px solid rgba(255,110,199,0.25) !important;
+        color: #ffb0d8 !important;
+        text-shadow: 0 0 10px rgba(255,46,115,0.4);
+        letter-spacing: 2px;
+    }
+
+    /* ===== Buttons: spray-can pills ===== */
+    .action-btn {
+        background: linear-gradient(135deg, rgba(255,46,115,0.25), rgba(192,132,252,0.25)) !important;
+        border: 1px solid rgba(255,110,199,0.45) !important;
+        border-radius: 20px !important;
+        transition: transform .15s, box-shadow .2s !important;
+    }
+    .action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 14px rgba(255,46,115,0.5) !important;
+    }
+    .back-btn { border-radius: 20px !important; transition: box-shadow .2s; }
+    .back-btn:hover { box-shadow: 0 0 12px rgba(192,132,252,0.5); }
+    .cloak-select {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(167,139,250,0.3) !important;
+        border-radius: 14px !important;
+    }
+
+    /* ===== Milestone rows ===== */
+    .milestone {
+        background: rgba(25,18,40,0.6) !important;
+        border: 1px solid rgba(167,139,250,0.18) !important;
+        border-radius: 4px 14px 14px 14px !important;
+    }
+    .milestone.unlocked {
+        border-color: rgba(255,110,199,0.4) !important;
+        box-shadow: 0 0 12px rgba(255,46,115,0.15) !important;
+    }
+
+    /* ===== Referral section pop ===== */
+    .ref-code-row {
+        background: linear-gradient(135deg, rgba(255,46,115,0.12), rgba(112,0,255,0.15)) !important;
+        border: 1px solid rgba(255,110,199,0.35) !important;
+    }
+    .ref-code-value {
+        background: linear-gradient(90deg, #ff2e73, #ffd700, #00f2ff) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+    .ref-copy-btn {
+        background: linear-gradient(135deg, #ff2e73, #c084fc) !important;
+        border: none !important;
+        box-shadow: 0 0 10px rgba(255,46,115,0.4) !important;
+    }
+    .ref-copy-btn:hover { box-shadow: 0 0 16px rgba(255,46,115,0.7) !important; }
+    .ref-seg.filled {
+        background: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) !important;
+        box-shadow: 0 0 10px rgba(255,46,115,0.5) !important;
+    }
+
+    /* ===== Leaderboard modal ===== */
+    .lb-modal {
+        background: rgba(20,14,32,0.97) !important;
+        border: 1px solid rgba(255,110,199,0.3) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 0 40px rgba(192,132,252,0.25) !important;
+    }
+    .lb-header {
+        background: linear-gradient(90deg, rgba(255,46,115,0.2), rgba(112,0,255,0.2)) !important;
+    }
+    .lb-tab.active {
+        background: linear-gradient(135deg, #ff2e73, #c084fc) !important;
+        border-radius: 12px 12px 0 0 !important;
+    }
+    .lb-row { border-bottom: 1px solid rgba(167,139,250,0.12) !important; }
+
+    /* total-time footer */
+    .total-time span {
+        background: linear-gradient(90deg, #ff2e73, #00f2ff) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+</style>
+
 </head>
 <body>
 
@@ -355,6 +516,74 @@ if (!localStorage.getItem('vandal_token')) {
                     <div class="setting-desc">See who's spent the most time, unlocked the most colors, and who owns each exclusive spray</div>
                 </div>
                 <button class="action-btn" onclick="openLeaderboard()">View 🏆</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">🎟️ Referrals</div>
+        <div class="section-body">
+            <div class="ref-code-row">
+                <div>
+                    <div class="ref-code-label">YOUR REFERRAL CODE</div>
+                    <div class="ref-code-value" id="refCode">------</div>
+                </div>
+                <button class="ref-copy-btn" id="refCopyBtn" onclick="copyRefLink()">Copy Link</button>
+            </div>
+            <div class="ref-progress-wrap">
+                <div class="ref-bar" id="refBar">
+                    <div class="ref-seg" data-i="0"></div>
+                    <div class="ref-seg" data-i="1"></div>
+                    <div class="ref-seg" data-i="2"></div>
+                    <div class="ref-seg" data-i="3"></div>
+                    <div class="ref-seg" data-i="4"></div>
+                </div>
+                <div class="ref-count-label"><span id="refCount">0</span> / 5 referrals</div>
+            </div>
+            <div class="ref-rewards" id="refRewards">
+                <div class="ref-reward" data-stage="1">
+                    <div class="ref-reward-icon"><span class="gradient-swatch" style="background:linear-gradient(135deg,#0aff6a,#050505,#0a3d1f)"></span></div>
+                    <div class="ref-reward-body">
+                        <div class="ref-reward-name">Ghost Train Spray</div>
+                        <div class="ref-reward-desc">An exclusive green/black spray, unlocked automatically</div>
+                    </div>
+                    <div class="ref-reward-stage">1 referral</div>
+                </div>
+                <div class="ref-reward" data-stage="2">
+                    <div class="ref-reward-icon">🏷️</div>
+                    <div class="ref-reward-body">
+                        <div class="ref-reward-name">Exclusive Chat Tag</div>
+                        <div class="ref-reward-desc">Equip it in chat — shows as [tag] your name</div>
+                    </div>
+                    <div class="ref-reward-stage">2 referrals</div>
+                </div>
+                <div class="ref-reward" data-stage="3">
+                    <div class="ref-reward-icon">🎮</div>
+                    <div class="ref-reward-body">
+                        <div class="ref-reward-name">Discord Role</div>
+                        <div class="ref-reward-desc">You'll appear on the leaderboard so an admin can grant it</div>
+                    </div>
+                    <div class="ref-reward-stage">3 referrals</div>
+                </div>
+                <div class="ref-reward" data-stage="4">
+                    <div class="ref-reward-icon">🔍</div>
+                    <div class="ref-reward-body">
+                        <div class="ref-reward-name">Custom Search Line</div>
+                        <div class="ref-reward-desc">Add your own line in the search bar</div>
+                        <div class="ref-searchline" id="refSearchlineWrap">
+                            <input id="refSearchlineInput" maxlength="60" placeholder="Your custom line..." onkeydown="if(event.key==='Enter')saveSearchLine()">
+                        </div>
+                    </div>
+                    <div class="ref-reward-stage">4 referrals</div>
+                </div>
+                <div class="ref-reward" data-stage="5">
+                    <div class="ref-reward-icon">✨</div>
+                    <div class="ref-reward-body">
+                        <div class="ref-reward-name">Glowing Title</div>
+                        <div class="ref-reward-desc">A prestige glowing title — equip it in chat</div>
+                    </div>
+                    <div class="ref-reward-stage">5 referrals</div>
+                </div>
             </div>
         </div>
     </div>
@@ -488,11 +717,13 @@ if (!localStorage.getItem('vandal_token')) {
             <div class="lb-tab active" id="lbTabTime" onclick="switchLbTab('time')">⏱️ Time</div>
             <div class="lb-tab" id="lbTabColors" onclick="switchLbTab('colors')">🎨 Colors</div>
             <div class="lb-tab" id="lbTabOwners" onclick="switchLbTab('owners')">💎 Owners</div>
+            <div class="lb-tab" id="lbTabReferrals" onclick="switchLbTab('referrals')">🎟️ Referrals</div>
         </div>
         <div class="lb-body">
             <div class="lb-pane active" id="lbPaneTime"><div class="lb-loading">Loading...</div></div>
             <div class="lb-pane" id="lbPaneColors"><div class="lb-loading">Loading...</div></div>
             <div class="lb-pane" id="lbPaneOwners"><div class="lb-loading">Loading...</div></div>
+            <div class="lb-pane" id="lbPaneReferrals"><div class="lb-loading">Loading...</div></div>
         </div>
     </div>
 </div>
@@ -678,7 +909,7 @@ function closeLeaderboard() {
 
 function switchLbTab(tab) {
     lbCurrentTab = tab;
-    ['Time','Colors','Owners'].forEach(function(t) {
+    ['Time','Colors','Owners','Referrals'].forEach(function(t) {
         document.getElementById('lbTab' + t).classList.toggle('active', t.toLowerCase() === tab);
         document.getElementById('lbPane' + t).classList.toggle('active', t.toLowerCase() === tab);
     });
@@ -692,6 +923,7 @@ function fetchLeaderboard() {
             renderTimeLeaderboard(data.timeLeaderboard || []);
             renderColorsLeaderboard(data.colorsLeaderboard || []);
             renderColorOwners(data.colorOwners || []);
+            renderReferralLeaderboard(data.referralLeaderboard || []);
         })
         .catch(function() {
             document.getElementById('lbPaneTime').innerHTML = '<div class="lb-empty">Couldn\'t load stats. Try again later.</div>';
@@ -741,6 +973,86 @@ function renderColorOwners(list) {
         '</div>';
     }).join('');
 }
+
+function renderReferralLeaderboard(list) {
+    var el = document.getElementById('lbPaneReferrals');
+    if (!el) return;
+    if (!list.length) { el.innerHTML = '<div class="lb-empty">No referrals yet. Share your code!</div>'; return; }
+    el.innerHTML = list.map(function(u, i) {
+        var badges = '';
+        if (u.discord) badges += '<span class="lb-badge" title="Discord role (3+)">🎮</span>';
+        if (u.searchLine) badges += '<span class="lb-badge" title="Search line: ' + escapeHtml(u.searchLine) + '">🔍</span>';
+        var line = u.searchLine ? '<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">\u201C' + escapeHtml(u.searchLine) + '\u201D</div>' : '';
+        return '<div class="lb-row">' +
+            '<div class="lb-rank ' + rankClass(i) + '">' + (i + 1) + '</div>' +
+            '<div class="lb-name">' + escapeHtml(u.username) + line + '</div>' +
+            '<div class="lb-ref-badges">' + badges + '</div>' +
+            '<div class="lb-value">' + u.count + '/5</div>' +
+        '</div>';
+    }).join('');
+}
+
+// ===== Referral progress section =====
+var refData = null;
+function loadReferral() {
+    var t = localStorage.getItem('vandal_token');
+    if (!t) return;
+    fetch('/api/referral/me', { headers: { 'Authorization': 'Bearer ' + t } })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            if (d.error) return;
+            refData = d;
+            document.getElementById('refCode').textContent = d.referralCode || '------';
+            document.getElementById('refCount').textContent = d.referralCount || 0;
+            var segs = document.querySelectorAll('#refBar .ref-seg');
+            for (var i = 0; i < segs.length; i++) {
+                segs[i].classList.toggle('filled', i < (d.referralCount || 0));
+            }
+            var rewards = document.querySelectorAll('#refRewards .ref-reward');
+            rewards.forEach(function(r){
+                var stage = parseInt(r.getAttribute('data-stage'));
+                r.classList.toggle('unlocked', (d.referralCount || 0) >= stage);
+            });
+            // stage 4 search-line editor
+            if ((d.referralCount || 0) >= 4) {
+                document.getElementById('refSearchlineWrap').classList.add('show');
+                document.getElementById('refSearchlineInput').value = d.searchLine || '';
+            }
+        })
+        .catch(function(){});
+}
+
+function copyRefLink() {
+    if (!refData || !refData.referralCode) return;
+    var link = 'https://vandal.chickenkiller.com/?ref=' + refData.referralCode;
+    var btn = document.getElementById('refCopyBtn');
+    navigator.clipboard.writeText(link).then(function(){
+        btn.textContent = 'Copied!';
+        setTimeout(function(){ btn.textContent = 'Copy Link'; }, 1500);
+    }).catch(function(){
+        // fallback
+        var ta = document.createElement('textarea');
+        ta.value = link; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); btn.textContent = 'Copied!'; } catch(e){}
+        document.body.removeChild(ta);
+        setTimeout(function(){ btn.textContent = 'Copy Link'; }, 1500);
+    });
+}
+
+function saveSearchLine() {
+    var t = localStorage.getItem('vandal_token');
+    var val = document.getElementById('refSearchlineInput').value;
+    fetch('/api/referral/searchline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t },
+        body: JSON.stringify({ line: val })
+    }).then(function(r){ return r.json(); }).then(function(d){
+        var inp = document.getElementById('refSearchlineInput');
+        if (!d.error) { inp.style.borderColor = '#22c55e'; setTimeout(function(){ inp.style.borderColor=''; }, 1000); }
+    }).catch(function(){});
+}
+
+loadReferral();
 </script>
 </body>
 </html>

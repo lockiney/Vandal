@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-if (!localStorage.getItem('vandal_token')) {
-    window.location.href = '/';
-}
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vandal - Movies</title>
@@ -285,6 +280,74 @@ if (!localStorage.getItem('vandal_token')) {
             .topbar-title { font-size: 16px; }
         }
     </style>
+<!-- ===== GRAFFITI / STREET THEME ===== -->
+<style>
+    /* Textured wallpaper background like the home page */
+    body {
+        background:
+            linear-gradient(rgba(10,8,20,0.82), rgba(10,8,20,0.88)),
+            url('https://wallpaperaccess.com/full/2238315.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+    }
+    body::before {
+        content: '';
+        position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background:
+            radial-gradient(circle at 12% 22%, rgba(255,46,115,0.10), transparent 22%),
+            radial-gradient(circle at 85% 15%, rgba(0,242,255,0.10), transparent 20%),
+            radial-gradient(circle at 78% 80%, rgba(255,140,0,0.08), transparent 24%),
+            radial-gradient(circle at 25% 85%, rgba(112,0,255,0.12), transparent 26%);
+    }
+
+    .topbar, .movie-grid, .search-wrap, .tabs, .server-btns { position: relative; z-index: 1; }
+
+    .topbar {
+        background: linear-gradient(135deg, rgba(255,46,115,0.22), rgba(112,0,255,0.28), rgba(0,242,255,0.18)) !important;
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) 1 !important;
+    }
+    .topbar-title {
+        background: linear-gradient(90deg, #ff2e73, #ffd700, #00f2ff, #c084fc) !important;
+        -webkit-background-clip: text !important; background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 0 18px rgba(192,132,252,0.4); letter-spacing: 2px;
+    }
+    .back-btn {
+        background: linear-gradient(135deg, rgba(255,46,115,0.25), rgba(192,132,252,0.25)) !important;
+        border: 1px solid rgba(255,110,199,0.45) !important;
+        border-radius: 20px !important; transition: transform .15s, box-shadow .2s !important;
+    }
+    .back-btn:hover { transform: translateY(-1px); box-shadow: 0 0 14px rgba(255,46,115,0.5) !important; }
+    .search-wrap input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(167,139,250,0.3) !important; border-radius: 24px !important;
+    }
+    .search-wrap input:focus { border-color: #ff6ec7 !important; box-shadow: 0 0 14px rgba(255,110,199,0.35) !important; }
+    .tab { border-radius: 16px !important; transition: transform .15s; }
+    .tab.active { background: linear-gradient(135deg, #ff2e73, #c084fc) !important; border-color: transparent !important; color: #fff !important; box-shadow: 0 0 12px rgba(255,46,115,0.4) !important; }
+    .server-btn { border-radius: 14px !important; }
+    .server-btn.active { background: linear-gradient(135deg, #ff2e73, #c084fc) !important; border-color: transparent !important; color: #fff !important; }
+    .section-title { color: #ffb0d8 !important; text-shadow: 0 0 10px rgba(255,46,115,0.4); letter-spacing: 2px; }
+    .movie-poster, .movie-card {
+        border-radius: 4px 16px 16px 16px !important;
+        border: 1px solid rgba(167,139,250,0.25) !important;
+        overflow: hidden; transition: transform .2s, box-shadow .2s, border-color .2s !important;
+    }
+    .movie-poster:hover, .movie-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(255,110,199,0.55) !important;
+        box-shadow: 0 12px 30px rgba(255,46,115,0.25) !important;
+    }
+    .play-overlay { background: linear-gradient(135deg, rgba(255,46,115,0.85), rgba(112,0,255,0.85)) !important; }
+    .player-topbar {
+        background: linear-gradient(135deg, rgba(255,46,115,0.22), rgba(112,0,255,0.28), rgba(0,242,255,0.18)) !important;
+        border-bottom: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) 1 !important;
+    }
+</style>
 </head>
 <body>
 

@@ -502,21 +502,21 @@
             font-weight: bold;
             pointer-events: auto;
         }
-#refresh-btn {
-    position: fixed;
-    top: 20px; left: 70px;
-    z-index: 99999;
-    display: none;
-    background: #c084fc;
-    color: #1e293b;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: sans-serif;
-    font-weight: bold;
-    pointer-events: auto;
-}
+        #refresh-btn {
+            position: fixed;
+            top: 20px; left: 70px;
+            z-index: 99999;
+            display: none;
+            background: #c084fc;
+            color: #1e293b;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-weight: bold;
+            pointer-events: auto;
+        }
         #stats-counter {
             position: fixed;
             top: 16px; right: 20px;
@@ -638,16 +638,16 @@
     /* ===== almost-invisible trigger button ===== */
     #voidTrigger {
         position: fixed;
-        bottom: 10px;
-        right: 10px;
-        width: 48px;
-        height: 48px;
+        bottom: 14px;
+        right: 14px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         background: radial-gradient(circle, rgba(170,100,255,0.7), rgba(100,50,180,0.35));
         border: 1px solid rgba(180,130,255,0.5);
         cursor: pointer;
         z-index: 9998;
-        opacity: 0.7;
+        opacity: 0.5;
         transition: opacity .3s, box-shadow .3s, transform .2s;
     }
     #voidTrigger:hover {
@@ -679,8 +679,7 @@
     }
 
     #gameCanvas {
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
+        image-rendering: auto;
         max-width: 96vw;
         max-height: 82vh;
         touch-action: none;
@@ -807,7 +806,7 @@
         filter: drop-shadow(0 0 22px rgba(140,90,255,0.7));
         transition: opacity .2s;
     }
-    #dlgPortraitCanvas { image-rendering: pixelated; width: 180px; height: 180px; }
+    #dlgPortraitCanvas { image-rendering: auto; width: 180px; height: 180px; }
     #dlgBox {
         width: 100%;
         max-width: 620px;
@@ -956,6 +955,7 @@
         <input type="text" id="urlInput">
         <button id="goBtn">Spray</button>
     </div>
+    <div id="customSearchLine" style="margin-top:14px;font-size:14px;color:#c8b8ff;text-shadow:0 0 10px rgba(167,139,250,0.6);letter-spacing:1px;min-height:18px;"></div>
 </div>
 
 <div id="proxy-container">
@@ -1041,12 +1041,19 @@
             <input class="auth-input" id="gateSignupUser" placeholder="Username (3-20 chars)">
             <input class="auth-input" id="gateSignupPass" placeholder="Password (min 6 chars)" type="password">
             <input class="auth-input" id="gateSignupPass2" placeholder="Confirm password" type="password">
+            <input class="auth-input" id="gateSignupRef" placeholder="Referral code (optional)">
             <div class="auth-error" id="gateError"></div>
             <div class="auth-success" id="gateSuccess"></div>
             <button class="auth-submit" onclick="doGateSignup()">Create Account 🚀</button>
             <div class="auth-switch">Already have one? <span onclick="renderGateLogin()">Login</span></div>
         `;
-        setTimeout(() => document.getElementById('gateSignupEmail')?.focus(), 100);
+        setTimeout(() => {
+            document.getElementById('gateSignupEmail')?.focus();
+            try {
+                const rc = new URLSearchParams(window.location.search).get('ref');
+                if (rc) { const f = document.getElementById('gateSignupRef'); if (f) f.value = rc.toUpperCase(); }
+            } catch(e) {}
+        }, 100);
     }
 
     async function doGateLogin() {
@@ -1077,13 +1084,14 @@
         const username = document.getElementById('gateSignupUser').value.trim();
         const password = document.getElementById('gateSignupPass').value;
         const password2 = document.getElementById('gateSignupPass2').value;
+        const referralCode = (document.getElementById('gateSignupRef')?.value || '').trim();
         if (!email || !username || !password) { document.getElementById('gateError').textContent = 'Fill in all fields'; return; }
         if (password !== password2) { document.getElementById('gateError').textContent = 'Passwords do not match'; return; }
         try {
             const res = await fetch('/api/auth/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
+                body: JSON.stringify({ username, email, password, referralCode })
             });
             const data = await res.json();
             if (!res.ok) { document.getElementById('gateError').textContent = data.error; return; }
@@ -1101,9 +1109,23 @@
         enterApp({ username: 'Guest', isGuest: true, token: null });
     }
 
+    function loadCustomSearchLine() {
+        const t = localStorage.getItem('vandal_token');
+        if (!t) return;
+        fetch('/api/referral/me', { headers: { 'Authorization': 'Bearer ' + t } })
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.searchLine && (d.referralCount || 0) >= 4) {
+                    const el = document.getElementById('customSearchLine');
+                    if (el) el.textContent = d.searchLine;
+                }
+            }).catch(() => {});
+    }
+
     function enterApp(user) {
         currentUser = user;
         document.getElementById('authGate').style.display = 'none';
+        if (!user.isGuest) loadCustomSearchLine();
 
         // Update user pill
         const dot = document.getElementById('userDot');
@@ -1190,6 +1212,7 @@
     const proxyContainer = document.getElementById('proxy-container');
     const frame = document.getElementById('proxyFrame');
     const backBtn = document.getElementById('back-btn');
+    const refreshBtn = document.getElementById('refresh-btn');
     const input = document.getElementById('urlInput');
     const canvas = document.getElementById('paintCanvas');
     const ctx = canvas.getContext('2d');
@@ -1267,16 +1290,17 @@
         frame.src = 'about:blank';
     };
 
+    refreshBtn.onclick = () => {
+        try {
+            frame.contentWindow.location.reload();
+        } catch (e) {
+            frame.src = frame.src;
+        }
+    };
+
     button.onclick = (e) => launchProxy(e);
     input.onkeydown = (e) => { if (e.key === 'Enter') launchProxy(e); };
-const refreshBtn = document.getElementById('refresh-btn');
-refreshBtn.onclick = () => {
-    try {
-        frame.contentWindow.location.reload();
-    } catch (e) {
-        frame.src = frame.src;
-    }
-};
+
     // Painting
     let drawing = false;
     let mouseX, mouseY;
@@ -1293,7 +1317,8 @@ refreshBtn.onclick = () => {
             rainbow:    { gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'], label: 'Rainbow' },
             sharks: { gradient: ['#0d0d2b', '#008080', '#40e0d0', '#8b0000'], label: 'Shark Blue' },
             royalty: { gradient: ['#8b0000', '#ffd700', '#7000ff'], label: 'Royalty' },
-            void_star: { gradient: ['#050308', '#6a3fd0', '#e8d8ff', '#1a0f2e'], label: 'Void' }
+            void_star: { gradient: ['#050308', '#6a3fd0', '#e8d8ff', '#1a0f2e'], label: 'Void' },
+            refer_color: { gradient: ['#0aff6a', '#050505', '#0a3d1f'], label: 'Ghost Train' }
         };
         unlocked.forEach((colorKey, index) => {
             if (document.getElementById('swatch_' + colorKey)) return;

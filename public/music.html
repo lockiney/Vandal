@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-if (!localStorage.getItem('vandal_token')) {
-    window.location.href = '/';
-}
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vandal - Music</title>
@@ -395,6 +390,82 @@ if (!localStorage.getItem('vandal_token')) {
             .album-art { height: 200px; }
         }
     </style>
+<!-- ===== GRAFFITI / STREET THEME ===== -->
+<style>
+    /* Textured wallpaper background like the home page */
+    body {
+        background:
+            linear-gradient(rgba(10,8,20,0.82), rgba(10,8,20,0.88)),
+            url('https://wallpaperaccess.com/full/2238315.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+    }
+    body::before {
+        content: '';
+        position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background:
+            radial-gradient(circle at 12% 22%, rgba(255,46,115,0.10), transparent 22%),
+            radial-gradient(circle at 85% 15%, rgba(0,242,255,0.10), transparent 20%),
+            radial-gradient(circle at 78% 80%, rgba(255,140,0,0.08), transparent 24%),
+            radial-gradient(circle at 25% 85%, rgba(112,0,255,0.12), transparent 26%);
+    }
+
+    .topbar, .main { position: relative; z-index: 1; }
+    .topbar {
+        background: linear-gradient(135deg, rgba(255,46,115,0.22), rgba(112,0,255,0.28), rgba(0,242,255,0.18)) !important;
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) 1 !important;
+    }
+    .topbar-title {
+        background: linear-gradient(90deg, #ff2e73, #ffd700, #00f2ff, #c084fc) !important;
+        -webkit-background-clip: text !important; background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 0 18px rgba(192,132,252,0.4); letter-spacing: 2px;
+    }
+    .back-btn {
+        background: linear-gradient(135deg, rgba(255,46,115,0.25), rgba(192,132,252,0.25)) !important;
+        border: 1px solid rgba(255,110,199,0.45) !important;
+        border-radius: 20px !important; transition: transform .15s, box-shadow .2s !important;
+    }
+    .back-btn:hover { transform: translateY(-1px); box-shadow: 0 0 14px rgba(255,46,115,0.5) !important; }
+    /* two panels get translucent sticker treatment so wallpaper shows through */
+    .player-panel {
+        background: linear-gradient(160deg, rgba(255,46,115,0.10), rgba(112,0,255,0.14), rgba(0,242,255,0.08)) !important;
+        backdrop-filter: blur(8px);
+        border-right: 1px solid rgba(255,110,199,0.25) !important;
+    }
+    .search-panel { background: rgba(15,10,25,0.55) !important; backdrop-filter: blur(6px); }
+    .album-art-wrap, .album-art {
+        border-radius: 12px !important;
+        box-shadow: 0 0 30px rgba(255,46,115,0.35) !important;
+    }
+    .play-btn {
+        background: linear-gradient(135deg, #ff2e73, #c084fc) !important;
+        box-shadow: 0 0 20px rgba(255,46,115,0.5) !important;
+    }
+    .play-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,46,115,0.8) !important; }
+    .ctrl-btn:hover { color: #ff6ec7 !important; }
+    .progress-fill { background: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) !important; }
+    .search-go {
+        background: linear-gradient(135deg, #ff2e73, #c084fc) !important;
+        border: none !important; box-shadow: 0 0 12px rgba(255,46,115,0.4) !important;
+    }
+    .search-bar-wrap input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(167,139,250,0.3) !important; border-radius: 20px !important;
+    }
+    .search-bar-wrap input:focus { border-color: #ff6ec7 !important; }
+    .result-item {
+        border-radius: 4px 14px 14px 14px !important;
+        transition: transform .15s, background .2s !important;
+    }
+    .result-item:hover { background: rgba(255,46,115,0.12) !important; transform: translateX(3px); }
+    .result-item.playing { background: linear-gradient(135deg, rgba(255,46,115,0.2), rgba(112,0,255,0.2)) !important; }
+    .result-thumb { border-radius: 8px !important; }
+    .preview-badge { background: linear-gradient(135deg, #ff2e73, #c084fc) !important; }
+</style>
 </head>
 <body>
 
@@ -602,42 +673,6 @@ if (!localStorage.getItem('vandal_token')) {
             results.innerHTML = `<div class="empty-state"><div class="icon">😕</div><p>Search failed — try again</p></div>`;
         }
     }
-</script>
-<script>
-// Unlock sharks achievement on music page visit
-(function() {
-    const unlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]');
-if (!unlocked.includes('sharks')) {
-    unlocked.push('sharks');
-    localStorage.setItem('vandal_unlocked_colors', JSON.stringify(unlocked));
-    // Sync to server
-    const token = localStorage.getItem('vandal_token');
-    if (token) {
-        fetch('/api/auth/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({
-                unlockedColors: unlocked,
-                timeSeconds: parseInt(localStorage.getItem('vandal_time_seconds') || '0'),
-                usedColors: JSON.parse(localStorage.getItem('vandal_used_colors') || '[]')
-            })
-        }).catch(() => {});
-    }
-    // Show notification only once
-    if (!localStorage.getItem('notif_shown_sharks')) {
-        localStorage.setItem('notif_shown_sharks', '1');
-        const notif = document.createElement('div');
-        notif.style.cssText = 'position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#0d0d2b,#008080,#40e0d0,#8b0000);color:white;padding:14px 20px;border-radius:12px;font-family:Permanent Marker,cursive;font-size:14px;z-index:99999;box-shadow:0 4px 20px rgba(0,102,255,0.5);';
-        notif.innerHTML = '🦈 Unlocked: Shark Blue spray!';
-        document.body.appendChild(notif);
-        setTimeout(() => notif.remove(), 4000);
-    }
-}
-})();
-setInterval(() => {
-    const c = parseInt(localStorage.getItem('vandal_time_seconds') || '0');
-    localStorage.setItem('vandal_time_seconds', c + 1);
-}, 1000);
 </script>
 </body>
 </html>

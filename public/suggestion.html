@@ -343,6 +343,77 @@ if (!localStorage.getItem('vandal_token')) {
         font-family: 'Permanent Marker', cursive;
     }
 </style>
+<!-- ===== GRAFFITI / STREET THEME ===== -->
+<style>
+    /* Textured wallpaper background like the home page */
+    body {
+        background:
+            linear-gradient(rgba(10,8,20,0.82), rgba(10,8,20,0.88)),
+            url('https://wallpaperaccess.com/full/2238315.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+    }
+    body::before {
+        content: '';
+        position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background:
+            radial-gradient(circle at 12% 22%, rgba(255,46,115,0.10), transparent 22%),
+            radial-gradient(circle at 85% 15%, rgba(0,242,255,0.10), transparent 20%),
+            radial-gradient(circle at 78% 80%, rgba(255,140,0,0.08), transparent 24%),
+            radial-gradient(circle at 25% 85%, rgba(112,0,255,0.12), transparent 26%);
+    }
+
+    .topbar, .container { position: relative; z-index: 1; }
+    .topbar {
+        background: linear-gradient(135deg, rgba(255,46,115,0.22), rgba(112,0,255,0.28), rgba(0,242,255,0.18)) !important;
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) 1 !important;
+        padding: 14px 20px; border-radius: 0;
+    }
+    .topbar h1, .topbar-title {
+        background: linear-gradient(90deg, #ff2e73, #ffd700, #00f2ff, #c084fc) !important;
+        -webkit-background-clip: text !important; background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 0 18px rgba(192,132,252,0.4);
+    }
+    .back {
+        background: linear-gradient(135deg, rgba(255,46,115,0.25), rgba(192,132,252,0.25)) !important;
+        border: 1px solid rgba(255,110,199,0.45) !important;
+        border-radius: 20px !important; padding: 8px 16px !important;
+        transition: transform .15s, box-shadow .2s !important; text-decoration: none;
+    }
+    .back:hover { transform: translateY(-1px); box-shadow: 0 0 14px rgba(255,46,115,0.5) !important; }
+    .add-btn {
+        background: linear-gradient(135deg, #ff2e73, #c084fc) !important;
+        box-shadow: 0 0 14px rgba(255,46,115,0.5) !important;
+    }
+    .sort-btn { border-radius: 18px !important; }
+    .sort-btn.active { background: linear-gradient(135deg, #ff2e73, #c084fc) !important; border-color: transparent !important; color: #fff !important; }
+    .card {
+        background: rgba(20,14,32,0.72) !important;
+        border: 1px solid rgba(167,139,250,0.28) !important;
+        border-radius: 4px 16px 16px 16px !important;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.35) !important;
+        backdrop-filter: blur(6px); transition: transform .15s, border-color .2s !important;
+    }
+    .card:hover { transform: translateY(-3px); border-color: rgba(255,110,199,0.5) !important; }
+    .card-title { color: #fff !important; }
+    .vote-btn { border-radius: 16px !important; transition: transform .15s; }
+    .vote-btn.like.active { background: linear-gradient(135deg, rgba(0,255,157,0.3), rgba(0,217,255,0.2)) !important; border-color: #00ff9d !important; color: #baffdc !important; }
+    .vote-btn.dislike.active { background: linear-gradient(135deg, rgba(255,46,115,0.3), rgba(255,20,60,0.2)) !important; border-color: #ff2e73 !important; color: #ffb0c8 !important; }
+    .chat-btn { border-radius: 16px !important; }
+    .chat-btn:hover { box-shadow: 0 0 12px rgba(255,46,115,0.4) !important; }
+    .add-btn:hover { transform: scale(1.08) !important; box-shadow: 0 0 18px rgba(255,46,115,0.7) !important; }
+    .modal, .chat-modal {
+        background: rgba(20,14,32,0.97) !important;
+        border: 1px solid rgba(255,110,199,0.3) !important;
+        border-radius: 18px !important; box-shadow: 0 0 40px rgba(192,132,252,0.25) !important;
+    }
+    .btn-create { background: linear-gradient(135deg, #ff2e73, #c084fc) !important; }
+    .chat-head { background: linear-gradient(90deg, rgba(255,46,115,0.18), rgba(112,0,255,0.18)) !important; }
+</style>
 </head>
 <body>
     <div class="topbar">

@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-if (!localStorage.getItem('vandal_token')) {
-    window.location.href = '/';
-}
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vandal - Games</title>
@@ -386,8 +381,122 @@ if (!localStorage.getItem('vandal_token')) {
             .game-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
         }
     </style>
-<script src="/uv/uv.bundle.js"></script>
-<script src="/uv/uv.config.js"></script>
+<!-- ===== GRAFFITI / STREET THEME — paste this whole block just before </head> ===== -->
+<style>
+    /* Textured wallpaper background like the home page */
+    body {
+        background:
+            linear-gradient(rgba(10,8,20,0.82), rgba(10,8,20,0.88)),
+            url('https://wallpaperaccess.com/full/2238315.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+    }
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+            radial-gradient(circle at 12% 22%, rgba(255,46,115,0.10), transparent 22%),
+            radial-gradient(circle at 85% 15%, rgba(0,242,255,0.10), transparent 20%),
+            radial-gradient(circle at 78% 80%, rgba(255,140,0,0.08), transparent 24%),
+            radial-gradient(circle at 25% 85%, rgba(112,0,255,0.12), transparent 26%);
+    }
+    #container, .hero { position: relative; z-index: 1; }
+
+    /* ===== Hero header: sprayed spotlight + multi-color title ===== */
+    .hero {
+        background: radial-gradient(ellipse at top,
+            rgba(255,46,115,0.18) 0%,
+            rgba(112,0,255,0.14) 40%,
+            transparent 72%) !important;
+    }
+    .hero-title {
+        background: linear-gradient(90deg, #ff2e73, #ffd700, #00f2ff, #c084fc) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 0 24px rgba(192,132,252,0.4);
+    }
+    .back-btn {
+        background: linear-gradient(135deg, rgba(255,46,115,0.25), rgba(192,132,252,0.25)) !important;
+        border: 1px solid rgba(255,110,199,0.45) !important;
+        border-radius: 20px !important;
+        transition: transform .15s, box-shadow .2s !important;
+    }
+    .back-btn:hover { transform: translateY(-1px); box-shadow: 0 0 14px rgba(255,46,115,0.5) !important; }
+
+    /* ===== Search bar ===== */
+    .search-wrap input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(167,139,250,0.3) !important;
+        border-radius: 24px !important;
+    }
+    .search-wrap input:focus {
+        border-color: #ff6ec7 !important;
+        box-shadow: 0 0 14px rgba(255,110,199,0.35) !important;
+    }
+
+    /* ===== Sort buttons: spray pills ===== */
+    .sort-btn {
+        border-radius: 18px !important;
+        transition: transform .15s, box-shadow .2s !important;
+    }
+    .sort-btn.active {
+        background: linear-gradient(135deg, #ff2e73, #c084fc) !important;
+        border-color: transparent !important;
+        box-shadow: 0 0 12px rgba(255,46,115,0.45) !important;
+        color: #fff !important;
+    }
+    .sort-btn:hover { transform: translateY(-1px); }
+
+    /* ===== Section titles ===== */
+    .section-title {
+        color: #ffb0d8 !important;
+        text-shadow: 0 0 10px rgba(255,46,115,0.4);
+        letter-spacing: 2px;
+    }
+    .section-title span { color: #00f2ff !important; }
+
+    /* ===== Game cards: sprayed stickers ===== */
+    .game-card {
+        background: rgba(20,14,32,0.7) !important;
+        border: 1px solid rgba(167,139,250,0.25) !important;
+        border-radius: 4px 16px 16px 16px !important;
+        backdrop-filter: blur(4px);
+    }
+    .game-card:hover {
+        border-color: rgba(255,110,199,0.55) !important;
+        box-shadow: 0 12px 30px rgba(255,46,115,0.25) !important;
+    }
+    .game-card .play-overlay {
+        background: linear-gradient(135deg, rgba(255,46,115,0.85), rgba(112,0,255,0.85)) !important;
+    }
+
+    /* ===== Popups / refresh box / zone bar ===== */
+    .popup, .refresh-box {
+        background: rgba(20,14,32,0.97) !important;
+        border: 1px solid rgba(255,110,199,0.3) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 0 40px rgba(192,132,252,0.25) !important;
+    }
+    .popup-header {
+        background: linear-gradient(90deg, rgba(255,46,115,0.2), rgba(112,0,255,0.2)) !important;
+    }
+    .zone-topbar {
+        background: linear-gradient(135deg, rgba(255,46,115,0.22), rgba(112,0,255,0.28), rgba(0,242,255,0.18)) !important;
+        border-bottom: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, #ff2e73, #c084fc, #00f2ff) 1 !important;
+    }
+    .zone-btn {
+        border-radius: 16px !important;
+        transition: box-shadow .2s !important;
+    }
+    .zone-btn:hover { box-shadow: 0 0 12px rgba(255,46,115,0.5) !important; }
+</style>
+
 </head>
 <body>
 
@@ -502,16 +611,6 @@ async function listZones() {
         const response = await fetch(zonesURL + "?t=" + Date.now());
         const json = await response.json();
         zones = json;
-const customGames = [
-    {
-        name: "Scritchy Scratchy",
-        url: "https://scritchy-scratchy.com/gg/scritchy-scratchy/",
-        cover: "https://scritchy-scratchy.com/wp-content/uploads/2025/10/scritchy-scratchy-240x190.png",
-        special: ["idle", "clicker"],
-        author: "Lunch Money Games"
-    }
-];
-zones = [...customGames, ...zones];
         zones[0].featured = true;
         await Promise.all([fetchPopularity("year"), fetchPopularity("month"), fetchPopularity("week"), fetchPopularity("day")]);
 
@@ -651,74 +750,31 @@ function displayZones(list) {
 }
 
 function openZone(file) {
-    if (file.url.startsWith("http") && !file.id) { window.open(file.url, "_blank"); return; }
-    // Custom games with direct URLs load straight into iframe
-    if (file.id && file.url.startsWith("http")) {
-        zoneFrame = document.getElementById('zoneFrame');
-        if (!zoneFrame) {
+    if (file.url.startsWith("http")) { window.open(file.url, "_blank"); return; }
+    const url = file.url.replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
+    fetch(url + "?t=" + Date.now()).then(r => r.text()).then(html => {
+        if (zoneFrame.contentDocument === null) {
             zoneFrame = document.createElement("iframe");
             zoneFrame.id = "zoneFrame";
             zoneViewer.appendChild(zoneFrame);
         }
-        zoneFrame.src = file.url;
+        zoneFrame.contentDocument.open();
+        zoneFrame.contentDocument.write(html);
+        zoneFrame.contentDocument.close();
         document.getElementById('zoneName').textContent = file.name;
         document.getElementById('zoneId').textContent = file.id;
         document.getElementById('zoneAuthorDisplay').textContent = file.author ? 'by ' + file.author : '';
         zoneViewer.classList.add('active');
-        return;
-    }
-    const cdns = [
-        "https://cdn.jsdelivr.net/gh/freebuisness/html@main",
-        "https://rawcdn.githack.com/freebuisness/html/main",
-        "https://raw.githubusercontent.com/freebuisness/html/main"
-    ];
-    
-    const filename = file.url.replace("{HTML_URL}", "").replace("{COVER_URL}", coverURL);
-    
-    function tryCDN(index) {
-        if (index >= cdns.length) {
-            alert("Could not load game - try refreshing or use a different network");
-            return;
-        }
-        const url = cdns[index] + filename + "?t=" + Date.now();
-        fetch(url, { redirect: 'follow' })
-            .then(r => { if (!r.ok) throw new Error('failed'); return r.text(); })
-            .then(html => {
-                zoneFrame = document.getElementById('zoneFrame');
-                if (!zoneFrame) {
-                    zoneFrame = document.createElement("iframe");
-                    zoneFrame.id = "zoneFrame";
-                    zoneViewer.appendChild(zoneFrame);
-                }
-                zoneFrame.contentDocument.open();
-                zoneFrame.contentDocument.write(html);
-                zoneFrame.contentDocument.close();
-                document.getElementById('zoneName').textContent = file.name;
-                document.getElementById('zoneId').textContent = file.id;
-                document.getElementById('zoneAuthorDisplay').textContent = file.author ? 'by ' + file.author : '';
-                zoneViewer.classList.add('active');
-                try {
-                    const u = new URL(window.location);
-                    u.searchParams.set('id', file.id);
-                    history.pushState(null, '', u.toString());
-                } catch(e) {}
-            })
-            .catch(() => tryCDN(index + 1));
-    }
-    
-    tryCDN(0);
+        try {
+            const u = new URL(window.location);
+            u.searchParams.set('id', file.id);
+            history.pushState(null, '', u.toString());
+        } catch(e) {}
+    }).catch(err => alert("Failed to load game: " + err));
 }
 
 function closeZone() {
     zoneViewer.classList.remove('active');
-    zoneFrame.src = 'about:blank';
-    setTimeout(() => {
-        try {
-            zoneFrame.contentDocument.open();
-            zoneFrame.contentDocument.write('');
-            zoneFrame.contentDocument.close();
-        } catch(e) {}
-    }, 100);
     try {
         const u = new URL(window.location);
         u.searchParams.delete('id');

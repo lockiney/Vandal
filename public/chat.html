@@ -294,9 +294,251 @@
         }
         #lightbox.show { display: flex; }
         #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 10px; }
+
+        /* ===== Titles ===== */
+        .titles-btn {
+            background: rgba(167,139,250,0.15);
+            border: 1px solid rgba(167,139,250,0.4);
+            color: #fff; font-family: 'Permanent Marker', cursive;
+            font-size: 12px; padding: 6px 12px; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .titles-btn:hover { background: rgba(167,139,250,0.3); }
+        .titles-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            z-index: 2000; align-items: center; justify-content: center; padding: 20px;
+        }
+        .titles-overlay.open { display: flex; }
+        .titles-modal {
+            background: #12121a; border: 1px solid rgba(167,139,250,0.3);
+            border-radius: 16px; width: 100%; max-width: 400px; padding: 22px;
+        }
+        .titles-modal h3 {
+            font-size: 18px; margin-bottom: 4px;
+            background: linear-gradient(135deg,#a78bfa,#c084fc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .titles-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+        .title-option {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 14px; border-radius: 10px; margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .title-option:hover { border-color: rgba(167,139,250,0.4); }
+        .title-option.locked { opacity: 0.45; cursor: not-allowed; }
+        .title-option.equipped { border-color: #c084fc; background: rgba(167,139,250,0.12); }
+        .title-preview { flex: 1; font-size: 14px; }
+        .title-status { font-size: 11px; color: rgba(255,255,255,0.4); }
+        .title-option.equipped .title-status { color: #c084fc; }
+        .titles-close {
+            width: 100%; margin-top: 8px; padding: 10px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7); border-radius: 10px;
+            font-family: 'Permanent Marker', cursive; font-size: 13px; cursor: pointer;
+        }
+        /* the tag/title shown next to usernames */
+        .chat-tag {
+            font-size: 11px; padding: 1px 7px; border-radius: 10px; margin-right: 5px;
+            border: 1px solid rgba(167,139,250,0.5); color: #c8b8ff;
+            background: rgba(167,139,250,0.12); vertical-align: middle;
+        }
+        .chat-tag.glow {
+            border-color: #ffd700; color: #fff2b0;
+            background: linear-gradient(90deg, rgba(255,215,0,0.15), rgba(255,140,0,0.15));
+            text-shadow: 0 0 8px #ffd700, 0 0 4px #ffae00;
+            animation: tagGlow 1.6s ease-in-out infinite;
+        }
+        @keyframes tagGlow {
+            0%,100% { box-shadow: 0 0 6px rgba(255,215,0,0.5); }
+            50% { box-shadow: 0 0 14px rgba(255,215,0,0.9); }
+        }
     </style>
+<!-- ===== THEMEABLE STREET STYLES (3 themes via CSS variables) ===== -->
+<style>
+    /* default theme values live on :root; body[data-theme] overrides them */
+    :root {
+        --bg-overlay-1: rgba(10,8,20,0.82);
+        --bg-overlay-2: rgba(10,8,20,0.88);
+        --show-wallpaper: 1;         /* 1 = wallpaper, 0 = flat */
+        --a1: #ff2e73;   /* accent 1 (pink) */
+        --a2: #c084fc;   /* accent 2 (purple) */
+        --a3: #00f2ff;   /* accent 3 (cyan) */
+        --a4: #ffd700;   /* accent 4 (gold) */
+        --splatter-1: rgba(255,46,115,0.10);
+        --splatter-2: rgba(0,242,255,0.10);
+        --splatter-3: rgba(255,140,0,0.08);
+        --splatter-4: rgba(112,0,255,0.12);
+        --bar-a: rgba(255,46,115,0.22);
+        --bar-b: rgba(112,0,255,0.28);
+        --bar-c: rgba(0,242,255,0.18);
+        --mine-glow: #ff6ec7;
+    }
+
+    /* CLASSIC — calm black & purple, no wallpaper, no splatter */
+    body[data-theme="classic"] {
+        --bg-overlay-1: #0a0a0f;
+        --bg-overlay-2: #0a0a0f;
+        --show-wallpaper: 0;
+        --a1: #a78bfa; --a2: #c084fc; --a3: #a78bfa; --a4: #c084fc;
+        --splatter-1: transparent; --splatter-2: transparent;
+        --splatter-3: transparent; --splatter-4: transparent;
+        --bar-a: rgba(167,139,250,0.10); --bar-b: rgba(167,139,250,0.14); --bar-c: rgba(167,139,250,0.10);
+        --mine-glow: #c084fc;
+    }
+
+    /* NEON — loud pink / green / yellow / blue mix */
+    body[data-theme="neon"] {
+        --a1: #ff1493; --a2: #00ff9d; --a3: #00d9ff; --a4: #ffe600;
+        --splatter-1: rgba(255,20,147,0.16);
+        --splatter-2: rgba(0,217,255,0.16);
+        --splatter-3: rgba(255,230,0,0.14);
+        --splatter-4: rgba(0,255,157,0.16);
+        --bar-a: rgba(255,20,147,0.28); --bar-b: rgba(0,255,157,0.24); --bar-c: rgba(0,217,255,0.26);
+        --mine-glow: #ff1493;
+    }
+    /* STREET is the default (:root values) — no override needed */
+
+    body {
+        background:
+            linear-gradient(var(--bg-overlay-1), var(--bg-overlay-2)),
+            url('https://wallpaperaccess.com/full/2238315.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
+    }
+    /* classic hides the wallpaper by making the overlay opaque (handled by vars above) */
+
+    body::before {
+        content: '';
+        position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background:
+            radial-gradient(circle at 12% 22%, var(--splatter-1), transparent 22%),
+            radial-gradient(circle at 85% 15%, var(--splatter-2), transparent 20%),
+            radial-gradient(circle at 78% 80%, var(--splatter-3), transparent 24%),
+            radial-gradient(circle at 25% 85%, var(--splatter-4), transparent 26%);
+    }
+    .topbar, #messages, .input-bar, .titles-overlay, #usernameModal { position: relative; z-index: 1; }
+
+    .topbar {
+        background: linear-gradient(135deg, var(--bar-a), var(--bar-b), var(--bar-c)) !important;
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, var(--a1), var(--a2), var(--a3)) 1 !important;
+    }
+    .topbar-title {
+        background: linear-gradient(90deg, var(--a1), var(--a4), var(--a3), var(--a2)) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        text-shadow: 0 0 18px rgba(192,132,252,0.4);
+        letter-spacing: 2px;
+    }
+
+    .msg-bubble {
+        background: rgba(25,18,40,0.7) !important;
+        border: 1px solid rgba(167,139,250,0.25) !important;
+        border-radius: 4px 16px 16px 16px !important;
+        box-shadow: 0 3px 14px rgba(0,0,0,0.35) !important;
+        color: rgba(255,255,255,0.95) !important;
+    }
+    .msg.mine .msg-bubble {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--a2) 30%, transparent), color-mix(in srgb, var(--a1) 20%, transparent)) !important;
+        border-color: color-mix(in srgb, var(--mine-glow) 45%, transparent) !important;
+        border-radius: 16px 4px 16px 16px !important;
+        color: #ffffff !important;
+    }
+    .msg-username { text-shadow: 0 0 8px rgba(167,139,250,0.5); }
+    .msg.mine .msg-username { color: var(--mine-glow) !important; }
+
+    .back-btn, .change-name-btn, .titles-btn, .attach-btn, .send-btn, .modal-btn, #themeBtn {
+        border-radius: 20px !important;
+        transition: transform .15s, box-shadow .2s, background .2s !important;
+    }
+    .titles-btn, .change-name-btn, #themeBtn {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--a1) 25%, transparent), color-mix(in srgb, var(--a2) 25%, transparent)) !important;
+        border: 1px solid color-mix(in srgb, var(--mine-glow) 45%, transparent) !important;
+        color: #fff !important;
+    }
+    .titles-btn:hover, .change-name-btn:hover, .back-btn:hover, #themeBtn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 14px color-mix(in srgb, var(--a1) 50%, transparent) !important;
+    }
+    .send-btn {
+        background: linear-gradient(135deg, var(--a1), var(--a2)) !important;
+        border: none !important;
+        box-shadow: 0 0 12px color-mix(in srgb, var(--a1) 40%, transparent) !important;
+    }
+    .send-btn:hover { transform: scale(1.05); }
+
+    .input-bar {
+        background: linear-gradient(135deg, var(--bar-c), var(--bar-b), var(--bar-a)) !important;
+        backdrop-filter: blur(10px);
+        border-top: 2px solid transparent !important;
+        border-image: linear-gradient(90deg, var(--a3), var(--a2), var(--a1)) 1 !important;
+    }
+    .chat-input {
+        background: rgba(255,255,255,0.06) !important;
+        border: 1px solid rgba(167,139,250,0.3) !important;
+        border-radius: 20px !important;
+    }
+    .chat-input:focus { border-color: var(--mine-glow) !important; box-shadow: 0 0 10px color-mix(in srgb, var(--mine-glow) 30%, transparent); }
+
+    .modal-box, .titles-modal {
+        background: rgba(20,14,32,0.96) !important;
+        border: 1px solid color-mix(in srgb, var(--mine-glow) 30%, transparent) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 0 40px rgba(192,132,252,0.25) !important;
+    }
+    .modal-input, .modal-btn { border-radius: 12px !important; }
+    .online-dot { box-shadow: 0 0 10px #22c55e, 0 0 4px #22c55e !important; }
+
+    /* ===== Theme picker popup ===== */
+    #themeOverlay {
+        display: none; position: fixed; inset: 0; z-index: 3000;
+        background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+        align-items: center; justify-content: center; padding: 20px;
+    }
+    #themeOverlay.open { display: flex; }
+    .theme-modal {
+        background: rgba(20,14,32,0.97); border: 1px solid rgba(255,110,199,0.3);
+        border-radius: 18px; width: 100%; max-width: 360px; padding: 22px;
+        font-family: 'Permanent Marker', cursive;
+    }
+    .theme-modal h3 { font-size: 18px; margin-bottom: 4px; color: #fff; }
+    .theme-modal .theme-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+    .theme-opt {
+        display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+        border-radius: 12px; margin-bottom: 10px; cursor: pointer;
+        border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+        transition: all .2s;
+    }
+    .theme-opt:hover { border-color: rgba(255,255,255,0.3); }
+    .theme-opt.active { border-color: #fff; }
+    .theme-swatch { width: 44px; height: 28px; border-radius: 8px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.2); }
+    .sw-classic { background: linear-gradient(135deg, #1a1a2e, #a78bfa); }
+    .sw-street  { background: linear-gradient(135deg, #ff2e73, #c084fc, #00f2ff); }
+    .sw-neon    { background: linear-gradient(135deg, #ff1493, #00ff9d, #ffe600, #00d9ff); }
+    .theme-opt-name { font-size: 14px; color: #fff; }
+    .theme-opt-desc { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .theme-close {
+        width: 100%; margin-top: 6px; padding: 10px;
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.7); border-radius: 10px;
+        font-family: 'Permanent Marker', cursive; font-size: 13px; cursor: pointer;
+    }
+</style>
+
 </head>
 <body>
+<script>
+    // apply saved chat theme ASAP (default: street)
+    (function(){
+        var t = localStorage.getItem('vandal_chat_theme') || 'street';
+        document.body.setAttribute('data-theme', t);
+    })();
+</script>
 
 <div id="usernameModal">
     <div class="modal-box">
@@ -311,12 +553,43 @@
     <a href="/" class="back-btn">← Back</a>
     <div class="topbar-title">💬 VANDAL CHAT</div>
     <div class="topbar-right">
+        <button class="titles-btn" onclick="openTitles()">🏷️ Titles</button>
+        <button id="themeBtn" class="titles-btn" onclick="openThemePicker()">🎨 Theme</button>
         <div class="online-dot"></div>
         <span>Global Chat</span>
     </div>
 </div>
 
 <div id="messages"></div>
+
+<div id="themeOverlay" onclick="if(event.target===this)closeThemePicker()">
+    <div class="theme-modal">
+        <h3>🎨 Chat Theme</h3>
+        <div class="theme-sub">Pick a vibe. Saved just for you.</div>
+        <div class="theme-opt" data-theme="classic" onclick="setTheme('classic')">
+            <div class="theme-swatch sw-classic"></div>
+            <div><div class="theme-opt-name">Classic</div><div class="theme-opt-desc">Calm black &amp; purple</div></div>
+        </div>
+        <div class="theme-opt" data-theme="street" onclick="setTheme('street')">
+            <div class="theme-swatch sw-street"></div>
+            <div><div class="theme-opt-name">Street</div><div class="theme-opt-desc">Graffiti gradient (default)</div></div>
+        </div>
+        <div class="theme-opt" data-theme="neon" onclick="setTheme('neon')">
+            <div class="theme-swatch sw-neon"></div>
+            <div><div class="theme-opt-name">Neon Mix</div><div class="theme-opt-desc">Loud pink/green/yellow/blue</div></div>
+        </div>
+        <button class="theme-close" onclick="closeThemePicker()">Close</button>
+    </div>
+</div>
+
+<div class="titles-overlay" id="titlesOverlay" onclick="if(event.target===this)closeTitles()">
+    <div class="titles-modal">
+        <h3>🏷️ Your Titles</h3>
+        <div class="titles-sub">Earn titles through referrals. Equip one to show it in chat.</div>
+        <div id="titlesList"></div>
+        <button class="titles-close" onclick="closeTitles()">Close</button>
+    </div>
+</div>
 
 <div class="user-tag">
     <span id="userTag"></span>
@@ -341,15 +614,16 @@
 </div>
 
 <script>
-document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-    }
-});
 (function() {
     let username = localStorage.getItem('vandal_chat_username') || '';
     let lastId = 0;
     let pendingImage = null;
+
+    // titles/tags (declared early so loadMessages can use them safely)
+    const authToken = localStorage.getItem('vandal_token');
+    const accountName = localStorage.getItem('vandal_username') || '';
+    const titleCache = {};   // username(lowercase) -> 'tag' | 'glow' | null
+    let myRef = null;
 
     // ── USERNAME MODAL ─────────────────────────────────
     const modal = document.getElementById('usernameModal');
@@ -432,20 +706,21 @@ document.addEventListener('keydown', e => {
     }
 
     // ── RENDER MESSAGE ─────────────────────────────────
-function renderMsg(msg) {
+    function renderMsg(msg) {
         const isMine = msg.username === username;
         const div = document.createElement('div');
         div.className = 'msg ' + (isMine ? 'mine' : 'theirs');
+        const tag = tagHtml(msg.username);
         div.innerHTML = `
             <div class="msg-meta">
-                <span class="msg-username">${isMine ? 'You' : esc(msg.username)}</span>
+                <span class="msg-username">${tag}${isMine ? 'You' : esc(msg.username)}</span>
                 <span>${esc(msg.time)}</span>
             </div>
             <div class="msg-bubble">
                 ${msg.message ? esc(msg.message) : ''}
             </div>
         `;
-        // Safely add image only if it's a real image data URL
+        // safely add image only if it's a real data-image URL
         if (msg.image && typeof msg.image === 'string' && msg.image.startsWith('data:image/')) {
             const bubble = div.querySelector('.msg-bubble');
             const imgEl = document.createElement('img');
@@ -466,6 +741,10 @@ function renderMsg(msg) {
             const msgs = await res.json();
             const newMsgs = msgs.filter(m => m.id > lastId);
             if (!newMsgs.length) return;
+            // fetch any unknown senders' titles before rendering so tags show
+            const unknown = [...new Set(newMsgs.map(m => m.username))]
+                .filter(u => !((u || '').toLowerCase() in titleCache));
+            await Promise.all(unknown.map(ensureTitle));
             const container = document.getElementById('messages');
             const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
             newMsgs.forEach(m => {
@@ -509,6 +788,106 @@ function renderMsg(msg) {
         const c = parseInt(localStorage.getItem('vandal_time_seconds') || '0');
         localStorage.setItem('vandal_time_seconds', c + 1);
     }, 1000);
+
+    // ── TITLES / TAGS ──────────────────────────────────
+    function tagHtml(uname) {
+        const t = titleCache[(uname || '').toLowerCase()];
+        if (t === 'tag') return '<span class="chat-tag">exclusive</span>';
+        if (t === 'glow') return '<span class="chat-tag glow">✦ PRESTIGE</span>';
+        return '';
+    }
+
+    // fetch a single user's title (cached), then re-render if it changed
+    async function ensureTitle(uname) {
+        const key = (uname || '').toLowerCase();
+        if (key in titleCache) return;
+        titleCache[key] = null; // mark as pending so we don't refetch
+        try {
+            const res = await fetch('/api/referral/title-of?username=' + encodeURIComponent(uname));
+            const d = await res.json();
+            titleCache[key] = d.equippedTitle || null;
+        } catch (e) { titleCache[key] = null; }
+    }
+
+    // My own referral status for the Titles modal
+    async function loadMyRef() {
+        if (!authToken) return;
+        try {
+            const res = await fetch('/api/referral/me', { headers: { 'Authorization': 'Bearer ' + authToken } });
+            myRef = await res.json();
+            // seed my own tag into the cache
+            if (accountName) titleCache[accountName.toLowerCase()] = myRef.equippedTitle || null;
+        } catch (e) {}
+    }
+
+    // ===== Theme picker =====
+    window.openThemePicker = function() {
+        const cur = localStorage.getItem('vandal_chat_theme') || 'street';
+        document.querySelectorAll('.theme-opt').forEach(o => {
+            o.classList.toggle('active', o.getAttribute('data-theme') === cur);
+        });
+        document.getElementById('themeOverlay').classList.add('open');
+    };
+    window.closeThemePicker = function() {
+        document.getElementById('themeOverlay').classList.remove('open');
+    };
+    window.setTheme = function(name) {
+        document.body.setAttribute('data-theme', name);
+        localStorage.setItem('vandal_chat_theme', name);
+        document.querySelectorAll('.theme-opt').forEach(o => {
+            o.classList.toggle('active', o.getAttribute('data-theme') === name);
+        });
+    };
+
+    window.openTitles = async function() {
+        document.getElementById('titlesOverlay').classList.add('open');
+        await loadMyRef();
+        renderTitlesModal();
+    };
+    window.closeTitles = function() {
+        document.getElementById('titlesOverlay').classList.remove('open');
+    };
+
+    function renderTitlesModal() {
+        const list = document.getElementById('titlesList');
+        if (!authToken) { list.innerHTML = '<div class="titles-sub">Log in to use titles.</div>'; return; }
+        const count = myRef ? (myRef.referralCount || 0) : 0;
+        const equipped = myRef ? myRef.equippedTitle : null;
+        const opts = [
+            { key: null,   label: 'None',                      preview: 'No title',                              need: 0 },
+            { key: 'tag',  label: 'Exclusive Tag',             preview: '<span class="chat-tag">exclusive</span> name', need: 2 },
+            { key: 'glow', label: 'Glowing Prestige Title',    preview: '<span class="chat-tag glow">✦ PRESTIGE</span> name', need: 5 }
+        ];
+        list.innerHTML = opts.map(o => {
+            const locked = o.need > 0 && count < o.need;
+            const isEq = equipped === o.key || (o.key === null && !equipped);
+            const cls = 'title-option' + (locked ? ' locked' : '') + (isEq ? ' equipped' : '');
+            const status = locked ? ('🔒 ' + o.need + ' referrals') : (isEq ? '✓ Equipped' : 'Tap to equip');
+            const attr = locked ? '' : ' onclick="equipTitle(' + (o.key === null ? 'null' : ("'" + o.key + "'")) + ')"';
+            return '<div class="' + cls + '"' + attr + '>' +
+                '<div class="title-preview">' + o.preview + '</div>' +
+                '<div class="title-status">' + status + '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    window.equipTitle = async function(which) {
+        if (!authToken) return;
+        try {
+            const res = await fetch('/api/referral/title', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                body: JSON.stringify({ title: which })
+            });
+            const d = await res.json();
+            if (!res.ok) { alert(d.error || 'Could not equip'); return; }
+            if (myRef) myRef.equippedTitle = d.equippedTitle;
+            if (accountName) titleCache[accountName.toLowerCase()] = d.equippedTitle || null;
+            renderTitlesModal();
+        } catch (e) {}
+    };
+
+    loadMyRef();
 })();
 </script>
 </body>
