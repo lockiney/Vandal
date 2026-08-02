@@ -700,6 +700,19 @@ if (!localStorage.getItem('vandal_token')) {
     </div>
     <div class="milestone-time" id="time_void">Hint: something lurks in the corner of the void 🌌</div>
 </div>
+<div class="milestone" id="m_refer">
+    <div class="milestone-top">
+        <div class="milestone-name"><span id="badge_refer">🔒</span> All Aboard the Ghost Train</div>
+        <div class="milestone-reward">
+            <span class="gradient-swatch" style="background:linear-gradient(135deg,#0aff6a,#050505,#0a3d1f)"></span>
+            ???
+        </div>
+    </div>
+    <div class="milestone-bar-wrap">
+        <div class="milestone-bar" id="bar_refer" style="background:linear-gradient(90deg,#0aff6a,#050505,#0a3d1f)"></div>
+    </div>
+    <div class="milestone-time" id="time_refer">Hint: refer a friend to earn this 🎟️</div>
+</div>
         </div>
         <div class="total-time">Total time on Vandal: <span id="totalTimeDisplay">0:00</span></div>
     </div>
@@ -846,6 +859,15 @@ if (voidUnlocked) {
     document.getElementById('time_void').textContent = 'Unlocked! Void spray is now available!';
     document.getElementById('m_void').querySelector('.milestone-reward').innerHTML =
         '<span class="gradient-swatch" style="background:linear-gradient(135deg,#050308,#6a3fd0,#e8d8ff,#1a0f2e)"></span> Void';
+}
+const referUnlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('refer_color');
+document.getElementById('bar_refer').style.width = referUnlocked ? '100%' : '0%';
+if (referUnlocked) {
+    document.getElementById('m_refer').classList.add('unlocked');
+    document.getElementById('badge_refer').textContent = '🚂';
+    document.getElementById('time_refer').textContent = 'Unlocked! Ghost Train spray is now available!';
+    document.getElementById('m_refer').querySelector('.milestone-reward').innerHTML =
+        '<span class="gradient-swatch" style="background:linear-gradient(135deg,#0aff6a,#050505,#0a3d1f)"></span> Ghost Train';
 }
 }
 

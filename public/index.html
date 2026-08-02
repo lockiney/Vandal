@@ -841,6 +841,52 @@
     }
     @keyframes dlgBob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(4px);} }
 </style>
+<!-- ===== FIT-TO-SCREEN (home page scales to device, no scroll) ===== -->
+<style>
+    html, body { height: 100%; }
+    body {
+        overflow: hidden !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        justify-content: center !important;   /* center the whole cluster vertically */
+    }
+
+    /* kill the stretchy spacer that was pushing the logo and text apart */
+    .spacer { flex-grow: 0 !important; height: 0 !important; }
+
+    /* logo image: bigger, and sits right above the VANDAL text */
+    .logo-container { display: flex; justify-content: center; margin-bottom: 0 !important; }
+    .main-logo {
+        height: clamp(120px, 34vh, 380px) !important;
+        margin-bottom: -2vh !important;   /* pull the text up close to the logo */
+    }
+
+    /* the VANDAL text + search cluster, centered and tight */
+    #home-ui .logo {
+        font-size: clamp(40px, 10vmin, 96px) !important;
+        margin-bottom: 1vh !important;
+    }
+    #home-ui .site-name {
+        font-size: clamp(14px, 3.4vmin, 30px) !important;
+        margin-bottom: 2.5vh !important;
+    }
+    .search-container { width: min(620px, 88vw) !important; }
+    #home-ui input { font-size: clamp(14px, 2.4vmin, 20px) !important; }
+    #home-ui #goBtn { font-size: clamp(12px, 2vmin, 16px) !important; padding: 12px 20px !important; }
+    #customSearchLine { font-size: clamp(11px, 2vmin, 14px) !important; }
+
+    @media (max-height: 600px), (max-width: 500px) {
+        #stats-counter .stat-line { font-size: 10px !important; }
+        #userPill { font-size: 10px !important; padding: 4px 10px !important; }
+        .main-logo { height: clamp(90px, 24vh, 200px) !important; margin-bottom: -1vh !important; }
+        #home-ui .site-name { margin-bottom: 1.5vh !important; }
+    }
+
+    #spray-nav { max-height: 92vh; }
+
+    /* restore normal scrolling while a site is being proxied */
+    body.proxy-active { overflow: auto !important; }
+</style>
 </head>
 <body>
 
@@ -1243,6 +1289,7 @@
         }
         homeUI.style.display = 'none';
         proxyContainer.style.display = 'block';
+        document.body.classList.add('proxy-active');
         backBtn.style.display = 'block';
         refreshBtn.style.display = 'block';
         document.getElementById('spray-nav').style.display = 'none';
@@ -1288,6 +1335,7 @@
         refreshBtn.style.display = 'none';
         document.getElementById('spray-nav').style.display = 'flex';
         frame.src = 'about:blank';
+        document.body.classList.remove('proxy-active');
     };
 
     refreshBtn.onclick = () => {

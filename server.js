@@ -318,7 +318,8 @@ const EXCLUSIVE_COLORS = [
     { id: 'rainbow',    label: 'Rainbow',    gradient: ['#ff0000', '#ff8c00', '#ffff00', '#00ff00', '#00f2ff', '#7000ff', '#ff69b4'] },
     { id: 'sharks',     label: 'Shark Blue', gradient: ['#0d0d2b', '#008080', '#40e0d0', '#8b0000'] },
     { id: 'royalty',    label: 'Royalty',    gradient: ['#8b0000', '#ffd700', '#7000ff'] },
-    { id: 'void_star',  label: 'Void',       gradient: ['#050308', '#6a3fd0', '#e8d8ff', '#1a0f2e'] }
+    { id: 'void_star',  label: 'Void',       gradient: ['#050308', '#6a3fd0', '#e8d8ff', '#1a0f2e'] },
+    { id: 'refer_color', label: 'Ghost Train', gradient: ['#0aff6a', '#050505', '#0a3d1f'] }
 ];
 
 app.get('/api/stats/leaderboard', (req, res) => {
