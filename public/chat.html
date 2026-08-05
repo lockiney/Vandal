@@ -354,6 +354,11 @@
             0%,100% { box-shadow: 0 0 6px rgba(255,215,0,0.5); }
             50% { box-shadow: 0 0 14px rgba(255,215,0,0.9); }
         }
+        .chat-tag.champ {
+            border-color: #ff8c00; color: #fff;
+            background: linear-gradient(90deg, #ff8c00, #ff5e00);
+            text-shadow: 0 0 6px rgba(255,140,0,0.8);
+        }
     </style>
 <!-- ===== THEMEABLE STREET STYLES (3 themes via CSS variables) ===== -->
 <style>
@@ -794,6 +799,7 @@
         const t = titleCache[(uname || '').toLowerCase()];
         if (t === 'tag') return '<span class="chat-tag">exclusive</span>';
         if (t === 'glow') return '<span class="chat-tag glow">✦ PRESTIGE</span>';
+        if (t === 'champ') return '<span class="chat-tag champ">🏀 Basketball Champ</span>';
         return '';
     }
 
@@ -853,16 +859,21 @@
         if (!authToken) { list.innerHTML = '<div class="titles-sub">Log in to use titles.</div>'; return; }
         const count = myRef ? (myRef.referralCount || 0) : 0;
         const equipped = myRef ? myRef.equippedTitle : null;
+        const hasChamp = (myRef && myRef.hoopsChamp)
+            || localStorage.getItem('vandal_hoops_champ') === '1'
+            || JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('nba_champ');
         const opts = [
-            { key: null,   label: 'None',                      preview: 'No title',                              need: 0 },
-            { key: 'tag',  label: 'Exclusive Tag',             preview: '<span class="chat-tag">exclusive</span> name', need: 2 },
-            { key: 'glow', label: 'Glowing Prestige Title',    preview: '<span class="chat-tag glow">✦ PRESTIGE</span> name', need: 5 }
+            { key: null,   label: 'None',                      preview: 'No title',                              need: 0, unlocked: true },
+            { key: 'tag',  label: 'Exclusive Tag',             preview: '<span class="chat-tag">exclusive</span> name', need: 2, unlocked: count >= 2 },
+            { key: 'glow', label: 'Glowing Prestige Title',    preview: '<span class="chat-tag glow">✦ PRESTIGE</span> name', need: 5, unlocked: count >= 5 },
+            { key: 'champ',label: 'Basketball Champ',          preview: '<span class="chat-tag champ">🏀 Basketball Champ</span> name', hoops: true, unlocked: hasChamp }
         ];
         list.innerHTML = opts.map(o => {
-            const locked = o.need > 0 && count < o.need;
+            const locked = !o.unlocked;
             const isEq = equipped === o.key || (o.key === null && !equipped);
             const cls = 'title-option' + (locked ? ' locked' : '') + (isEq ? ' equipped' : '');
-            const status = locked ? ('🔒 ' + o.need + ' referrals') : (isEq ? '✓ Equipped' : 'Tap to equip');
+            const lockLabel = o.hoops ? '🔒 win Hoops' : ('🔒 ' + o.need + ' referrals');
+            const status = locked ? lockLabel : (isEq ? '✓ Equipped' : 'Tap to equip');
             const attr = locked ? '' : ' onclick="equipTitle(' + (o.key === null ? 'null' : ("'" + o.key + "'")) + ')"';
             return '<div class="' + cls + '"' + attr + '>' +
                 '<div class="title-preview">' + o.preview + '</div>' +

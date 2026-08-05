@@ -713,6 +713,19 @@ if (!localStorage.getItem('vandal_token')) {
     </div>
     <div class="milestone-time" id="time_refer">Hint: refer a friend to earn this 🎟️</div>
 </div>
+<div class="milestone" id="m_hoops">
+    <div class="milestone-top">
+        <div class="milestone-name"><span id="badge_hoops">🔒</span> Basketball Champ</div>
+        <div class="milestone-reward">
+            <span class="gradient-swatch" style="background:linear-gradient(135deg,#c8102e,#ffffff,#1d428a)"></span>
+            ???
+        </div>
+    </div>
+    <div class="milestone-bar-wrap">
+        <div class="milestone-bar" id="bar_hoops" style="background:linear-gradient(90deg,#c8102e,#ffffff,#1d428a)"></div>
+    </div>
+    <div class="milestone-time" id="time_hoops">Hint: win a game of Hoops 🏀</div>
+</div>
         </div>
         <div class="total-time">Total time on Vandal: <span id="totalTimeDisplay">0:00</span></div>
     </div>
@@ -868,6 +881,15 @@ if (referUnlocked) {
     document.getElementById('time_refer').textContent = 'Unlocked! Ghost Train spray is now available!';
     document.getElementById('m_refer').querySelector('.milestone-reward').innerHTML =
         '<span class="gradient-swatch" style="background:linear-gradient(135deg,#0aff6a,#050505,#0a3d1f)"></span> Ghost Train';
+}
+const hoopsUnlocked = JSON.parse(localStorage.getItem('vandal_unlocked_colors') || '[]').includes('nba_champ');
+document.getElementById('bar_hoops').style.width = hoopsUnlocked ? '100%' : '0%';
+if (hoopsUnlocked) {
+    document.getElementById('m_hoops').classList.add('unlocked');
+    document.getElementById('badge_hoops').textContent = '🏀';
+    document.getElementById('time_hoops').textContent = 'Unlocked! Basketball Champ color is now available!';
+    document.getElementById('m_hoops').querySelector('.milestone-reward').innerHTML =
+        '<span class="gradient-swatch" style="background:linear-gradient(135deg,#c8102e,#ffffff,#1d428a)"></span> Basketball Champ';
 }
 }
 

@@ -139,6 +139,7 @@ users.forEach(u => {
     if (!('referredBy' in u)) { u.referredBy = null; _refBackfill = true; }
     if (!u.equippedTitle) { u.equippedTitle = null; _refBackfill = true; }
     if (!u.searchLine) { u.searchLine = ''; _refBackfill = true; }
+    if (!('hoopsChamp' in u)) { u.hoopsChamp = false; _refBackfill = true; }
 });
 if (_refBackfill) saveUsers();
 
@@ -266,7 +267,8 @@ app.get('/api/referral/me', (req, res) => {
         stages: REFERRAL_STAGES,
         rewards: REFERRAL_REWARDS,
         equippedTitle: user.equippedTitle || null,
-        searchLine: user.searchLine || ''
+        searchLine: user.searchLine || '',
+        hoopsChamp: !!user.hoopsChamp
     });
 });
 
@@ -284,11 +286,25 @@ app.post('/api/referral/title', express.json(), (req, res) => {
     } else if (which === 'glow') {
         if (count < 5) return res.status(403).json({ error: 'Not unlocked' });
         user.equippedTitle = 'glow';
+    } else if (which === 'champ') {
+        if (!user.hoopsChamp) return res.status(403).json({ error: 'Not unlocked' });
+        user.equippedTitle = 'champ';
     } else {
         return res.status(400).json({ error: 'Invalid title' });
     }
     saveUsers();
     res.json({ equippedTitle: user.equippedTitle });
+});
+
+// Record a Hoops win: grant the NBA color + Basketball Champ title eligibility
+app.post('/api/hoops/win', (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+    user.hoopsChamp = true;
+    user.unlockedColors = user.unlockedColors || [];
+    if (!user.unlockedColors.includes('nba_champ')) user.unlockedColors.push('nba_champ');
+    saveUsers();
+    res.json({ success: true });
 });
 
 // Set the custom search-bar line (stage 4)
@@ -319,7 +335,8 @@ const EXCLUSIVE_COLORS = [
     { id: 'sharks',     label: 'Shark Blue', gradient: ['#0d0d2b', '#008080', '#40e0d0', '#8b0000'] },
     { id: 'royalty',    label: 'Royalty',    gradient: ['#8b0000', '#ffd700', '#7000ff'] },
     { id: 'void_star',  label: 'Void',       gradient: ['#050308', '#6a3fd0', '#e8d8ff', '#1a0f2e'] },
-    { id: 'refer_color', label: 'Ghost Train', gradient: ['#0aff6a', '#050505', '#0a3d1f'] }
+    { id: 'refer_color', label: 'Ghost Train', gradient: ['#0aff6a', '#050505', '#0a3d1f'] },
+    { id: 'nba_champ', label: 'Basketball Champ', gradient: ['#c8102e', '#ffffff', '#1d428a'] }
 ];
 
 app.get('/api/stats/leaderboard', (req, res) => {
@@ -503,6 +520,49 @@ app.post('/api/suggestions/:id/messages', express.json(), (req, res) => {
     res.json({ success: true });
 });
 
+// ---- Update Log ----
+const UPDATES_FILE = path.join(__dirname, 'updates.json');
+function loadUpdates() {
+    try { return JSON.parse(fs.readFileSync(UPDATES_FILE, 'utf8')); }
+    catch { return []; }
+}
+function saveUpdates(list) {
+    fs.writeFileSync(UPDATES_FILE, JSON.stringify(list, null, 2));
+}
+
+app.get('/api/updates', (req, res) => {
+    const list = loadUpdates();
+    // newest first
+    list.sort((a, b) => b.date - a.date);
+    res.json(list);
+});
+
+app.post('/api/updates', express.json(), (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+    if (user.username !== 'lockiney') return res.status(403).json({ error: 'Not authorized' });
+    const title = String(req.body.title || '').trim().slice(0, 80);
+    const description = String(req.body.description || '').trim().slice(0, 1000);
+    if (!title) return res.status(400).json({ error: 'Title required' });
+    const list = loadUpdates();
+    list.push({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+        title,
+        description,
+        date: Date.now()
+    });
+    saveUpdates(list);
+    res.json({ success: true });
+});
+
+app.delete('/api/updates/:id', (req, res) => {
+    const user = getUserFromToken(req);
+    if (!user) return res.status(401).json({ error: 'Login required' });
+    if (user.username !== 'lockiney') return res.status(403).json({ error: 'Not authorized' });
+    const list = loadUpdates().filter(u => u.id !== req.params.id);
+    saveUpdates(list);
+    res.json({ success: true });
+});
 // --- 404 FALLBACK ---
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
